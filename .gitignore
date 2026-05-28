@@ -1,0 +1,77 @@
+# ==========================================================================
+# .gitignore für BackgammonGym (Objective-C / iOS, öffentliches Repo)
+# ==========================================================================
+
+# --------------------------------------------------------------------------
+# Persönliche Xcode-Einstellungen
+# Diese enthalten DEINE lokalen UI-Zustände (geöffnete Dateien, Breakpoints,
+# Fensterpositionen). Gehören NIE ins Repo, schon gar nicht ins öffentliche.
+# --------------------------------------------------------------------------
+xcuserdata/
+*.xcuserstate
+*.xcuserdatad/
+
+# Der "shared data"-Ordner DARF rein (Schemes, die geteilt werden sollen),
+# nur die persönlichen Teile werden ignoriert:
+!*.xcworkspace/xcshareddata/
+!*.xcodeproj/xcshareddata/
+
+# --------------------------------------------------------------------------
+# Build-Artefakte
+# Alles, was beim Kompilieren entsteht und jederzeit neu erzeugt werden kann.
+# --------------------------------------------------------------------------
+build/
+DerivedData/
+*.o
+*.hmap
+*.ipa
+*.dSYM.zip
+*.dSYM
+
+# --------------------------------------------------------------------------
+# macOS Systemmüll
+# Finder legt diese überall an – sollen nicht ins Repo.
+# --------------------------------------------------------------------------
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+
+# --------------------------------------------------------------------------
+# Swift Package Manager
+# (falls du später mal ein Package einbindest)
+# --------------------------------------------------------------------------
+.build/
+.swiftpm/
+
+# --------------------------------------------------------------------------
+# CocoaPods
+# Falls du Pods nutzt: Manche committen den Pods/-Ordner, manche nicht.
+# Für ein kleines Projekt ist es üblich, ihn NICHT zu committen.
+# Wenn du Pods gar nicht nutzt, schadet diese Zeile nicht.
+# --------------------------------------------------------------------------
+Pods/
+
+# --------------------------------------------------------------------------
+# Carthage (falls verwendet)
+# --------------------------------------------------------------------------
+Carthage/Build/
+
+# --------------------------------------------------------------------------
+# Sonstiges
+# --------------------------------------------------------------------------
+*.moved-aside
+*.pbxuser
+!default.pbxuser
+*.mode1v3
+!default.mode1v3
+*.mode2v3
+!default.mode2v3
+*.perspectivev3
+!default.perspectivev3
+
+# Optional: falls du jemals geheime Schlüssel in einer Config-Datei hast,
+# diese hier ergänzen, damit sie NICHT öffentlich werden. Beispiel:
+# Secrets.plist
+# Config.local.xcconfig
