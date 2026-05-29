@@ -9,6 +9,7 @@
 #import "Tools.h"
 #import "BGGStartTile.h"
 #import "BGGStartTileCell.h"
+#import "BGGBoardState.h"
 
 @interface StartVC () <UICollectionViewDataSource,
                        UICollectionViewDelegate,
@@ -30,6 +31,10 @@
 
     [self setupTiles];
     [self setupCollectionView];
+    
+    BGGBoardState *test = [BGGBoardState startingPosition];
+    NSLog(@"Blau gesamt: %ld", (long)[test totalCheckersForPlayer:BGGPlayerBlue]);
+    NSLog(@"Gültig: %d", [test isValidCheckerCount]);
 }
 
 #pragma mark - Setup
