@@ -42,7 +42,7 @@
     _titleLabel.translatesAutoresizingMaskIntoConstraints = NO;
     _titleLabel.font = [UIFont boldSystemFontOfSize:28];
     _titleLabel.textColor = [UIColor labelColor];
-    _titleLabel.textAlignment = NSTextAlignmentLeft;
+    _titleLabel.textAlignment = NSTextAlignmentCenter;
     _titleLabel.adjustsFontSizeToFitWidth = YES;
     _titleLabel.minimumScaleFactor = 0.6;
     [self.contentView addSubview:_titleLabel];
@@ -51,7 +51,7 @@
     _subtitleLabel.translatesAutoresizingMaskIntoConstraints = NO;
     _subtitleLabel.font = [UIFont systemFontOfSize:16];
     _subtitleLabel.textColor = [UIColor secondaryLabelColor];
-    _subtitleLabel.textAlignment = NSTextAlignmentLeft;
+    _subtitleLabel.textAlignment = NSTextAlignmentCenter;
     [self.contentView addSubview:_subtitleLabel];
 
     UILayoutGuide *g = self.contentView.layoutMarginsGuide;
@@ -59,12 +59,13 @@
     [NSLayoutConstraint activateConstraints:@[
         [_iconView.topAnchor      constraintEqualToAnchor:g.topAnchor constant:8],
         [_iconView.leadingAnchor  constraintEqualToAnchor:g.leadingAnchor],
-        [_iconView.widthAnchor    constraintEqualToConstant:36],
-        [_iconView.heightAnchor   constraintEqualToConstant:36],
+        [_iconView.widthAnchor    constraintEqualToConstant:50],
+        [_iconView.heightAnchor   constraintEqualToConstant:50],
 
         [_titleLabel.leadingAnchor  constraintEqualToAnchor:g.leadingAnchor],
-        [_titleLabel.trailingAnchor constraintEqualToAnchor:g.trailingAnchor],
-        [_titleLabel.bottomAnchor   constraintEqualToAnchor:_subtitleLabel.topAnchor constant:-2],
+        [_titleLabel.centerXAnchor constraintEqualToAnchor:g.centerXAnchor],
+        [_titleLabel.centerYAnchor constraintEqualToAnchor:g.centerYAnchor],
+ //      [_titleLabel.bottomAnchor   constraintEqualToAnchor:_subtitleLabel.topAnchor constant:-2],
 
         [_subtitleLabel.leadingAnchor  constraintEqualToAnchor:g.leadingAnchor],
         [_subtitleLabel.trailingAnchor constraintEqualToAnchor:g.trailingAnchor],
