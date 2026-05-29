@@ -14,7 +14,7 @@
 		E0C84D2A2FC85B5600B4AF81 /* Exceptions for "BackgammonGym" folder in "BackgammonGym" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
-				Info.plist,
+				SupportingFiles/Info.plist,
 			);
 			target = E0C84D122FC85B5400B4AF81 /* BackgammonGym */;
 		};
@@ -146,7 +146,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = VL8Y87Y9PB;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = BackgammonGym/Info.plist;
+				INFOPLIST_FILE = BackgammonGym/SupportingFiles/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "Backgammon Gym";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
@@ -176,7 +176,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = VL8Y87Y9PB;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = BackgammonGym/Info.plist;
+				INFOPLIST_FILE = BackgammonGym/SupportingFiles/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "Backgammon Gym";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;

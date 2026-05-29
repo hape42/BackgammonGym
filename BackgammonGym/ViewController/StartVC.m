@@ -1,17 +1,19 @@
 //
-//  ViewController.m
+//  StartVC.m
 //  BackgammonGym
 //
 //  Created by Peter Schneider on 28.05.26.
 //
 
-#import "ViewController.h"
+#import "StartVC.h"
 
-@interface ViewController ()
+@interface StartVC ()
+
+@property (weak, nonatomic) IBOutlet UICollectionView *collectionView;
 
 @end
 
-@implementation ViewController
+@implementation StartVC
 
 - (void)viewDidLoad {
     [super viewDidLoad];
