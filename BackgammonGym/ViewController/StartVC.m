@@ -10,6 +10,7 @@
 #import "BGGStartTile.h"
 #import "BGGStartTileCell.h"
 #import "BGGBoardState.h"
+#import "PipCountVC.h"
 
 @interface StartVC () <UICollectionViewDataSource,
                        UICollectionViewDelegate,
@@ -29,6 +30,15 @@
     self.view.backgroundColor = [UIColor colorNamed:@"ColorViewBackground"];
     self.title = @"Backgammon Gym";
 
+    UIImage *setupImage = [UIImage systemImageNamed:@"gearshape"];
+        
+    UIBarButtonItem *setupButton = [[UIBarButtonItem alloc] initWithImage:setupImage
+                                                                    style:UIBarButtonItemStylePlain
+                                                                   target:self
+                                                                   action:@selector(setupButtonTapped:)];
+    
+    self.navigationItem.rightBarButtonItem = setupButton;
+    
     [self setupTiles];
     [self setupCollectionView];
     
@@ -176,9 +186,10 @@ didSelectItemAtIndexPath:(NSIndexPath *)indexPath
     switch (tile.kind)
     {
         case BGGStartTileKindPipCount:
-            [Tools showNotImplementedAlertFromViewController:self
-                                                     feature:@"Pipcount"
-                                                 description:nil];
+        {
+            PipCountVC *vc = [[PipCountVC alloc] init];
+            [self.navigationController pushViewController:vc animated:YES];
+        }
             break;
 
         case BGGStartTileKindMETQuiz:
@@ -213,4 +224,17 @@ didSelectItemAtIndexPath:(NSIndexPath *)indexPath
     }
 }
 
+
+- (void)setupButtonTapped:(UIBarButtonItem *)sender
+{
+    NSLog(@"Setup-Button wurde gedrückt!");
+    [Tools showNotImplementedAlertFromViewController:self
+                                             feature:@"SetUp"
+                                         description:nil];
+
+    /*
+    SetupViewController *setupVC = [[SetupViewController alloc] init];
+    [self.navigationController pushViewController:setupVC animated:YES];
+    */
+}
 @end
