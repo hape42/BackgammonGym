@@ -7,6 +7,7 @@
 #import "BGGBoardView.h"
 #import "BGGBoardState.h"
 #import "BGGBoardGeometry.h"
+#import "BGGPosition.h"
 
 @interface PipCountVC ()
 
@@ -41,7 +42,9 @@
     self.boardView.translatesAutoresizingMaskIntoConstraints = NO;
     self.boardView.boardDesign     = @"4";
     self.boardView.showsPointNumbers = YES;
-    self.boardView.boardState      = [BGGBoardState startingPosition];
+    // PipCountVC.m, viewDidLoad – statt [BGGBoardState startingPosition]
+    BGGBoardState *state = [BGGPosition boardStateFromCombinedID:@"094HAIB1ewcAAA:AYElAYAAEAAA"];
+    self.boardView.boardState = state;
     [self.contentView addSubview:self.boardView];
 
     // Second board – half width, same position for now.
@@ -50,6 +53,7 @@
     self.boardView2.boardDesign      = @"5";
     self.boardView2.showsPointNumbers = YES;
     self.boardView2.boardState       = [BGGBoardState startingPosition];
+    self.boardView2.boardState = state;
     [self.contentView addSubview:self.boardView2];
 
     UILayoutGuide *safe = self.view.safeAreaLayoutGuide;

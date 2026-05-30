@@ -212,6 +212,19 @@ static void writeBits(uint8_t *bytes, NSInteger bitPos, NSUInteger val, NSIntege
     }
     board.barYellow = yellowBar;
 
+    // The Position ID only encodes checkers on the board and bar.
+    // Checkers already borne off are implicit: 15 minus everything else.
+    NSInteger blueOnBoard = 0;
+    NSInteger yellowOnBoard = 0;
+    for (NSInteger p = 1; p <= 24; p++)
+    {
+        NSInteger c = [board checkersOnPoint:p];
+        if (c > 0) blueOnBoard   += c;
+        if (c < 0) yellowOnBoard += -c;
+    }
+    board.offBlue   = 15 - blueOnBoard   - board.barBlue;
+    board.offYellow = 15 - yellowOnBoard - board.barYellow;
+
     return board;
 }
 
@@ -280,21 +293,28 @@ static void writeBits(uint8_t *bytes, NSInteger bitPos, NSUInteger val, NSIntege
     NSString *posID   = nil;
     NSString *matchID = nil;
 
-    // Format: "4HPwATDgc/ABMA" – 14 chars, no separator between them
-    // (the slash is part of the Position ID Base64 alphabet).
-    if (stripped.length >= kPositionIDChars + kMatchIDChars)
+    // Supported formats:
+    //   "4HPwATDgc/ABMA"           – position ID only (14 chars)
+    //   "4HPwATDgc/ABMA AYElAYAA"  – space separator (GNU Backgammon)
+    //   "094HAIB1ewcAAA:AYElAYAA"  – colon separator (BGBlitz)
+    if (stripped.length >= (NSUInteger)(kPositionIDChars + kMatchIDChars))
     {
-        posID   = [stripped substringToIndex:kPositionIDChars];
-        matchID = [stripped substringFromIndex:kPositionIDChars];
-        // Strip any leading space or separator between the two IDs.
-        matchID = [matchID stringByTrimmingCharactersInSet:
-                   [NSCharacterSet whitespaceAndNewlineCharacterSet]];
-        if ([matchID hasPrefix:@"/"] || [matchID hasPrefix:@" "])
-            matchID = [matchID substringFromIndex:1];
+        posID = [stripped substringToIndex:(NSUInteger)kPositionIDChars];
+        NSString *rest = [stripped substringFromIndex:(NSUInteger)kPositionIDChars];
+        rest = [rest stringByTrimmingCharactersInSet:
+                [NSCharacterSet whitespaceAndNewlineCharacterSet]];
+        // Strip leading separator character (space, slash, or colon).
+        if (rest.length > 0)
+        {
+            unichar sep = [rest characterAtIndex:0];
+            if (sep == ' ' || sep == ':')
+                rest = [rest substringFromIndex:1];
+        }
+        matchID = rest;
     }
-    else if (stripped.length >= kPositionIDChars)
+    else if (stripped.length >= (NSUInteger)kPositionIDChars)
     {
-        posID = [stripped substringToIndex:kPositionIDChars];
+        posID = [stripped substringToIndex:(NSUInteger)kPositionIDChars];
     }
 
     if (posID == nil) { return nil; }

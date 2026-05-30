@@ -61,6 +61,21 @@
                           @"starting position must encode to known ID");
 }
 
+- (void)testDecodeBGBlitzRacePosition
+{
+    // A typical race position from a live match, exported directly from BGBlitz.
+    // Format: posID:matchID (BGBlitz uses colon as separator).
+    // Blue has all checkers in the home board bearing off,
+    // yellow is also bearing off on the other side.
+    BGGBoardState *board = [BGGPosition boardStateFromCombinedID:@"094HAIB1ewcAAA:AYElAYAAEAAA"];
+    XCTAssertNotNil(board);
+    XCTAssertTrue([board isValidCheckerCount], @"checker count must be valid");
+
+    // Round-trip: encode back and compare.
+    NSString *reEncoded = [BGGPosition positionIDFromBoardState:board];
+    XCTAssertEqualObjects(reEncoded, @"094HAIB1ewcAAA", @"round-trip must be lossless");
+}
+
 - (void)testRoundTripPositionID
 {
     // Decode → encode → decode must produce the same board.

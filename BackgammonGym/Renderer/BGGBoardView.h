@@ -30,6 +30,15 @@ NS_ASSUME_NONNULL_BEGIN
 // Default: NO.
 @property (nonatomic, assign) BOOL showsPointNumbers;
 
+// Show the doubling cube. The cube sits in the left (off) area;
+// position depends on who owns it (top = yellow, center = nobody, bottom = blue).
+// Default: YES.
+@property (nonatomic, assign) BOOL showsCube;
+
+// Show the dice if they have been rolled (die1/die2 != 0 in boardState).
+// Default: YES.
+@property (nonatomic, assign) BOOL showsDice;
+
 // Convenience: set position and schema in one call.
 - (void)configureWithBoardState:(nullable BGGBoardState *)state
                           design:(NSString *)design;

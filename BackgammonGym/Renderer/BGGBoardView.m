@@ -40,6 +40,8 @@
 {
     _boardDesign       = @"4";
     _showsPointNumbers = NO;
+    _showsCube         = YES;
+    _showsDice         = YES;
     _elements          = [[BGGBoardElements alloc] initWithSchema:4];
     self.backgroundColor = [UIColor clearColor];
     self.clipsToBounds   = YES;
@@ -63,6 +65,18 @@
 - (void)setShowsPointNumbers:(BOOL)showsPointNumbers
 {
     _showsPointNumbers = showsPointNumbers;
+    [self setNeedsLayout];
+}
+
+- (void)setShowsCube:(BOOL)showsCube
+{
+    _showsCube = showsCube;
+    [self setNeedsLayout];
+}
+
+- (void)setShowsDice:(BOOL)showsDice
+{
+    _showsDice = showsDice;
     [self setNeedsLayout];
 }
 
@@ -129,6 +143,9 @@
     [self drawAllPointsWithScale:scale origin:origin];
     [self drawBarCheckersWithScale:scale origin:origin];
     [self drawOffCheckersWithScale:scale origin:origin];
+
+    if (self.showsCube)  { [self drawCubeWithScale:scale origin:origin]; }
+    if (self.showsDice)  { [self drawDiceWithScale:scale origin:origin]; }
 }
 
 #pragma mark - Background
@@ -506,6 +523,142 @@
         iv.contentMode = UIViewContentModeScaleToFill;
         [self addSubview:iv];
     }
+}
+
+#pragma mark - Cube
+
+// The cube always sits in the left (off) area.
+// Three positions:
+//   centered (nobody owns it) → vertically centered between the two tray fields
+//   top      (yellow owns it) → in the upper tray field area
+//   bottom   (blue owns it)   → in the lower tray field area
+- (void)drawCubeWithScale:(CGFloat)scale origin:(CGPoint)origin
+{
+    if (self.boardState == nil) { return; }
+
+    NSInteger cubeValue = self.boardState.cubeValue;
+    if (cubeValue < 1) { cubeValue = 1; }
+
+    // Find the right asset: cube1, cube2, cube4, cube8, cube16, cube32, cube64.
+    // Values above 64 fall back to cube64.
+    NSInteger assetValue = 1;
+    for (NSInteger v = 1; v <= 64; v *= 2)
+    {
+        if (v <= cubeValue) { assetValue = v; }
+    }
+    NSString *cubeName = [NSString stringWithFormat:@"%ld/cube%ld",
+                          (long)self.elements.schema, (long)assetValue];
+    UIImage *cubeImage = [UIImage imageNamed:cubeName];
+    if (cubeImage == nil) { return; }
+
+    // The cube PNG is 290x290 (square). I size it to fit within the off area,
+    // using checkerWidth as the reference - that's exactly the inner tray width.
+    CGFloat cubeNativeW = kBGGCheckerWidth;
+    CGFloat cubeNativeH = kBGGCheckerWidth;
+
+    // The tray field sits at x = (kBGGOffWidth - kBGGCheckerWidth) / 2 = 15,
+    // and is kBGGCheckerWidth (40) wide. Center the cube within that field.
+    CGFloat trayFieldX = (kBGGOffWidth - kBGGCheckerWidth) / 2.0;   // 15
+    CGFloat cubeNativeX = trayFieldX + (kBGGCheckerWidth - cubeNativeW) / 2.0 + 2.0;
+
+    // Vertical position depends on cube owner.
+    BGGPlayer owner = self.boardState.cubeOwner;
+    CGFloat cubeNativeY;
+
+    if (owner == BGGPlayerYellow)
+    {
+        // Upper tray field center.
+        cubeNativeY = kBGGNumberHeight + (kBGGPointsHeight - cubeNativeH) / 2.0;
+    }
+    else if (owner == BGGPlayerBlue)
+    {
+        // Lower tray field center.
+        cubeNativeY = kBGGBoardHeight - kBGGNumberHeight - kBGGPointsHeight
+                      + (kBGGPointsHeight - cubeNativeH) / 2.0;
+    }
+    else
+    {
+        // Centered = nobody owns it yet.
+        cubeNativeY = (kBGGBoardHeight - cubeNativeH) / 2.0;
+    }
+
+    CGRect frame = [self scaleRect:CGRectMake(cubeNativeX, cubeNativeY,
+                                               cubeNativeW, cubeNativeH)
+                             scale:scale origin:origin];
+    UIImageView *iv = [[UIImageView alloc] initWithFrame:frame];
+    iv.image = cubeImage;
+    iv.contentMode = UIViewContentModeScaleToFill;
+    [self addSubview:iv];
+}
+
+#pragma mark - Dice
+
+// Dice are shown in the center strip (indicator area) on the side of the
+// player on roll. Two dice side by side, centered horizontally in their half.
+- (void)drawDiceWithScale:(CGFloat)scale origin:(CGPoint)origin
+{
+    if (self.boardState == nil) { return; }
+
+    NSInteger die1 = self.boardState.dice.die1;
+    NSInteger die2 = self.boardState.dice.die2;
+    if (die1 <= 0 || die2 <= 0) { return; }   // not yet rolled
+
+    BGGPlayer onRoll = self.boardState.onRoll;
+
+    // Dice color matches the player on roll.
+    NSString *colorStr = (onRoll == BGGPlayerYellow) ? @"y" : @"b";
+
+    NSString *die1Name = [NSString stringWithFormat:@"%ld/die_%@%ld",
+                          (long)self.elements.schema, colorStr, (long)die1];
+    NSString *die2Name = [NSString stringWithFormat:@"%ld/die_%@%ld",
+                          (long)self.elements.schema, colorStr, (long)die2];
+
+    UIImage *img1 = [UIImage imageNamed:die1Name];
+    UIImage *img2 = [UIImage imageNamed:die2Name];
+
+    // Native die size: 250x250. Scale to fit comfortably in the indicator strip.
+    // I make each die slightly smaller than a checker so they fit side by side.
+    CGFloat dieNativeSize = kBGGCheckerWidth * 0.9;
+
+    // Dice sit in the center strip (between tongue tips).
+    // The center strip Y: kBGGNumberHeight + kBGGPointsHeight + kBGGIndicatorHeight/2
+    CGFloat centerStripMidY = kBGGNumberHeight + kBGGPointsHeight
+                              + kBGGIndicatorHeight + kBGGCheckerWidth / 2.0;
+    CGFloat dieNativeY = centerStripMidY - dieNativeSize / 2.0;
+
+    // Dice sit on the side of the player on roll.
+    // Blue moves from high to low points (right home board) → right half.
+    // Yellow moves from low to high points (left home board) → left half.
+    CGFloat halfCenterX;
+    if (onRoll == BGGPlayerBlue)
+    {
+        halfCenterX = kBGGRightHalfX + 3.0 * kBGGCheckerWidth;
+    }
+    else
+    {
+        halfCenterX = kBGGOffWidth + 3.0 * kBGGCheckerWidth;
+    }
+
+    CGFloat gap = dieNativeSize * 0.2;
+    CGFloat totalW = 2.0 * dieNativeSize + gap;
+    CGFloat startX = halfCenterX - totalW / 2.0;
+
+    CGRect frame1 = [self scaleRect:CGRectMake(startX, dieNativeY,
+                                                dieNativeSize, dieNativeSize)
+                              scale:scale origin:origin];
+    CGRect frame2 = [self scaleRect:CGRectMake(startX + dieNativeSize + gap, dieNativeY,
+                                                dieNativeSize, dieNativeSize)
+                              scale:scale origin:origin];
+
+    UIImageView *iv1 = [[UIImageView alloc] initWithFrame:frame1];
+    iv1.image = img1;
+    iv1.contentMode = UIViewContentModeScaleToFill;
+    [self addSubview:iv1];
+
+    UIImageView *iv2 = [[UIImageView alloc] initWithFrame:frame2];
+    iv2.image = img2;
+    iv2.contentMode = UIViewContentModeScaleToFill;
+    [self addSubview:iv2];
 }
 
 #pragma mark - Point number labels
