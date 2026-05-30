@@ -8,6 +8,7 @@
 #import "BGGBoardState.h"
 #import "BGGBoardGeometry.h"
 #import "BGGPosition.h"
+#import "PositionDatabase.h"
 
 @interface PipCountVC ()
 
@@ -44,7 +45,9 @@
     self.boardView.showsPointNumbers = YES;
     // PipCountVC.m, viewDidLoad – statt [BGGBoardState startingPosition]
     BGGBoardState *state = [BGGPosition boardStateFromCombinedID:@"094HAIB1ewcAAA:AYElAYAAEAAA"];
-    self.boardView.boardState = state;
+//    self.boardView.boardState = state;
+    BGGPositionEntry *entry = [[PositionDatabase sharedDatabase] allPositions].firstObject;
+    self.boardView.boardState = [entry boardState];
     [self.contentView addSubview:self.boardView];
 
     // Second board – half width, same position for now.
