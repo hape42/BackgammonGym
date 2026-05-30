@@ -6,7 +6,18 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXContainerItemProxy section */
+		E067EF712FCAF9EC0007CE37 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = E0C84D0B2FC85B5400B4AF81 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = E0C84D122FC85B5400B4AF81;
+			remoteInfo = BackgammonGym;
+		};
+/* End PBXContainerItemProxy section */
+
 /* Begin PBXFileReference section */
+		E067EF6D2FCAF9EC0007CE37 /* BackgammonGymTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = BackgammonGymTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		E0C84D132FC85B5400B4AF81 /* BackgammonGym.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = BackgammonGym.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -21,6 +32,11 @@
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
+		E067EF6E2FCAF9EC0007CE37 /* BackgammonGymTests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = BackgammonGymTests;
+			sourceTree = "<group>";
+		};
 		E0C84D152FC85B5400B4AF81 /* BackgammonGym */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
@@ -32,6 +48,13 @@
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		E067EF6A2FCAF9EC0007CE37 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		E0C84D102FC85B5400B4AF81 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -46,6 +69,7 @@
 			isa = PBXGroup;
 			children = (
 				E0C84D152FC85B5400B4AF81 /* BackgammonGym */,
+				E067EF6E2FCAF9EC0007CE37 /* BackgammonGymTests */,
 				E0C84D142FC85B5400B4AF81 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -54,6 +78,7 @@
 			isa = PBXGroup;
 			children = (
 				E0C84D132FC85B5400B4AF81 /* BackgammonGym.app */,
+				E067EF6D2FCAF9EC0007CE37 /* BackgammonGymTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -61,6 +86,29 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		E067EF6C2FCAF9EC0007CE37 /* BackgammonGymTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = E067EF732FCAF9EC0007CE37 /* Build configuration list for PBXNativeTarget "BackgammonGymTests" */;
+			buildPhases = (
+				E067EF692FCAF9EC0007CE37 /* Sources */,
+				E067EF6A2FCAF9EC0007CE37 /* Frameworks */,
+				E067EF6B2FCAF9EC0007CE37 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				E067EF722FCAF9EC0007CE37 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				E067EF6E2FCAF9EC0007CE37 /* BackgammonGymTests */,
+			);
+			name = BackgammonGymTests;
+			packageProductDependencies = (
+			);
+			productName = BackgammonGymTests;
+			productReference = E067EF6D2FCAF9EC0007CE37 /* BackgammonGymTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 		E0C84D122FC85B5400B4AF81 /* BackgammonGym */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = E0C84D2B2FC85B5600B4AF81 /* Build configuration list for PBXNativeTarget "BackgammonGym" */;
@@ -92,6 +140,10 @@
 				BuildIndependentTargetsInParallel = 1;
 				LastUpgradeCheck = 2650;
 				TargetAttributes = {
+					E067EF6C2FCAF9EC0007CE37 = {
+						CreatedOnToolsVersion = 26.5;
+						TestTargetID = E0C84D122FC85B5400B4AF81;
+					};
 					E0C84D122FC85B5400B4AF81 = {
 						CreatedOnToolsVersion = 26.5;
 					};
@@ -112,11 +164,19 @@
 			projectRoot = "";
 			targets = (
 				E0C84D122FC85B5400B4AF81 /* BackgammonGym */,
+				E067EF6C2FCAF9EC0007CE37 /* BackgammonGymTests */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		E067EF6B2FCAF9EC0007CE37 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		E0C84D112FC85B5400B4AF81 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -127,6 +187,13 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		E067EF692FCAF9EC0007CE37 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		E0C84D0F2FC85B5400B4AF81 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -136,7 +203,51 @@
 		};
 /* End PBXSourcesBuildPhase section */
 
+/* Begin PBXTargetDependency section */
+		E067EF722FCAF9EC0007CE37 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = E0C84D122FC85B5400B4AF81 /* BackgammonGym */;
+			targetProxy = E067EF712FCAF9EC0007CE37 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
 /* Begin XCBuildConfiguration section */
+		E067EF742FCAF9EC0007CE37 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = VL8Y87Y9PB;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = de.hape42.BackgammonGymTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/BackgammonGym.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/BackgammonGym";
+			};
+			name = Debug;
+		};
+		E067EF752FCAF9EC0007CE37 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = VL8Y87Y9PB;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = de.hape42.BackgammonGymTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/BackgammonGym.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/BackgammonGym";
+			};
+			name = Release;
+		};
 		E0C84D2C2FC85B5600B4AF81 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -318,6 +429,15 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		E067EF732FCAF9EC0007CE37 /* Build configuration list for PBXNativeTarget "BackgammonGymTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				E067EF742FCAF9EC0007CE37 /* Debug */,
+				E067EF752FCAF9EC0007CE37 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		E0C84D0E2FC85B5400B4AF81 /* Build configuration list for PBXProject "BackgammonGym" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
