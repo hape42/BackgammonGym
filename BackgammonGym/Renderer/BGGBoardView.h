@@ -2,11 +2,11 @@
 //  BGGBoardView.h
 //  BackgammonGym
 //
-//  Datengetriebene Board-View: bekommt ein BGGBoardState (reine Zahlen)
-//  und ein Board-Design (z.B. @"4"), platziert daraus die fertigen PNGs.
+//  Data-driven board view: takes a BGGBoardState and a schema number,
+//  and renders the position using BGGBoardElements.
 //
-//  Kein DailyGammon-HTML, keine Move-Logik, keine Würfel-Pflicht.
-//  Nur Anzeige.
+//  No DailyGammon HTML, no move logic, no dice required.
+//  Display only.
 //
 
 #import <UIKit/UIKit.h>
@@ -17,20 +17,20 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface BGGBoardView : UIView
 
-//  Die anzuzeigende Stellung. Nach dem Setzen wird neu gezeichnet.
+// The position to display. Setting this triggers a redraw.
 @property (nonatomic, strong, nullable) BGGBoardState *boardState;
 
-//  Welches Board-Design (entspricht dem Asset-Namespace-Ordner,
-//  z.B. @"4" lädt Bilder als "4/pt_lt_down_b7").
-//  Default: @"4".
+// Board design / schema number as a string (e.g. @"4").
+// Schema <= 4 loads pre-rendered PNGs; schema >= 5 draws at runtime.
+// Default: @"4".
 @property (nonatomic, copy) NSString *boardDesign;
 
-//  Zungen-Nummern (1–24) am Rand anzeigen? Im echten Spiel stehen
-//  keine Nummern am Brett – daher abschaltbar (Trainings-Feature).
-//  Default: NO.
+// Show point numbers 1–24 along the edge strips.
+// In a real game the board has no numbers - this is a training aid.
+// Default: NO.
 @property (nonatomic, assign) BOOL showsPointNumbers;
 
-//  Convenience: setzt Stellung und Design in einem Rutsch.
+// Convenience: set position and schema in one call.
 - (void)configureWithBoardState:(nullable BGGBoardState *)state
                           design:(NSString *)design;
 

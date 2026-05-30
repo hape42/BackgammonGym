@@ -6,6 +6,11 @@
 #import "BGGBoardView.h"
 #import "BGGBoardState.h"
 #import "BGGBoardGeometry.h"
+#import "BGGBoardElements.h"
+
+@interface BGGBoardView ()
+@property (nonatomic, strong) BGGBoardElements *elements;
+@end
 
 @implementation BGGBoardView
 
@@ -35,6 +40,7 @@
 {
     _boardDesign       = @"4";
     _showsPointNumbers = NO;
+    _elements          = [[BGGBoardElements alloc] initWithSchema:4];
     self.backgroundColor = [UIColor clearColor];
     self.clipsToBounds   = YES;
 }
@@ -50,6 +56,7 @@
 - (void)setBoardDesign:(NSString *)boardDesign
 {
     _boardDesign = [boardDesign copy];
+    _elements    = [[BGGBoardElements alloc] initWithSchema:[boardDesign integerValue]];
     [self setNeedsLayout];
 }
 
@@ -128,7 +135,7 @@
 
 - (void)drawBackgroundWithScale:(CGFloat)scale origin:(CGPoint)origin
 {
-    UIColor *boardColor = [self colorNamed:@"ColorBoard"]
+    UIColor *boardColor = [self.elements colorNamed:@"ColorBoard"]
                        ?: [UIColor colorWithWhite:0.55 alpha:1.0];
 
     CGRect r = [self scaleRect:CGRectMake(0, 0, kBGGBoardWidth, kBGGBoardHeight)
@@ -136,6 +143,22 @@
     UIView *bg = [[UIView alloc] initWithFrame:r];
     bg.backgroundColor = boardColor;
     [self addSubview:bg];
+
+    // Schema >= 5 may have a background image covering the playing field.
+    UIImage *bgImage = [self.elements boardBackgroundImage];
+    if (bgImage != nil)
+    {
+        CGFloat imageW = (6.0 * kBGGCheckerWidth + kBGGBarWidth + 6.0 * kBGGCheckerWidth) * scale;
+        CGFloat imageH = (kBGGPointsHeight + kBGGIndicatorHeight + kBGGCheckerWidth
+                          + kBGGIndicatorHeight + kBGGPointsHeight) * scale;
+        CGFloat imageX = origin.x + kBGGOffWidth * scale;
+        CGFloat imageY = origin.y + kBGGNumberHeight * scale;
+
+        UIImageView *bgIV = [[UIImageView alloc] initWithFrame:CGRectMake(imageX, imageY, imageW, imageH)];
+        bgIV.image = bgImage;
+        bgIV.contentMode = UIViewContentModeScaleToFill;
+        [self addSubview:bgIV];
+    }
 }
 
 #pragma mark - Number strips
@@ -144,7 +167,7 @@
 // areas - that's what gives the board its consistent frame look.
 - (void)drawNumberStripsWithScale:(CGFloat)scale origin:(CGPoint)origin
 {
-    UIColor *edgeColor = [self colorNamed:@"ColorEdge"]
+    UIColor *edgeColor = [self.elements colorNamed:@"ColorEdge"]
                       ?: [UIColor colorWithWhite:0.45 alpha:1.0];
 
     // Top strip (above the upper tongues)
@@ -167,9 +190,9 @@
 
 - (void)drawOffAreaWithScale:(CGFloat)scale origin:(CGPoint)origin
 {
-    UIColor *edgeColor  = [self colorNamed:@"ColorEdge"]
+    UIColor *edgeColor  = [self.elements colorNamed:@"ColorEdge"]
                        ?: [UIColor colorWithWhite:0.45 alpha:1.0];
-    UIColor *boardColor = [self colorNamed:@"ColorBoard"]
+    UIColor *boardColor = [self.elements colorNamed:@"ColorBoard"]
                        ?: [UIColor colorWithWhite:0.55 alpha:1.0];
 
     // The off area starts below the number strip.
@@ -199,9 +222,9 @@
 
 - (void)drawCubeAreaWithScale:(CGFloat)scale origin:(CGPoint)origin
 {
-    UIColor *edgeColor  = [self colorNamed:@"ColorEdge"]
+    UIColor *edgeColor  = [self.elements colorNamed:@"ColorEdge"]
                        ?: [UIColor colorWithWhite:0.45 alpha:1.0];
-    UIColor *boardColor = [self colorNamed:@"ColorBoard"]
+    UIColor *boardColor = [self.elements colorNamed:@"ColorBoard"]
                        ?: [UIColor colorWithWhite:0.55 alpha:1.0];
 
     CGRect cubeNative = CGRectMake(kBGGCubeAreaX,
@@ -256,7 +279,8 @@
     insideView.layer.borderColor = [UIColor grayColor].CGColor;
     [parentView addSubview:insideView];
 
-    UIImage *tray = [self imageNamed:[self namespacedName:@"tray_light"]];
+    NSString *trayName = [NSString stringWithFormat:@"%ld/tray_light", (long)self.elements.schema];
+    UIImage *tray = [UIImage imageNamed:trayName];
     if (tray != nil)
     {
         UIImageView *trayIV = [[UIImageView alloc] initWithFrame:insideView.bounds];
@@ -270,9 +294,9 @@
 
 - (void)drawBarAreaWithScale:(CGFloat)scale origin:(CGPoint)origin
 {
-    UIColor *edgeColor  = [self colorNamed:@"ColorEdge"]
+    UIColor *edgeColor  = [self.elements colorNamed:@"ColorEdge"]
                        ?: [UIColor colorWithWhite:0.45 alpha:1.0];
-    UIColor *stripColor = [self colorNamed:@"ColorBarCentralStripe"]
+    UIColor *stripColor = [self.elements colorNamed:@"ColorBarCentralStripe"]
                        ?: [UIColor colorWithWhite:0.35 alpha:1.0];
 
     // The bar represents the central hinge of an opened backgammon case.
@@ -313,18 +337,17 @@
     [self slotForPoint:point outSlot:&slot outIsTopRow:&isTopRow];
 
     NSInteger checkers = (self.boardState != nil) ? [self.boardState checkersOnPoint:point] : 0;
-    BOOL isBlue = (checkers > 0);
+    BGGCheckerColor color = (checkers >= 0) ? BGGCheckerColorDark : BGGCheckerColorLight;
     NSInteger cnt = ABS(checkers);
 
-    // Alternate light/dark tongues across the board like a chess pattern.
-    BOOL isLight   = (slot % 2 == 0);
-    BOOL pointsDown = isTopRow;
+    BGGPointShade     shade = (slot % 2 == 0) ? BGGPointShadeLight : BGGPointShadeDark;
+    BGGPointDirection dir   = isTopRow ? BGGPointDirectionDown : BGGPointDirectionUp;
 
-    NSString *imgName = [self pointImageNameForLightTongue:isLight
-                                                pointsDown:pointsDown
-                                                    isBlue:isBlue
-                                                     count:cnt];
-    UIImage *img = [self imageNamed:imgName];
+    UIImage *img = [self.elements pointImageForShade:shade
+                                           direction:dir
+                                        checkerColor:color
+                                        checkerCount:cnt
+                                          pointIndex:point];
 
     CGFloat nativeX = BGGTongueLeftX(slot);
     CGFloat nativeY = isTopRow ? kBGGTopTongueY : kBGGBottomTongueY;
@@ -366,27 +389,6 @@
     }
 }
 
-// Build the asset name deterministically from the position data,
-// e.g. "4/pt_lt_down_b7" for a light tongue pointing down with 7 blue checkers.
-// This was previously scattered across drawBoard - now it's all in one place.
-- (NSString *)pointImageNameForLightTongue:(BOOL)isLight
-                                pointsDown:(BOOL)pointsDown
-                                    isBlue:(BOOL)isBlue
-                                     count:(NSInteger)count
-{
-    NSString *shade = isLight ? @"lt" : @"dk";
-    NSString *dir   = pointsDown ? @"down" : @"up";
-
-    if (count == 0)
-    {
-        return [self namespacedName:[NSString stringWithFormat:@"pt_%@_%@0", shade, dir]];
-    }
-
-    NSString *color = isBlue ? @"b" : @"y";
-    return [self namespacedName:[NSString stringWithFormat:@"pt_%@_%@_%@%ld",
-                                 shade, dir, color, (long)count]];
-}
-
 #pragma mark - Bar checkers
 
 - (void)drawBarCheckersWithScale:(CGFloat)scale origin:(CGPoint)origin
@@ -406,64 +408,35 @@
     }
 }
 
-// Stack individual checker images on the bar, same approach as drawBarForSchema:
-// in DailyGammon. Blue goes in the upper half, yellow in the lower half.
+// Stack individual checker images on the bar.
+// Blue goes in the upper half, yellow in the lower half.
 - (void)drawBarStack:(NSInteger)count
               isBlue:(BOOL)isBlue
          inUpperHalf:(BOOL)upper
                scale:(CGFloat)scale
               origin:(CGPoint)origin
 {
-    NSString *checkerName = [self namespacedName:(isBlue ? @"checker_lt" : @"checker_dk")];
-    UIImage  *checker     = [self imageNamed:checkerName];
+    BGGCheckerColor color = isBlue ? BGGCheckerColorDark : BGGCheckerColorLight;
+    UIImage *img = [self.elements barImageForCheckerColor:color checkerCount:count];
+    if (img == nil) { return; }
 
-    NSInteger visible = MIN(count, 5);
-
-    // Center the checker stack within the bar width.
-    CGFloat nativeBarX    = kBGGOffWidth + 6.0 * kBGGCheckerWidth;
+    // Center the stack within the bar width.
+    CGFloat nativeBarX     = kBGGOffWidth + 6.0 * kBGGCheckerWidth;
     CGFloat checkerNativeX = nativeBarX + (kBGGBarWidth - kBGGCheckerWidth) / 2.0;
+    NSInteger visible      = MIN(count, 5);
 
-    for (NSInteger i = 0; i < visible; i++)
-    {
-        CGFloat nativeY;
-        if (upper)
-        {
-            nativeY = kBGGTopTongueY + (CGFloat)i * kBGGCheckerWidth;
-        }
-        else
-        {
-            CGFloat stackBottom = kBGGBoardHeight - kBGGNumberHeight;
-            nativeY = stackBottom - (CGFloat)(i + 1) * kBGGCheckerWidth;
-        }
+    CGFloat nativeY = upper
+        ? kBGGTopTongueY
+        : kBGGBoardHeight - kBGGNumberHeight - (CGFloat)visible * kBGGCheckerWidth;
 
-        CGRect frame = [self scaleRect:CGRectMake(checkerNativeX, nativeY,
-                                                   kBGGCheckerWidth, kBGGCheckerWidth)
-                                 scale:scale origin:origin];
-        UIImageView *iv = [[UIImageView alloc] initWithFrame:frame];
-        iv.image = checker;
-        iv.contentMode = UIViewContentModeScaleToFill;
-        [self addSubview:iv];
-    }
-
-    // Show the count as a number label when more than 5 checkers are on the bar.
-    if (count > 5)
-    {
-        CGFloat nativeY = upper
-            ? kBGGTopTongueY + 2.0 * kBGGCheckerWidth
-            : kBGGBoardHeight - kBGGNumberHeight - 3.0 * kBGGCheckerWidth;
-
-        CGRect frame = [self scaleRect:CGRectMake(checkerNativeX, nativeY,
-                                                   kBGGCheckerWidth, kBGGCheckerWidth)
-                                 scale:scale origin:origin];
-        UILabel *lbl = [[UILabel alloc] initWithFrame:frame];
-        lbl.text = [NSString stringWithFormat:@"%ld", (long)count];
-        lbl.textAlignment = NSTextAlignmentCenter;
-        lbl.textColor = [UIColor whiteColor];
-        lbl.font = [UIFont monospacedDigitSystemFontOfSize:frame.size.height * 0.5
-                                                    weight:UIFontWeightBold];
-        lbl.adjustsFontSizeToFitWidth = YES;
-        [self addSubview:lbl];
-    }
+    CGFloat nativeH = (CGFloat)visible * kBGGCheckerWidth;
+    CGRect frame = [self scaleRect:CGRectMake(checkerNativeX, nativeY,
+                                               kBGGCheckerWidth, nativeH)
+                             scale:scale origin:origin];
+    UIImageView *iv = [[UIImageView alloc] initWithFrame:frame];
+    iv.image = img;
+    iv.contentMode = UIViewContentModeScaleToFill;
+    [self addSubview:iv];
 }
 
 #pragma mark - Off checkers
@@ -485,28 +458,24 @@
     }
 }
 
-// Bear-off checkers use the off_* images which show checkers lying on their side,
-// stacked from the outside in. This makes it easy to count how many are already off.
+// Bear-off checkers use the off_* images which show checkers lying on their side.
 - (void)drawOffStack:(NSInteger)count
               isBlue:(BOOL)isBlue
          inUpperHalf:(BOOL)upper
                scale:(CGFloat)scale
               origin:(CGPoint)origin
 {
-    NSString *colorStr = isBlue ? @"b" : @"y";
-    NSString *halfStr  = upper  ? @"top" : @"bot";
+    BGGCheckerColor  color = isBlue ? BGGCheckerColorDark : BGGCheckerColorLight;
+    BGGOffDirection  dir   = upper ? BGGOffDirectionTop : BGGOffDirectionBottom;
+    CGFloat slotH = kBGGPointsHeight / 5.0;
+    CGFloat nativeX = kBGGCubeAreaX + (kBGGCubeWidth - kBGGCheckerWidth) / 2.0;
 
     NSInteger visible = MIN(count, 4);
-    CGFloat slotH     = kBGGPointsHeight / 5.0;   // each off image occupies 1/5 of point height
-    CGFloat nativeX   = kBGGCubeAreaX + (kBGGCubeWidth - kBGGCheckerWidth) / 2.0;
-
     for (NSInteger i = 1; i <= visible; i++)
     {
-        NSString *name = [self namespacedName:
-                          [NSString stringWithFormat:@"off_%@%ld_%@",
-                           colorStr, (long)i, halfStr]];
-        UIImage *img = [self imageNamed:name];
-
+        UIImage *img = [self.elements offImageForCheckerColor:color
+                                                    direction:dir
+                                                 checkerCount:i];
         CGFloat nativeY = upper
             ? kBGGTopTongueY + (CGFloat)(i - 1) * slotH
             : kBGGBoardHeight - kBGGNumberHeight - (CGFloat)i * slotH;
@@ -520,13 +489,11 @@
         [self addSubview:iv];
     }
 
-    // off_b5 / off_y5 is a special combined image for 5 or more checkers.
     if (count >= 5)
     {
-        NSString *name = [self namespacedName:
-                          [NSString stringWithFormat:@"off_%@5", colorStr]];
-        UIImage *img = [self imageNamed:name];
-
+        UIImage *img = [self.elements offImageForCheckerColor:color
+                                                    direction:BGGOffDirectionAll
+                                                 checkerCount:5];
         CGFloat nativeY = upper
             ? kBGGTopTongueY
             : kBGGBoardHeight - kBGGNumberHeight - slotH;
@@ -549,7 +516,7 @@
                      atRect:(CGRect)tongueRect
                    isTopRow:(BOOL)isTopRow
 {
-    UIColor *numColor = [self colorNamed:@"ColorNumber"]
+    UIColor *numColor = [self.elements colorNamed:@"ColorNumber"]
                      ?: [UIColor secondaryLabelColor];
 
     UILabel *lbl = [[UILabel alloc] init];
@@ -572,35 +539,6 @@
 
     lbl.frame = CGRectMake(x, y, w, h);
     [self addSubview:lbl];
-}
-
-#pragma mark - Image helpers
-
-// Prepend the board design namespace so the same image names work
-// across all board styles (4, 5, 6, ...).
-- (NSString *)namespacedName:(NSString *)base
-{
-    if (self.boardDesign.length == 0) { return base; }
-    return [NSString stringWithFormat:@"%@/%@", self.boardDesign, base];
-}
-
-// Log missing images during development so typos in asset names are
-// caught immediately rather than silently showing a blank space.
-- (nullable UIImage *)imageNamed:(NSString *)name
-{
-    UIImage *img = [UIImage imageNamed:name];
-    if (img == nil)
-    {
-        NSLog(@"[BGGBoardView] image not found: %@", name);
-    }
-    return img;
-}
-
-// Color assets live in the same numbered subfolders as the image assets,
-// so the namespace prefix works exactly the same way: "4/ColorNumber" etc.
-- (nullable UIColor *)colorNamed:(NSString *)name
-{
-    return [UIColor colorNamed:[self namespacedName:name]];
 }
 
 @end

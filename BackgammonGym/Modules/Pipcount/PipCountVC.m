@@ -47,7 +47,7 @@
     // Second board – half width, same position for now.
     self.boardView2 = [[BGGBoardView alloc] init];
     self.boardView2.translatesAutoresizingMaskIntoConstraints = NO;
-    self.boardView2.boardDesign      = @"4";
+    self.boardView2.boardDesign      = @"5";
     self.boardView2.showsPointNumbers = YES;
     self.boardView2.boardState       = [BGGBoardState startingPosition];
     [self.contentView addSubview:self.boardView2];
