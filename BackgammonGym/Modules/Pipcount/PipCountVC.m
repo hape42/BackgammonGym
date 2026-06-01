@@ -9,6 +9,7 @@
 
 #import "PipCountVC.h"
 #import "PipCountWarmupVC.h"
+#import "PipCountClusterVC.h"
 
 typedef NS_ENUM(NSInteger, PipCountSection)
 {
@@ -53,6 +54,7 @@ static NSString * sectionSymbol(PipCountSection section)
 
 // Child VCs – created lazily.
 @property (nonatomic, strong) PipCountWarmupVC *warmupVC;
+@property (nonatomic, strong) PipCountClusterVC *clusterVC;
 
 @end
 
@@ -177,22 +179,30 @@ static NSString * sectionSymbol(PipCountSection section)
             return self.warmupVC;
 
         case PipCountSectionCluster:
-            return [self placeholderForSection:section];
+            if (self.clusterVC == nil)
+            {
+                self.clusterVC = [[PipCountClusterVC alloc] init];
+            }
+            return self.clusterVC;
 
         case PipCountSectionTraining:
-            return [self placeholderForSection:section];
+            return [self placeholderForSection:section
+                                       subtitle:@"Guided exercises with point numbers shown on the board. No time pressure – focus on learning the method."];
 
         case PipCountSectionWorkout:
-            return [self placeholderForSection:section];
+            return [self placeholderForSection:section
+                                       subtitle:@"Tournament conditions: no point numbers, timer always running. If you can do it here, you can do it at the board."];
 
         case PipCountSectionProgress:
-            return [self placeholderForSection:section];
+            return [self placeholderForSection:section
+                                       subtitle:@"Your statistics, trends and achievements across all sessions."];
     }
 }
 
 #pragma mark - Placeholder child
 
 - (UIViewController *)placeholderForSection:(PipCountSection)section
+                                   subtitle:(NSString *)subtitle
 {
     UIViewController *vc = [[UIViewController alloc] init];
     vc.view.backgroundColor = [UIColor systemBackgroundColor];
@@ -206,22 +216,34 @@ static NSString * sectionSymbol(PipCountSection section)
                                                         weight:UIImageSymbolWeightThin];
     [vc.view addSubview:icon];
 
-    UILabel *label = [[UILabel alloc] init];
-    label.text          = [NSString stringWithFormat:@"%@ – coming soon", sectionTitle(section)];
-    label.textColor     = [UIColor secondaryLabelColor];
-    label.font          = [UIFont preferredFontForTextStyle:UIFontTextStyleBody];
-    label.textAlignment = NSTextAlignmentCenter;
-    label.numberOfLines = 0;
-    label.translatesAutoresizingMaskIntoConstraints = NO;
-    [vc.view addSubview:label];
+    UILabel *titleLabel = [[UILabel alloc] init];
+    titleLabel.text          = sectionTitle(section);
+    titleLabel.textColor     = [UIColor secondaryLabelColor];
+    titleLabel.font          = [UIFont preferredFontForTextStyle:UIFontTextStyleHeadline];
+    titleLabel.textAlignment = NSTextAlignmentCenter;
+    titleLabel.translatesAutoresizingMaskIntoConstraints = NO;
+    [vc.view addSubview:titleLabel];
+
+    UILabel *subtitleLabel = [[UILabel alloc] init];
+    subtitleLabel.text          = subtitle;
+    subtitleLabel.textColor     = [UIColor tertiaryLabelColor];
+    subtitleLabel.font          = [UIFont preferredFontForTextStyle:UIFontTextStyleBody];
+    subtitleLabel.textAlignment = NSTextAlignmentCenter;
+    subtitleLabel.numberOfLines = 0;
+    subtitleLabel.translatesAutoresizingMaskIntoConstraints = NO;
+    [vc.view addSubview:subtitleLabel];
 
     [NSLayoutConstraint activateConstraints:@[
-        [icon.centerXAnchor  constraintEqualToAnchor:vc.view.centerXAnchor],
-        [icon.centerYAnchor  constraintEqualToAnchor:vc.view.centerYAnchor constant:-24.0],
+        [icon.centerXAnchor   constraintEqualToAnchor:vc.view.centerXAnchor],
+        [icon.centerYAnchor   constraintEqualToAnchor:vc.view.centerYAnchor constant:-44.0],
 
-        [label.topAnchor     constraintEqualToAnchor:icon.bottomAnchor     constant:12.0],
-        [label.leadingAnchor constraintEqualToAnchor:vc.view.leadingAnchor constant:32.0],
-        [label.trailingAnchor constraintEqualToAnchor:vc.view.trailingAnchor constant:-32.0],
+        [titleLabel.topAnchor     constraintEqualToAnchor:icon.bottomAnchor     constant:12.0],
+        [titleLabel.leadingAnchor constraintEqualToAnchor:vc.view.leadingAnchor constant:32.0],
+        [titleLabel.trailingAnchor constraintEqualToAnchor:vc.view.trailingAnchor constant:-32.0],
+
+        [subtitleLabel.topAnchor     constraintEqualToAnchor:titleLabel.bottomAnchor constant:8.0],
+        [subtitleLabel.leadingAnchor constraintEqualToAnchor:vc.view.leadingAnchor   constant:32.0],
+        [subtitleLabel.trailingAnchor constraintEqualToAnchor:vc.view.trailingAnchor constant:-32.0],
     ]];
 
     return vc;
