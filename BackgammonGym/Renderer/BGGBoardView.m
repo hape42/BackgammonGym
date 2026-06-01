@@ -674,7 +674,7 @@
 
     UILabel *lbl = [[UILabel alloc] init];
     lbl.text = [NSString stringWithFormat:@"%ld", (long)point];
-    lbl.font = [UIFont monospacedDigitSystemFontOfSize:10.0 weight:UIFontWeightMedium];
+    lbl.font = [UIFont monospacedDigitSystemFontOfSize:13.0 weight:UIFontWeightMedium];
     lbl.textColor = numColor;
     lbl.textAlignment = NSTextAlignmentCenter;
     [lbl sizeToFit];

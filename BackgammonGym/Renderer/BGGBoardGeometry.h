@@ -22,7 +22,7 @@ static const CGFloat kBGGOffWidth        = 70.0;   // left edge (off checkers)
 static const CGFloat kBGGBarWidth        = 40.0;   // center divider (bar)
 static const CGFloat kBGGCubeWidth       = 70.0;   // right edge (cube area)
 static const CGFloat kBGGPointsHeight    = 200.0;  // tongue height
-static const CGFloat kBGGNumberHeight    = 15.0;   // point number strip
+static const CGFloat kBGGNumberHeight    = 30.0;   // point number strip (doubled for legibility)
 static const CGFloat kBGGIndicatorHeight = 22.0;   // gap between tongue tip and center strip
 
 // ── Derived board dimensions ───────────────────────────────────────────────
@@ -33,10 +33,10 @@ static const CGFloat kBGGIndicatorHeight = 22.0;   // gap between tongue tip and
 //  boardHeight = numberHeight + pointsHeight + indicatorHeight
 //              + checkerWidth (center strip)
 //              + indicatorHeight + pointsHeight + numberHeight
-//              = 15 + 200 + 22 + 40 + 22 + 200 + 15 = 514
+//              = 30 + 200 + 22 + 40 + 22 + 200 + 30 = 544
 
 static const CGFloat kBGGBoardWidth  = 660.0;
-static const CGFloat kBGGBoardHeight = 514.0;
+static const CGFloat kBGGBoardHeight = 544.0;
 
 // ── Horizontal zone offsets (from left, unscaled) ─────────────────────────
 
