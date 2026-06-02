@@ -84,6 +84,40 @@
             [self totalCheckersForPlayer:BGGPlayerYellow] == 15);
 }
 
+- (NSInteger)pipCountForPlayer:(BGGPlayer)player
+{
+    NSInteger total = 0;
+
+    if (player == BGGPlayerBlue)
+    {
+        for (NSInteger point = 1; point <= 24; point++)
+        {
+            NSInteger checkers = [self checkersOnPoint:point];
+            if (checkers > 0)
+            {
+                total += point * checkers;
+            }
+        }
+        // Bar checkers still have 25 points to travel.
+        total += 25 * self.barBlue;
+    }
+    else if (player == BGGPlayerYellow)
+    {
+        for (NSInteger point = 1; point <= 24; point++)
+        {
+            NSInteger checkers = [self checkersOnPoint:point];
+            if (checkers < 0)
+            {
+                // Yellow moves from high to low, so distance = 25 - point.
+                total += (25 - point) * (-checkers);
+            }
+        }
+        total += 25 * self.barYellow;
+    }
+
+    return total;
+}
+
 #pragma mark - Factory
 
 + (instancetype)emptyBoard

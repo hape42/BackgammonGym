@@ -1,0 +1,668 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Backgammon Gym – Position Editor</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=DM+Sans:wght@300;400;500;600&display=swap');
+
+  :root {
+    --red:      #c0392b;
+    --red-dark: #962d22;
+    --red-dim:  rgba(192,57,43,0.12);
+    --grey:     #6b7280;
+    --bg:       #f4f3f1;
+    --surface:  #ffffff;
+    --border:   #e2e0dc;
+    --text:     #1a1a1a;
+    --text2:    #6b7280;
+    --mono:     'JetBrains Mono', monospace;
+    --sans:     'DM Sans', sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: var(--sans);
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+  }
+
+  header {
+    background: var(--text);
+    color: #fff;
+    padding: 20px 32px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  header .logo {
+    width: 36px; height: 36px;
+    background: var(--red);
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+  }
+  header h1 { font-size: 16px; font-weight: 600; letter-spacing: 0.02em; }
+  header span { font-size: 13px; color: #888; font-weight: 300; }
+
+  .layout {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0;
+    height: calc(100vh - 76px);
+  }
+
+  /* ── Left panel ── */
+  .left {
+    padding: 24px;
+    overflow-y: auto;
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  /* ── Right panel ── */
+  .right {
+    padding: 24px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  /* ── Section headings ── */
+  .section-title {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text2);
+    margin-bottom: 8px;
+  }
+
+  /* ── Card ── */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+  }
+
+  /* ── Input ── */
+  input[type="text"], textarea {
+    width: 100%;
+    font-family: var(--mono);
+    font-size: 13px;
+    padding: 10px 12px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--bg);
+    color: var(--text);
+    outline: none;
+    transition: border-color 0.15s;
+  }
+  input[type="text"]:focus, textarea:focus {
+    border-color: var(--red);
+  }
+  textarea { resize: vertical; min-height: 72px; }
+
+  /* ── Difficulty ── */
+  .diff-row { display: flex; gap: 8px; }
+  .diff-btn {
+    flex: 1;
+    padding: 8px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--surface);
+    font-family: var(--sans);
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.15s;
+    color: var(--text2);
+  }
+  .diff-btn.active {
+    background: var(--red);
+    border-color: var(--red);
+    color: #fff;
+    font-weight: 600;
+  }
+
+  /* ── Tags ── */
+  .tags-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 4px;
+  }
+  .tag-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    border: 1.5px solid var(--border);
+    background: var(--surface);
+    color: var(--text2);
+    transition: all 0.15s;
+    user-select: none;
+  }
+  .tag-chip:hover { border-color: var(--red); color: var(--red); }
+  .tag-chip.selected {
+    background: var(--red-dim);
+    border-color: var(--red);
+    color: var(--red);
+    font-weight: 600;
+  }
+  .tag-chip.selected::before { content: '✓ '; }
+  .tag-chip.disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+  .tag-limit {
+    font-size: 11px;
+    color: var(--text2);
+    margin-top: 6px;
+  }
+  .tag-limit.warn { color: var(--red); font-weight: 600; }
+
+  /* ── New tag input ── */
+  .new-tag-row {
+    display: flex;
+    gap: 8px;
+    margin-top: 8px;
+  }
+  .new-tag-row input { flex: 1; }
+
+  /* ── Buttons ── */
+  .btn {
+    padding: 10px 18px;
+    border-radius: 8px;
+    border: none;
+    font-family: var(--sans);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .btn-primary {
+    background: var(--red);
+    color: #fff;
+  }
+  .btn-primary:hover { background: var(--red-dark); }
+  .btn-secondary {
+    background: var(--surface);
+    color: var(--text);
+    border: 1px solid var(--border);
+  }
+  .btn-secondary:hover { border-color: var(--red); color: var(--red); }
+  .btn-danger {
+    background: transparent;
+    color: #c0392b;
+    border: 1px solid #c0392b;
+    font-size: 12px;
+    padding: 6px 12px;
+  }
+  .btn-danger:hover { background: #c0392b; color: #fff; }
+  .btn-small {
+    padding: 7px 14px;
+    font-size: 12px;
+  }
+
+  /* ── Position list ── */
+  .pos-list { display: flex; flex-direction: column; gap: 8px; }
+  .pos-item {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 16px;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    transition: border-color 0.15s;
+  }
+  .pos-item:hover { border-color: #ccc; }
+  .pos-item.editing { border-color: var(--red); }
+  .pos-id {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--text);
+    flex: 1;
+    word-break: break-all;
+  }
+  .pos-meta {
+    font-size: 11px;
+    color: var(--text2);
+    margin-top: 3px;
+  }
+  .pos-tags { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 5px; }
+  .pos-tag-badge {
+    font-size: 10px;
+    padding: 2px 7px;
+    border-radius: 10px;
+    background: var(--red-dim);
+    color: var(--red);
+    font-weight: 600;
+  }
+  .pos-actions { display: flex; gap: 6px; flex-shrink: 0; }
+
+  /* ── JSON output ── */
+  .json-output {
+    font-family: var(--mono);
+    font-size: 12px;
+    background: #1a1a1a;
+    color: #d4d4d4;
+    border-radius: 10px;
+    padding: 16px;
+    overflow-x: auto;
+    white-space: pre;
+    flex: 1;
+    min-height: 200px;
+  }
+  .json-string  { color: #ce9178; }
+  .json-key     { color: #9cdcfe; }
+  .json-number  { color: #b5cea8; }
+  .json-bool    { color: #569cd6; }
+
+  /* ── Import area ── */
+  .import-area {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  /* ── Empty state ── */
+  .empty {
+    text-align: center;
+    padding: 32px;
+    color: var(--text2);
+    font-size: 13px;
+  }
+
+  /* ── Action row ── */
+  .action-row {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .count-badge {
+    background: var(--red-dim);
+    color: var(--red);
+    font-size: 11px;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 10px;
+    margin-left: 6px;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">🎲</div>
+  <div>
+    <h1>Backgammon Gym – Position Editor</h1>
+    <span>Local tool – open directly in browser, no server needed</span>
+  </div>
+</header>
+
+<div class="layout">
+
+  <!-- ── LEFT: Add / Edit form ── -->
+  <div class="left">
+
+    <!-- Import existing JSON -->
+    <div class="card">
+      <div class="section-title">Import existing positions.json</div>
+      <div class="import-area">
+        <textarea id="importInput" placeholder='Paste your positions.json content here, then click Import…' style="min-height:90px;"></textarea>
+        <div class="action-row">
+          <button class="btn btn-secondary btn-small" onclick="importJSON()">Import JSON</button>
+          <button class="btn btn-danger btn-small" onclick="clearAll()">Clear all</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Add / Edit position -->
+    <div class="card">
+      <div class="section-title" id="formTitle">Add Position</div>
+
+      <div style="margin-bottom:12px;">
+        <label style="font-size:12px;color:var(--text2);font-weight:500;">GNU Position ID</label>
+        <input type="text" id="posId" placeholder="e.g. 4HPwATDgc/ABMA" style="margin-top:4px;" />
+      </div>
+
+      <div style="margin-bottom:12px;">
+        <label style="font-size:12px;color:var(--text2);font-weight:500;">Difficulty</label>
+        <div class="diff-row" style="margin-top:4px;">
+          <button class="diff-btn active" data-diff="1" onclick="setDifficulty(1)">1 – Easy</button>
+          <button class="diff-btn" data-diff="2" onclick="setDifficulty(2)">2 – Medium</button>
+          <button class="diff-btn" data-diff="3" onclick="setDifficulty(3)">3 – Hard</button>
+        </div>
+      </div>
+
+      <div style="margin-bottom:12px;">
+        <label style="font-size:12px;color:var(--text2);font-weight:500;">
+          Tags <span class="count-badge" id="tagCount">0 / 5</span>
+        </label>
+        <div class="tags-container" id="tagsContainer" style="margin-top:6px;"></div>
+        <div class="tag-limit" id="tagLimit"></div>
+        <div class="new-tag-row">
+          <input type="text" id="newTagInput" placeholder="New tag name…" onkeydown="if(event.key==='Enter')addNewTag()" />
+          <button class="btn btn-secondary btn-small" onclick="addNewTag()">+ Add tag</button>
+        </div>
+      </div>
+
+      <div style="margin-bottom:16px;">
+        <label style="font-size:12px;color:var(--text2);font-weight:500;">Note (dev only, not shown in app)</label>
+        <textarea id="noteInput" placeholder="Optional note…" style="margin-top:4px;min-height:56px;"></textarea>
+      </div>
+
+      <div class="action-row">
+        <button class="btn btn-primary" onclick="savePosition()">Save Position</button>
+        <button class="btn btn-secondary" onclick="resetForm()">Reset</button>
+      </div>
+    </div>
+
+    <!-- Tag manager -->
+    <div class="card">
+      <div class="section-title">Manage Tags</div>
+      <div id="allTagsManager" class="tags-container"></div>
+      <p style="font-size:11px;color:var(--text2);margin-top:8px;">Click a tag to remove it from the tag library (only if unused).</p>
+    </div>
+
+  </div>
+
+  <!-- ── RIGHT: Position list + JSON output ── -->
+  <div class="right">
+
+    <div>
+      <div class="section-title">
+        Positions
+        <span class="count-badge" id="posCount">0</span>
+      </div>
+      <div class="pos-list" id="posList">
+        <div class="empty">No positions yet. Import a JSON or add one on the left.</div>
+      </div>
+    </div>
+
+    <div style="flex:1;display:flex;flex-direction:column;gap:8px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;">
+        <div class="section-title" style="margin-bottom:0;">JSON Output</div>
+        <button class="btn btn-secondary btn-small" onclick="copyJSON()">Copy JSON</button>
+      </div>
+      <div class="json-output" id="jsonOutput"></div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+// ── State ──
+let positions = [];   // [{id, tags, difficulty, note}]
+let allTags   = ['race', 'contact', 'bearoff', 'pipcount', 'cluster'];
+let editingIndex = -1;
+let selectedTags = [];
+let currentDifficulty = 1;
+
+// ── Init ──
+renderAll();
+
+// ── Tag helpers ──
+function ensureTag(tag) {
+  tag = tag.trim().toLowerCase();
+  if (tag && !allTags.includes(tag)) {
+    allTags.push(tag);
+  }
+  return tag;
+}
+
+function addNewTag() {
+  const input = document.getElementById('newTagInput');
+  const tag = input.value.trim().toLowerCase();
+  if (!tag) return;
+  ensureTag(tag);
+  if (!selectedTags.includes(tag) && selectedTags.length < 5) {
+    selectedTags.push(tag);
+  }
+  input.value = '';
+  renderForm();
+}
+
+function setDifficulty(d) {
+  currentDifficulty = d;
+  document.querySelectorAll('.diff-btn').forEach(b => {
+    b.classList.toggle('active', parseInt(b.dataset.diff) === d);
+  });
+}
+
+function toggleTag(tag) {
+  if (selectedTags.includes(tag)) {
+    selectedTags = selectedTags.filter(t => t !== tag);
+  } else {
+    if (selectedTags.length >= 5) return;
+    selectedTags.push(tag);
+  }
+  renderForm();
+}
+
+// ── Form ──
+function renderForm() {
+  const container = document.getElementById('tagsContainer');
+  const countEl   = document.getElementById('tagCount');
+  const limitEl   = document.getElementById('tagLimit');
+
+  countEl.textContent = `${selectedTags.length} / 5`;
+  limitEl.textContent = selectedTags.length >= 5 ? '⚠ Maximum 5 tags reached' : '';
+  limitEl.className   = 'tag-limit' + (selectedTags.length >= 5 ? ' warn' : '');
+
+  container.innerHTML = '';
+  allTags.forEach(tag => {
+    const chip = document.createElement('div');
+    chip.className = 'tag-chip' +
+      (selectedTags.includes(tag) ? ' selected' : '') +
+      (!selectedTags.includes(tag) && selectedTags.length >= 5 ? ' disabled' : '');
+    chip.textContent = tag;
+    chip.onclick = () => toggleTag(tag);
+    container.appendChild(chip);
+  });
+}
+
+function resetForm() {
+  editingIndex = -1;
+  selectedTags = [];
+  currentDifficulty = 1;
+  document.getElementById('posId').value    = '';
+  document.getElementById('noteInput').value = '';
+  document.getElementById('formTitle').textContent = 'Add Position';
+  setDifficulty(1);
+  renderForm();
+}
+
+function editPosition(index) {
+  const pos = positions[index];
+  editingIndex = index;
+  selectedTags = [...pos.tags];
+  currentDifficulty = pos.difficulty;
+  document.getElementById('posId').value     = pos.id;
+  document.getElementById('noteInput').value = pos.note || '';
+  document.getElementById('formTitle').textContent = 'Edit Position';
+  setDifficulty(pos.difficulty);
+  renderForm();
+  document.getElementById('posId').scrollIntoView({behavior:'smooth'});
+}
+
+function savePosition() {
+  const id   = document.getElementById('posId').value.trim();
+  const note = document.getElementById('noteInput').value.trim();
+
+  if (!id) { alert('Position ID is required.'); return; }
+  if (selectedTags.length === 0) { alert('Select at least one tag.'); return; }
+
+  const entry = { id, tags: [...selectedTags], difficulty: currentDifficulty, note };
+
+  if (editingIndex >= 0) {
+    positions[editingIndex] = entry;
+  } else {
+    // Check for duplicate
+    if (positions.find(p => p.id === id)) {
+      alert('This Position ID is already in the list.');
+      return;
+    }
+    positions.push(entry);
+  }
+
+  resetForm();
+  renderAll();
+}
+
+function deletePosition(index) {
+  if (!confirm('Remove this position?')) return;
+  positions.splice(index, 1);
+  renderAll();
+}
+
+// ── Import / Export ──
+function importJSON() {
+  const text = document.getElementById('importInput').value.trim();
+  if (!text) return;
+  try {
+    const json = JSON.parse(text);
+    const arr  = json.positions || json;
+    if (!Array.isArray(arr)) throw new Error('Expected array');
+
+    arr.forEach(item => {
+      // Support both old {category} and new {tags} format
+      let tags = [];
+      if (Array.isArray(item.tags)) {
+        tags = item.tags.slice(0, 5);
+      } else if (item.category) {
+        tags = [item.category];
+      }
+      tags.forEach(ensureTag);
+
+      if (item.id && !positions.find(p => p.id === item.id)) {
+        positions.push({
+          id: item.id,
+          tags,
+          difficulty: item.difficulty || 1,
+          note: item.note || ''
+        });
+      }
+    });
+
+    document.getElementById('importInput').value = '';
+    renderAll();
+  } catch(e) {
+    alert('Invalid JSON: ' + e.message);
+  }
+}
+
+function clearAll() {
+  if (!confirm('Clear all positions?')) return;
+  positions = [];
+  renderAll();
+}
+
+function buildJSON() {
+  return JSON.stringify({ positions }, null, 2);
+}
+
+function copyJSON() {
+  navigator.clipboard.writeText(buildJSON())
+    .then(() => {
+      const btn = event.target;
+      btn.textContent = '✓ Copied!';
+      setTimeout(() => btn.textContent = 'Copy JSON', 1500);
+    });
+}
+
+// ── Render position list ──
+function renderPosList() {
+  const list = document.getElementById('posList');
+  document.getElementById('posCount').textContent = positions.length;
+
+  if (positions.length === 0) {
+    list.innerHTML = '<div class="empty">No positions yet.</div>';
+    return;
+  }
+
+  list.innerHTML = '';
+  positions.forEach((pos, i) => {
+    const item = document.createElement('div');
+    item.className = 'pos-item' + (editingIndex === i ? ' editing' : '');
+
+    const tagsHtml = pos.tags.map(t =>
+      `<span class="pos-tag-badge">${t}</span>`
+    ).join('');
+
+    item.innerHTML = `
+      <div style="flex:1;">
+        <div class="pos-id">${pos.id}</div>
+        <div class="pos-meta">Difficulty: ${pos.difficulty}${pos.note ? ' · ' + pos.note : ''}</div>
+        <div class="pos-tags">${tagsHtml}</div>
+      </div>
+      <div class="pos-actions">
+        <button class="btn btn-secondary btn-small" onclick="editPosition(${i})">Edit</button>
+        <button class="btn btn-danger" onclick="deletePosition(${i})">✕</button>
+      </div>
+    `;
+    list.appendChild(item);
+  });
+}
+
+// ── Render JSON output with syntax highlight ──
+function renderJSONOutput() {
+  const json = buildJSON();
+  const highlighted = json
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/"([^"]+)":/g, '<span class="json-key">"$1"</span>:')
+    .replace(/: "([^"]*)"/g, ': <span class="json-string">"$1"</span>')
+    .replace(/: (\d+)/g, ': <span class="json-number">$1</span>')
+    .replace(/: (true|false)/g, ': <span class="json-bool">$1</span>');
+  document.getElementById('jsonOutput').innerHTML = highlighted;
+}
+
+// ── Tag manager ──
+function renderTagManager() {
+  const el = document.getElementById('allTagsManager');
+  el.innerHTML = '';
+  allTags.forEach(tag => {
+    const usedIn = positions.filter(p => p.tags.includes(tag)).length;
+    const chip = document.createElement('div');
+    chip.className = 'tag-chip';
+    chip.innerHTML = `${tag} <span style="opacity:0.5;font-size:10px;">${usedIn}</span>`;
+    if (usedIn === 0) {
+      chip.title = 'Click to remove';
+      chip.onclick = () => {
+        allTags = allTags.filter(t => t !== tag);
+        renderAll();
+      };
+    } else {
+      chip.style.cursor = 'default';
+      chip.title = `Used in ${usedIn} position(s)`;
+    }
+    el.appendChild(chip);
+  });
+}
+
+// ── Render all ──
+function renderAll() {
+  renderPosList();
+  renderJSONOutput();
+  renderTagManager();
+  renderForm();
+}
+
+// Initial form render
+renderForm();
+</script>
+</body>
+</html>

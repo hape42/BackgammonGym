@@ -81,6 +81,11 @@ typedef struct
 /// Prüft, ob beide Spieler genau 15 Steine haben.
 - (BOOL)isValidCheckerCount;
 
+/// Returns the total pip count for the given player.
+/// Blue:   sum of (point × checkers) for all positive points, plus bar × 25.
+/// Yellow: sum of ((25 - point) × |checkers|) for all negative points, plus bar × 25.
+- (NSInteger)pipCountForPlayer:(BGGPlayer)player;
+
 /// Leeres Brett (alle Punkte 0, Bar/Off 0, Cube 1, neutraler Kontext).
 + (instancetype)emptyBoard;
 

@@ -2,9 +2,22 @@
   "positions": [
     {
       "id": "4HPwATDgc/ABMA",
-      "category": "race",
+      "tags": [
+        "pipcount",
+        "race"
+      ],
       "difficulty": 1,
       "note": "Starting position – good for explaining what pips are"
+    },
+    {
+      "id": "u7sNAADbtg8AAA:MIEqAWAAEAAE",
+      "tags": [
+        "bearoff",
+        "pipcount",
+        "cluster"
+      ],
+      "difficulty": 1,
+      "note": "hier ein Erklärtext einfügen"
     }
   ]
 }

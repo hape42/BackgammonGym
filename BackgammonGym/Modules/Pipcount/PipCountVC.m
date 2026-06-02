@@ -10,6 +10,8 @@
 #import "PipCountVC.h"
 #import "PipCountWarmupVC.h"
 #import "PipCountClusterVC.h"
+#import "PipCountTrainingVC.h"
+#import "PipCountWorkoutVC.h"
 
 typedef NS_ENUM(NSInteger, PipCountSection)
 {
@@ -190,13 +192,11 @@ static NSString * sectionSymbol(PipCountSection section)
             return self.clusterVC;
 
         case PipCountSectionTraining:
-            return [self placeholderForSection:section
-                                       subtitle:@"Guided exercises with point numbers shown on the board. No time pressure – focus on learning the method."];
+            return [[PipCountTrainingVC alloc] init];
 
         case PipCountSectionWorkout:
-            return [self placeholderForSection:section
-                                       subtitle:@"Tournament conditions: no point numbers, timer always running. If you can do it here, you can do it at the board."];
-
+            return [[PipCountWorkoutVC alloc] init];
+            
         case PipCountSectionProgress:
             return [self placeholderForSection:section
                                        subtitle:@"Your statistics, trends and achievements across all sessions."];

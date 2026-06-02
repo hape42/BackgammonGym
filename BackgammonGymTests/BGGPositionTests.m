@@ -142,4 +142,10 @@
     XCTAssertEqual(board2.cubeOwner,    BGGPlayerBlue);
 }
 
+- (void)testPipCountStartingPosition
+{
+    BGGBoardState *board = [BGGBoardState startingPosition];
+    XCTAssertEqual([board pipCountForPlayer:BGGPlayerBlue],   167);
+    XCTAssertEqual([board pipCountForPlayer:BGGPlayerYellow], 167);
+}
 @end

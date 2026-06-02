@@ -7,6 +7,8 @@
 #import "BGGPosition.h"
 #import "BGGBoardState.h"
 
+static const NSUInteger kMaxTags = 5;
+
 // MARK: - BGGPositionEntry
 
 @implementation BGGPositionEntry
@@ -16,16 +18,46 @@
     self = [super init];
     if (self)
     {
-        _positionID = [dict[@"id"]         isKindOfClass:[NSString class]] ? dict[@"id"]         : @"";
-        _category   = [dict[@"category"]   isKindOfClass:[NSString class]] ? dict[@"category"]   : @"";
-        _note       = [dict[@"note"]       isKindOfClass:[NSString class]] ? dict[@"note"]       : @"";
-        _difficulty = [dict[@"difficulty"] isKindOfClass:[NSNumber class]] ? [dict[@"difficulty"] integerValue] : 1;
+        _positionID = [dict[@"id"] isKindOfClass:[NSString class]]
+                    ? dict[@"id"] : @"";
+
+        // Tags: array of strings, capped at kMaxTags.
+        NSArray *rawTags = dict[@"tags"];
+        if ([rawTags isKindOfClass:[NSArray class]])
+        {
+            NSMutableArray<NSString *> *tags = [NSMutableArray array];
+            for (id tag in rawTags)
+            {
+                if ([tag isKindOfClass:[NSString class]] && tags.count < kMaxTags)
+                {
+                    [tags addObject:tag];
+                }
+            }
+            _tags = [tags copy];
+        }
+        else
+        {
+            _tags = @[];
+        }
+
+        _difficulty = [dict[@"difficulty"] isKindOfClass:[NSNumber class]]
+                    ? [dict[@"difficulty"] integerValue] : 1;
+
+        _note = [dict[@"note"] isKindOfClass:[NSString class]]
+              ? dict[@"note"] : @"";
     }
     return self;
 }
 
+- (BOOL)hasTag:(NSString *)tag
+{
+    return [self.tags containsObject:tag];
+}
+
 - (nullable BGGBoardState *)boardState
 {
+    // The board is always drawable from the ID alone – it does not depend
+    // on the entry still being in the JSON.
     return [BGGPosition boardStateFromPositionID:self.positionID];
 }
 
@@ -113,23 +145,36 @@
 
 // MARK: - Filtering
 
-- (NSArray<BGGPositionEntry *> *)positionsForCategory:(NSString *)category
+- (NSArray<BGGPositionEntry *> *)positionsForTag:(NSString *)tag
 {
-    return [self.allPositions filteredArrayUsingPredicate:
-            [NSPredicate predicateWithFormat:@"category == %@", category]];
+    NSMutableArray *result = [NSMutableArray array];
+    for (BGGPositionEntry *entry in self.allPositions)
+    {
+        if ([entry hasTag:tag])
+        {
+            [result addObject:entry];
+        }
+    }
+    return [result copy];
 }
 
-- (NSArray<BGGPositionEntry *> *)positionsForCategory:(NSString *)category
-                                           difficulty:(NSInteger)difficulty
+- (NSArray<BGGPositionEntry *> *)positionsForTag:(NSString *)tag
+                                      difficulty:(NSInteger)difficulty
 {
-    return [self.allPositions filteredArrayUsingPredicate:
-            [NSPredicate predicateWithFormat:@"category == %@ AND difficulty == %ld",
-             category, (long)difficulty]];
+    NSMutableArray *result = [NSMutableArray array];
+    for (BGGPositionEntry *entry in self.allPositions)
+    {
+        if ([entry hasTag:tag] && entry.difficulty == difficulty)
+        {
+            [result addObject:entry];
+        }
+    }
+    return [result copy];
 }
 
-- (nullable BGGPositionEntry *)randomPositionForCategory:(NSString *)category
+- (nullable BGGPositionEntry *)randomPositionForTag:(NSString *)tag
 {
-    NSArray<BGGPositionEntry *> *filtered = [self positionsForCategory:category];
+    NSArray<BGGPositionEntry *> *filtered = [self positionsForTag:tag];
     if (filtered.count == 0) { return nil; }
     NSUInteger index = arc4random_uniform((uint32_t)filtered.count);
     return filtered[index];
