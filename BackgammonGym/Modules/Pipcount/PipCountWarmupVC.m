@@ -73,26 +73,26 @@
     // ── Board 1: starting position ────────────────────────────────────────
     BGGBoardCard *card1 = [[BGGBoardCard alloc]
                            initWithCaption:@"Starting position – pip count 167 : 167"
-                           explanationText:@"Count every checker: multiply its point number by the number of checkers on it, then add everything up. The two checkers on point 24 contribute 48 pips; the five on point 13 contribute 65. Both players start at exactly 167."
+                           explanationText:@"Count every checker: multiply its point number by the number of checkers on it, then add everything up. \nFor example: The two checkers on point 24 contribute 48 pips; the five on point 13 contribute 65. \nBoth players start at exactly 167."
                             boardState:[BGGPosition boardStateFromPositionID:@"4HPwATDgc/ABMA"]];
     card1.translatesAutoresizingMaskIntoConstraints = NO;
     [self.contentView addSubview:card1];
 
     // ── Board 2: placeholder ──────────────────────────────────────────────
     BGGBoardCard *card2 = [[BGGBoardCard alloc]
-                           initWithCaption:@"A typical race position – replace this board"
-                           explanationText:@"Placeholder – swap in a real race position from BGBlitz once the analysis is done."
-                            boardState:[BGGPosition boardStateFromPositionID:@"4HPwATDgc/ABMA"]];
-    card2.isPlaceholder = YES;
+                           initWithCaption:@"A typical bear off position"
+                           explanationText:@"Pipcount Player 1: 51 pips - Player 2 : 60 pips"
+                            boardState:[BGGPosition boardStateFromPositionID:@"u7sNAADbtg8AAA:MIEqAWAAEAAE"]];
+    card2.isPlaceholder = NO;
     card2.translatesAutoresizingMaskIntoConstraints = NO;
     [self.contentView addSubview:card2];
 
     // ── Board 3: placeholder ──────────────────────────────────────────────
     BGGBoardCard *card3 = [[BGGBoardCard alloc]
-                           initWithCaption:@"A contact position – replace this board"
-                           explanationText:@"Placeholder – swap in a real contact position from BGBlitz once the analysis is done."
-                            boardState:[BGGPosition boardStateFromPositionID:@"4HPwATDgc/ABMA"]];
-    card3.isPlaceholder = YES;
+                           initWithCaption:@"A typical holding game"
+                           explanationText:@"Pipcount Player 1: 113 pips - Player 2 : 91 pips"
+                            boardState:[BGGPosition boardStateFromPositionID:@"22aICAbG3j0AAA:MAEgAUAACAAE"]];
+    card3.isPlaceholder = NO;
     card3.translatesAutoresizingMaskIntoConstraints = NO;
     [self.contentView addSubview:card3];
 
@@ -147,7 +147,8 @@
         @"When you play on Heroes, Backgammon Galaxy, DailyGammon or any other online "
         @"platform, the pip count is always right there on the screen – you never have "
         @"to think about it. Sit down at a real board, and it's gone. That gap is "
-        @"exactly why training this skill matters.";
+        @"exactly why training this skill matters."
+        @"\n\nThis app is designed to help you learn how to quickly and accurately calculate the PipCount for the positions below in just a few seconds. ";
 
     NSMutableAttributedString *attr =
         [[NSMutableAttributedString alloc]

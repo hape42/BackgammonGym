@@ -17,7 +17,18 @@
         "cluster"
       ],
       "difficulty": 1,
-      "note": "hier ein Erklärtext einfügen"
+      "note": "Insert explanatory text here"
+    },
+    {
+      "id": "22aICAbG3j0AAA:MAEgAUAACAAE",
+      "tags": [
+        "holding",
+        "cluster",
+        "pipcount",
+        "contact"
+      ],
+      "difficulty": 2,
+      "note": "Typical Holding game"
     }
   ]
 }
