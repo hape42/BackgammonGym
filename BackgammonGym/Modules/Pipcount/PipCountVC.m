@@ -63,6 +63,8 @@ static NSString * sectionSymbol(PipCountSection section)
 - (void)viewDidLoad
 {
     [super viewDidLoad];
+    self.navigationController.navigationBar.tintColor = [UIColor systemGreenColor];
+
     self.view.backgroundColor = [UIColor systemBackgroundColor];
     self.title = @"Pip Count";
 
@@ -99,6 +101,8 @@ static NSString * sectionSymbol(PipCountSection section)
                                     action:nil];
     item.menu = [self buildMenu];
     item.primaryAction = nil;
+    item.tintColor = [UIColor colorNamed:@"AccentColor"];
+
     self.navigationItem.rightBarButtonItem = item;
 }
 

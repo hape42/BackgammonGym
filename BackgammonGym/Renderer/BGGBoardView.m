@@ -7,6 +7,7 @@
 #import "BGGBoardState.h"
 #import "BGGBoardGeometry.h"
 #import "BGGBoardElements.h"
+#import "Tools.h"
 
 @interface BGGBoardView ()
 @property (nonatomic, strong) BGGBoardElements *elements;
@@ -38,7 +39,7 @@
 
 - (void)commonInit
 {
-    _boardDesign       = @"4";
+    _boardDesign       = [Tools currentBoardDesign];
     _showsPointNumbers = NO;
     _showsCube         = YES;
     _showsDice         = YES;

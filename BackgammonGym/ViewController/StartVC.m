@@ -11,6 +11,7 @@
 #import "BGGStartTileCell.h"
 #import "BGGBoardState.h"
 #import "PipCountVC.h"
+#import "SettingsVC.h"
 
 @interface StartVC () <UICollectionViewDataSource,
                        UICollectionViewDelegate,
@@ -27,6 +28,8 @@
 {
     [super viewDidLoad];
 
+    self.navigationController.navigationBar.tintColor = [UIColor colorNamed:@"AccentColor"];
+
     self.view.backgroundColor = [UIColor colorNamed:@"ColorViewBackground"];
     self.title = @"Backgammon Gym";
 
@@ -36,7 +39,8 @@
                                                                     style:UIBarButtonItemStylePlain
                                                                    target:self
                                                                    action:@selector(setupButtonTapped:)];
-    
+    setupButton.tintColor = [UIColor colorNamed:@"AccentColor"];
+
     self.navigationItem.rightBarButtonItem = setupButton;
     
     [self setupTiles];
@@ -181,6 +185,8 @@ minimumLineSpacingForSectionAtIndex:(NSInteger)section
 - (void)collectionView:(UICollectionView *)collectionView
 didSelectItemAtIndexPath:(NSIndexPath *)indexPath
 {
+    self.navigationController.navigationBar.tintColor = [UIColor colorNamed:@"AccentColor"];
+
     BGGStartTile *tile = self.tiles[indexPath.row];
 
     switch (tile.kind)
@@ -227,14 +233,18 @@ didSelectItemAtIndexPath:(NSIndexPath *)indexPath
 
 - (void)setupButtonTapped:(UIBarButtonItem *)sender
 {
-    NSLog(@"Setup-Button wurde gedrückt!");
-    [Tools showNotImplementedAlertFromViewController:self
-                                             feature:@"SetUp"
-                                         description:nil];
+    
+    SettingsVC *settingsVC = [[SettingsVC alloc] init];
+    UINavigationController *nav = [[UINavigationController alloc] initWithRootViewController:settingsVC];
+    // Sheet-Größe konfigurieren
+    UISheetPresentationController *sheet = nav.sheetPresentationController;
+    sheet.detents = @[
+        [UISheetPresentationControllerDetent mediumDetent],
+        [UISheetPresentationControllerDetent largeDetent]
+    ];
+    sheet.prefersGrabberVisible = YES;
 
-    /*
-    SetupViewController *setupVC = [[SetupViewController alloc] init];
-    [self.navigationController pushViewController:setupVC animated:YES];
-    */
+    [self presentViewController:nav animated:YES completion:nil];
 }
+
 @end

@@ -28,4 +28,12 @@
     [alert addAction:okAction];
     [viewController presentViewController:alert animated:YES completion:nil];
 }
+
++ (NSString *)currentBoardDesign
+{
+    NSInteger schema = [[NSUserDefaults standardUserDefaults]
+                        integerForKey:@"BoardSchema"];
+    if (schema < 4) { schema = 4; }
+    return [NSString stringWithFormat:@"%ld", (long)schema];
+}
 @end

@@ -13,12 +13,19 @@
 
 @implementation AppDelegate
 
+- (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
+{
+    UIColor *accent = [UIColor colorNamed:@"AccentColor"];
+   
+    UINavigationBarAppearance *appearance = [[UINavigationBarAppearance alloc] init];
+    [appearance configureWithDefaultBackground];
 
-- (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
-    // Override point for customization after application launch.
+    UINavigationBar.appearance.standardAppearance   = appearance;
+    UINavigationBar.appearance.scrollEdgeAppearance = appearance;
+    UINavigationBar.appearance.tintColor            = accent;
+
     return YES;
 }
-
 
 #pragma mark - UISceneSession lifecycle
 

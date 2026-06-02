@@ -7,6 +7,7 @@
 #import "BGGBoardView.h"
 #import "BGGBoardState.h"
 #import "BGGBoardGeometry.h"
+#import "Tools.h"
 
 // Below this width the card stacks vertically (iPhone layout).
 static const CGFloat kBGGBoardCardWideThreshold = 600.0;
@@ -53,7 +54,7 @@ static const CGFloat kBGGBoardFraction = 0.40;
 
 - (void)commonInit
 {
-    _boardDesign       = @"4";
+    _boardDesign       = [Tools currentBoardDesign];
     _showsPointNumbers = YES;
     _showsCube         = NO;
     _showsDice         = NO;

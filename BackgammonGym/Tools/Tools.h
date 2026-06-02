@@ -17,6 +17,9 @@ NS_ASSUME_NONNULL_BEGIN
                                           feature:(NSString *)featureName
                                       description:(nullable NSString *)description;
 
+// Returns the board design string for BGGBoardView and BGGBoardCard.
+// Reads BoardSchema from NSUserDefaults, defaults to schema 4.
++ (NSString *)currentBoardDesign;
 
 @end
 
