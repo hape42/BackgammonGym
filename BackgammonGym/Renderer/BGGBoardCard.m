@@ -126,17 +126,17 @@ static const CGFloat kBGGBoardFraction = 0.40;
 {
     [super layoutSubviews];
 
-    BOOL shouldBeWide = (self.bounds.size.width >= kBGGBoardCardWideThreshold);
-    if (shouldBeWide == self.isWideLayout) { return; }
+    if (self.bounds.size.width <= 0) { return; }
 
-    // Deactivate current layout constraints.
+    BOOL shouldBeWide = (self.bounds.size.width >= kBGGBoardCardWideThreshold);
+    if (shouldBeWide == self.isWideLayout && self.wideConstraints != nil) { return; }
+
     [NSLayoutConstraint deactivateConstraints:self.wideConstraints ?: @[]];
     [NSLayoutConstraint deactivateConstraints:self.narrowConstraints ?: @[]];
 
     self.isWideLayout = shouldBeWide;
     shouldBeWide ? [self installWideConstraints] : [self installNarrowConstraints];
 }
-
 // iPad: caption spans full width on top, then board (40%) left + text (60%) right.
 - (void)installWideConstraints
 {

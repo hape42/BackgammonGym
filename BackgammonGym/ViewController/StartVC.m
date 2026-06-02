@@ -150,13 +150,18 @@
                   layout:(UICollectionViewLayout *)layout
   sizeForItemAtIndexPath:(NSIndexPath *)indexPath
 {
-    CGFloat available = collectionView.bounds.size.width - 40; // Insets links/rechts
-    CGFloat spacing = 20;
-    NSInteger columns = (collectionView.bounds.size.width > 700) ? 3 : 2;
-    if (collectionView.bounds.size.width < 400) columns = 1; // iPhone Portrait
+    CGFloat width = collectionView.bounds.size.width;
+    CGFloat inset = 20.0;
+    CGFloat spacing = 20.0;
 
-    CGFloat itemWidth = (available - spacing * (columns - 1)) / columns;
-    return CGSizeMake(itemWidth, itemWidth * 0.65); // Verhältnis
+    NSInteger columns;
+    if (width >= 900)       columns = 3;   // iPad landscape
+    else if (width >= 600)  columns = 2;   // iPad portrait
+    else                    columns = 1;   // iPhone immer 1 Spalte
+
+    CGFloat available = width - (2 * inset) - (spacing * (columns - 1));
+    CGFloat itemWidth = available / columns;
+    return CGSizeMake(itemWidth, itemWidth * 0.5);
 }
 
 - (CGFloat)collectionView:(UICollectionView *)collectionView
