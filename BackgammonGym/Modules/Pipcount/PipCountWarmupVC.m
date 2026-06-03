@@ -78,7 +78,7 @@
     card1.translatesAutoresizingMaskIntoConstraints = NO;
     [self.contentView addSubview:card1];
 
-    // ── Board 2: placeholder ──────────────────────────────────────────────
+    // ── Board 2:  ──────────────────────────────────────────────
     BGGBoardCard *card2 = [[BGGBoardCard alloc]
                            initWithCaption:@"A typical bear off position"
                            explanationText:@"Pipcount Player 1: 51 pips - Player 2 : 60 pips"
@@ -87,7 +87,7 @@
     card2.translatesAutoresizingMaskIntoConstraints = NO;
     [self.contentView addSubview:card2];
 
-    // ── Board 3: placeholder ──────────────────────────────────────────────
+    // ── Board 3:  ──────────────────────────────────────────────
     BGGBoardCard *card3 = [[BGGBoardCard alloc]
                            initWithCaption:@"A typical holding game"
                            explanationText:@"Pipcount Player 1: 113 pips - Player 2 : 91 pips"

@@ -65,8 +65,6 @@ static NSString * sectionSymbol(PipCountSection section)
 - (void)viewDidLoad
 {
     [super viewDidLoad];
-    self.navigationController.navigationBar.tintColor = [UIColor systemGreenColor];
-
     self.view.backgroundColor = [UIColor systemBackgroundColor];
     self.title = @"Pip Count";
 
@@ -168,6 +166,9 @@ static NSString * sectionSymbol(PipCountSection section)
     [newChild didMoveToParentViewController:self];
     self.activeChild   = newChild;
     self.activeSection = section;
+
+    // Show the section name in the navigation bar.
+    self.navigationItem.title = sectionTitle(section);
 
     // Rebuild the menu so the checkmark moves to the new section.
     self.navigationItem.rightBarButtonItem.menu = [self buildMenu];

@@ -43,6 +43,12 @@ static const NSUInteger kMaxTags = 5;
         _difficulty = [dict[@"difficulty"] isKindOfClass:[NSNumber class]]
                     ? [dict[@"difficulty"] integerValue] : 1;
 
+        _caption = [dict[@"caption"] isKindOfClass:[NSString class]]
+                 ? dict[@"caption"] : @"";
+
+        _text = [dict[@"text"] isKindOfClass:[NSString class]]
+              ? dict[@"text"] : @"";
+
         _note = [dict[@"note"] isKindOfClass:[NSString class]]
               ? dict[@"note"] : @"";
     }
@@ -58,7 +64,9 @@ static const NSUInteger kMaxTags = 5;
 {
     // The board is always drawable from the ID alone – it does not depend
     // on the entry still being in the JSON.
-    return [BGGPosition boardStateFromPositionID:self.positionID];
+//    return [BGGPosition boardStateFromPositionID:self.positionID];
+    return [BGGPosition boardStateFromCombinedID:self.positionID];
+
 }
 
 @end

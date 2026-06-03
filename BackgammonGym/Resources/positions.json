@@ -2,33 +2,27 @@
   "positions": [
     {
       "id": "4HPwATDgc/ABMA",
-      "tags": [
-        "pipcount",
-        "race"
-      ],
+      "tags": ["race", "pipcount", "cluster"],
       "difficulty": 1,
-      "note": "Starting position – good for explaining what pips are"
+      "caption": "Starting position",
+      "text": "Count every checker: multiply its point number by the number of checkers on it, then add everything up. Both players start at exactly 167.",
+      "note": "Standard starting position"
     },
     {
-      "id": "u7sNAADbtg8AAA:MIEqAWAAEAAE",
-      "tags": [
-        "bearoff",
-        "pipcount",
-        "cluster"
-      ],
+      "id": "u7sNAADbtg8AAA",
+      "tags": ["bearoff", "pipcount", "cluster"],
       "difficulty": 1,
-      "note": "Insert explanatory text here"
+      "caption": "A typical bear off position",
+      "text": "Pipcount Player 1: 51 pips - Player 2: 60 pips",
+      "note": ""
     },
     {
-      "id": "22aICAbG3j0AAA:MAEgAUAACAAE",
-      "tags": [
-        "holding",
-        "cluster",
-        "pipcount",
-        "contact"
-      ],
+      "id": "22aICAbG3j0AAA",
+      "tags": ["holding", "cluster", "pipcount", "contact"],
       "difficulty": 2,
-      "note": "Typical Holding game"
+      "caption": "Typical Holding game",
+      "text": "Pipcount Player 1: 113 pips - Player 2: 91 pips",
+      "note": ""
     }
   ]
 }

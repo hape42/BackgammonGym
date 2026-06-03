@@ -10,10 +10,12 @@
 //  {
 //    "positions": [
 //      {
-//        "id": "4HPwATDgc/ABMA",
-//        "tags": ["race", "pipcount", "cluster"],   // up to 5 tags
-//        "difficulty": 1,
-//        "note": "dev comment, not shown in UI"
+//        "id":         "4HPwATDgc/ABMA",   // required
+//        "tags":       ["race", "pipcount"],// up to 5 tags
+//        "difficulty": 1,                   // 1–3
+//        "caption":    "Starting position", // shown as board title in UI
+//        "text":       "Both players...",   // shown as explanation text in UI
+//        "note":       "dev comment"        // never shown in UI
 //      }
 //    ]
 //  }
@@ -25,12 +27,13 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-// A single entry from positions.json.
 @interface BGGPositionEntry : NSObject
 
 @property (nonatomic, copy,   readonly) NSString            *positionID;  // GNU Position ID
 @property (nonatomic, copy,   readonly) NSArray<NSString *> *tags;        // up to 5 tags
 @property (nonatomic, assign, readonly) NSInteger            difficulty;  // 1–3
+@property (nonatomic, copy,   readonly) NSString            *caption;     // board title, shown in UI
+@property (nonatomic, copy,   readonly) NSString            *text;        // explanation, shown in UI
 @property (nonatomic, copy,   readonly) NSString            *note;        // dev comment, not shown in UI
 
 // Convenience: YES if the entry has the given tag.

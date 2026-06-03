@@ -360,9 +360,19 @@
         </div>
       </div>
 
+      <div style="margin-bottom:12px;">
+        <label style="font-size:12px;color:var(--text2);font-weight:500;">Caption <span style="font-weight:300;">(board title, shown in app)</span></label>
+        <input type="text" id="captionInput" placeholder="e.g. Starting position" style="margin-top:4px;" />
+      </div>
+
+      <div style="margin-bottom:12px;">
+        <label style="font-size:12px;color:var(--text2);font-weight:500;">Text <span style="font-weight:300;">(explanation, shown in app)</span></label>
+        <textarea id="textInput" placeholder="Explanation shown next to the board in Warm-up and Cluster…" style="margin-top:4px;min-height:72px;"></textarea>
+      </div>
+
       <div style="margin-bottom:16px;">
-        <label style="font-size:12px;color:var(--text2);font-weight:500;">Note (dev only, not shown in app)</label>
-        <textarea id="noteInput" placeholder="Optional note…" style="margin-top:4px;min-height:56px;"></textarea>
+        <label style="font-size:12px;color:var(--text2);font-weight:500;">Note <span style="font-weight:300;">(dev only, never shown in app)</span></label>
+        <textarea id="noteInput" placeholder="Optional dev comment…" style="margin-top:4px;min-height:56px;"></textarea>
       </div>
 
       <div class="action-row">
@@ -479,8 +489,10 @@ function resetForm() {
   editingIndex = -1;
   selectedTags = [];
   currentDifficulty = 1;
-  document.getElementById('posId').value    = '';
-  document.getElementById('noteInput').value = '';
+  document.getElementById('posId').value       = '';
+  document.getElementById('captionInput').value = '';
+  document.getElementById('textInput').value    = '';
+  document.getElementById('noteInput').value    = '';
   document.getElementById('formTitle').textContent = 'Add Position';
   setDifficulty(1);
   renderForm();
@@ -491,8 +503,10 @@ function editPosition(index) {
   editingIndex = index;
   selectedTags = [...pos.tags];
   currentDifficulty = pos.difficulty;
-  document.getElementById('posId').value     = pos.id;
-  document.getElementById('noteInput').value = pos.note || '';
+  document.getElementById('posId').value        = pos.id;
+  document.getElementById('captionInput').value = pos.caption || '';
+  document.getElementById('textInput').value    = pos.text    || '';
+  document.getElementById('noteInput').value    = pos.note    || '';
   document.getElementById('formTitle').textContent = 'Edit Position';
   setDifficulty(pos.difficulty);
   renderForm();
@@ -500,13 +514,16 @@ function editPosition(index) {
 }
 
 function savePosition() {
-  const id   = document.getElementById('posId').value.trim();
-  const note = document.getElementById('noteInput').value.trim();
+  const id      = document.getElementById('posId').value.trim();
+  const caption = document.getElementById('captionInput').value.trim();
+  const text    = document.getElementById('textInput').value.trim();
+  const note    = document.getElementById('noteInput').value.trim();
 
   if (!id) { alert('Position ID is required.'); return; }
   if (selectedTags.length === 0) { alert('Select at least one tag.'); return; }
 
-  const entry = { id, tags: [...selectedTags], difficulty: currentDifficulty, note };
+  const entry = { id, tags: [...selectedTags], difficulty: currentDifficulty,
+                  caption, text, note };
 
   if (editingIndex >= 0) {
     positions[editingIndex] = entry;
@@ -550,10 +567,12 @@ function importJSON() {
 
       if (item.id && !positions.find(p => p.id === item.id)) {
         positions.push({
-          id: item.id,
+          id:         item.id,
           tags,
           difficulty: item.difficulty || 1,
-          note: item.note || ''
+          caption:    item.caption    || '',
+          text:       item.text       || '',
+          note:       item.note       || ''
         });
       }
     });
@@ -606,6 +625,8 @@ function renderPosList() {
     item.innerHTML = `
       <div style="flex:1;">
         <div class="pos-id">${pos.id}</div>
+        ${pos.caption ? `<div style="font-size:12px;font-weight:600;margin-top:3px;">${pos.caption}</div>` : ''}
+        ${pos.text    ? `<div style="font-size:11px;color:var(--text2);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:320px;">${pos.text}</div>` : ''}
         <div class="pos-meta">Difficulty: ${pos.difficulty}${pos.note ? ' · ' + pos.note : ''}</div>
         <div class="pos-tags">${tagsHtml}</div>
       </div>
