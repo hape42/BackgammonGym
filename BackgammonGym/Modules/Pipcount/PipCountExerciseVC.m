@@ -13,6 +13,7 @@
 //
 
 #import "PipCountExerciseVC.h"
+#import "UIViewController+BGGHomeButton.h"
 #import "BGGBoardView.h"
 #import "BGGBoardGeometry.h"
 #import "BGGBoardState.h"
@@ -42,7 +43,9 @@ static const CGFloat kWideThreshold = 700.0;
 
 // Buttons
 @property (nonatomic, strong) UIButton      *submitButton;
+@property (nonatomic, strong) UIButton      *cancelButton;
 @property (nonatomic, strong) UIButton      *nextButton;
+@property (nonatomic, strong) UIButton      *cancelAfterNextButton;
 
 // Feedback
 @property (nonatomic, strong) UILabel       *feedbackLabel;
@@ -75,6 +78,7 @@ static const CGFloat kWideThreshold = 700.0;
 {
     [super viewDidLoad];
     self.view.backgroundColor = [UIColor systemBackgroundColor];
+    [self installHomeButton];
     [self buildUI];
 }
 
@@ -138,24 +142,28 @@ static const CGFloat kWideThreshold = 700.0;
     self.timerLabel.translatesAutoresizingMaskIntoConstraints = NO;
     [self.controlsView addSubview:self.timerLabel];
 
-    // Blue label + field
-    self.blueLabel = [self labelWithText:@"My pip count"];
-    [self.controlsView addSubview:self.blueLabel];
-    self.blueField = [self pipCountField];
-    self.blueField.returnKeyType = UIReturnKeyNext;
-    [self.controlsView addSubview:self.blueField];
-
-    // Yellow label + field
+    // Opponent label + field (top – opponent's checkers are at the top of the board)
     self.yellowLabel = [self labelWithText:@"Opponent pip count"];
     [self.controlsView addSubview:self.yellowLabel];
     self.yellowField = [self pipCountField];
-    self.yellowField.returnKeyType = UIReturnKeyDone;
+    self.yellowField.returnKeyType = UIReturnKeyNext;
     [self.controlsView addSubview:self.yellowField];
+
+    // My label + field (bottom – my checkers are at the bottom of the board)
+    self.blueLabel = [self labelWithText:@"My pip count"];
+    [self.controlsView addSubview:self.blueLabel];
+    self.blueField = [self pipCountField];
+    self.blueField.returnKeyType = UIReturnKeyDone;
+    [self.controlsView addSubview:self.blueField];
 
     // Check button
     self.submitButton = [self actionButtonWithTitle:@"Check"
                                              action:@selector(submitTapped)];
     [self.controlsView addSubview:self.submitButton];
+
+    // Cancel button (visible under Check)
+    self.cancelButton = [self cancelButtonWithAction:@selector(cancelTapped)];
+    [self.controlsView addSubview:self.cancelButton];
 
     // Feedback label
     self.feedbackLabel = [[UILabel alloc] init];
@@ -173,6 +181,11 @@ static const CGFloat kWideThreshold = 700.0;
     self.nextButton.hidden = YES;
     [self.controlsView addSubview:self.nextButton];
 
+    // Cancel after Next – hidden until after Check
+    self.cancelAfterNextButton = [self cancelButtonWithAction:@selector(cancelTapped)];
+    self.cancelAfterNextButton.hidden = YES;
+    [self.controlsView addSubview:self.cancelAfterNextButton];
+
     // Controls internal layout
     [NSLayoutConstraint activateConstraints:@[
         [self.progressLabel.topAnchor     constraintEqualToAnchor:self.controlsView.topAnchor
@@ -187,22 +200,7 @@ static const CGFloat kWideThreshold = 700.0;
         [self.timerLabel.leadingAnchor    constraintEqualToAnchor:self.progressLabel.trailingAnchor
                                                          constant:8.0],
 
-        [self.blueLabel.topAnchor        constraintEqualToAnchor:self.progressLabel.bottomAnchor
-                                                        constant:m],
-        [self.blueLabel.leadingAnchor    constraintEqualToAnchor:self.controlsView.leadingAnchor
-                                                        constant:m],
-        [self.blueLabel.trailingAnchor   constraintEqualToAnchor:self.controlsView.trailingAnchor
-                                                        constant:-m],
-
-        [self.blueField.topAnchor        constraintEqualToAnchor:self.blueLabel.bottomAnchor
-                                                        constant:6.0],
-        [self.blueField.leadingAnchor    constraintEqualToAnchor:self.controlsView.leadingAnchor
-                                                        constant:m],
-        [self.blueField.trailingAnchor   constraintEqualToAnchor:self.controlsView.trailingAnchor
-                                                        constant:-m],
-        [self.blueField.heightAnchor     constraintEqualToConstant:48.0],
-
-        [self.yellowLabel.topAnchor      constraintEqualToAnchor:self.blueField.bottomAnchor
+        [self.yellowLabel.topAnchor      constraintEqualToAnchor:self.progressLabel.bottomAnchor
                                                         constant:m],
         [self.yellowLabel.leadingAnchor  constraintEqualToAnchor:self.controlsView.leadingAnchor
                                                         constant:m],
@@ -217,7 +215,22 @@ static const CGFloat kWideThreshold = 700.0;
                                                         constant:-m],
         [self.yellowField.heightAnchor   constraintEqualToConstant:48.0],
 
-        [self.submitButton.topAnchor     constraintEqualToAnchor:self.yellowField.bottomAnchor
+        [self.blueLabel.topAnchor        constraintEqualToAnchor:self.yellowField.bottomAnchor
+                                                        constant:m],
+        [self.blueLabel.leadingAnchor    constraintEqualToAnchor:self.controlsView.leadingAnchor
+                                                        constant:m],
+        [self.blueLabel.trailingAnchor   constraintEqualToAnchor:self.controlsView.trailingAnchor
+                                                        constant:-m],
+
+        [self.blueField.topAnchor        constraintEqualToAnchor:self.blueLabel.bottomAnchor
+                                                        constant:6.0],
+        [self.blueField.leadingAnchor    constraintEqualToAnchor:self.controlsView.leadingAnchor
+                                                        constant:m],
+        [self.blueField.trailingAnchor   constraintEqualToAnchor:self.controlsView.trailingAnchor
+                                                        constant:-m],
+        [self.blueField.heightAnchor     constraintEqualToConstant:48.0],
+
+        [self.submitButton.topAnchor     constraintEqualToAnchor:self.blueField.bottomAnchor
                                                         constant:m],
         [self.submitButton.leadingAnchor constraintEqualToAnchor:self.controlsView.leadingAnchor
                                                         constant:m],
@@ -225,7 +238,15 @@ static const CGFloat kWideThreshold = 700.0;
                                                          constant:-m],
         [self.submitButton.heightAnchor  constraintEqualToConstant:48.0],
 
-        [self.feedbackLabel.topAnchor    constraintEqualToAnchor:self.submitButton.bottomAnchor
+        [self.cancelButton.topAnchor     constraintEqualToAnchor:self.submitButton.bottomAnchor
+                                                        constant:8.0],
+        [self.cancelButton.leadingAnchor constraintEqualToAnchor:self.controlsView.leadingAnchor
+                                                        constant:m],
+        [self.cancelButton.trailingAnchor constraintEqualToAnchor:self.controlsView.trailingAnchor
+                                                         constant:-m],
+        [self.cancelButton.heightAnchor  constraintEqualToConstant:44.0],
+
+        [self.feedbackLabel.topAnchor    constraintEqualToAnchor:self.cancelButton.bottomAnchor
                                                         constant:12.0],
         [self.feedbackLabel.leadingAnchor constraintEqualToAnchor:self.controlsView.leadingAnchor
                                                          constant:m],
@@ -239,6 +260,14 @@ static const CGFloat kWideThreshold = 700.0;
         [self.nextButton.trailingAnchor  constraintEqualToAnchor:self.controlsView.trailingAnchor
                                                         constant:-m],
         [self.nextButton.heightAnchor    constraintEqualToConstant:48.0],
+
+        [self.cancelAfterNextButton.topAnchor    constraintEqualToAnchor:self.nextButton.bottomAnchor
+                                                                constant:8.0],
+        [self.cancelAfterNextButton.leadingAnchor constraintEqualToAnchor:self.controlsView.leadingAnchor
+                                                                 constant:m],
+        [self.cancelAfterNextButton.trailingAnchor constraintEqualToAnchor:self.controlsView.trailingAnchor
+                                                                  constant:-m],
+        [self.cancelAfterNextButton.heightAnchor constraintEqualToConstant:44.0],
     ]];
 
     // Outer layout pins – direction-independent parts
@@ -273,6 +302,18 @@ static const CGFloat kWideThreshold = 700.0;
     return f;
 }
 
+- (UIButton *)cancelButtonWithAction:(SEL)action
+{
+    UIButton *btn = [UIButton buttonWithType:UIButtonTypeSystem];
+    [btn setTitle:@"Cancel" forState:UIControlStateNormal];
+    btn.titleLabel.font = [UIFont preferredFontForTextStyle:UIFontTextStyleBody];
+    [btn setTitleColor:[UIColor redColor] forState:UIControlStateNormal];
+    btn.backgroundColor = [UIColor systemGrayColor];
+    btn.layer.cornerRadius  = 10.0;
+    btn.translatesAutoresizingMaskIntoConstraints = NO;
+    [btn addTarget:self action:action forControlEvents:UIControlEventTouchUpInside];
+    return btn;
+}
 - (UIButton *)actionButtonWithTitle:(NSString *)title action:(SEL)action
 {
     UIButton *btn = [UIButton buttonWithType:UIButtonTypeSystem];
@@ -407,11 +448,14 @@ static const CGFloat kWideThreshold = 700.0;
     self.yellowField.text     = @"";
     self.feedbackLabel.alpha  = 0.0;
     self.submitButton.hidden  = NO;
+    self.cancelButton.hidden  = NO;
     self.nextButton.hidden    = YES;
+    self.cancelAfterNextButton.hidden = YES;
     self.blueField.enabled    = YES;
     self.yellowField.enabled  = YES;
 
-    [self.blueField becomeFirstResponder];
+    // Yellow is the first field (opponent, top of board).
+    [self.yellowField becomeFirstResponder];
 
     // Always measure time. Workout shows it live; Training shows it in the feedback.
     [self startTimer];
@@ -426,8 +470,8 @@ static const CGFloat kWideThreshold = 700.0;
     NSString *yellowText = [self.yellowField.text stringByTrimmingCharactersInSet:
                             [NSCharacterSet whitespaceCharacterSet]];
 
-    if (blueText.length == 0)   { [self.blueField   becomeFirstResponder]; return; }
     if (yellowText.length == 0) { [self.yellowField becomeFirstResponder]; return; }
+    if (blueText.length == 0)   { [self.blueField   becomeFirstResponder]; return; }
 
     [self stopTimer];
     [self.view endEditing:YES];
@@ -453,18 +497,25 @@ static const CGFloat kWideThreshold = 700.0;
                                                         : UIImpactFeedbackStyleRigid];
     [impact impactOccurred];
 
-    // Show Next button, hide Check button.
-    // User decides when to move on.
-    self.submitButton.hidden = YES;
-    self.nextButton.hidden   = NO;
-    self.blueField.enabled   = NO;
-    self.yellowField.enabled = NO;
+    // Show Next + CancelAfterNext, hide Check + Cancel.
+    self.submitButton.hidden  = YES;
+    self.cancelButton.hidden  = YES;
+    self.nextButton.hidden    = NO;
+    self.cancelAfterNextButton.hidden = NO;
+    self.blueField.enabled    = NO;
+    self.yellowField.enabled  = NO;
 }
 
 - (void)nextTapped
 {
     self.currentIndex++;
     [self showCurrentPosition];
+}
+
+- (void)cancelTapped
+{
+    [self stopTimer];
+    [self.navigationController popToRootViewControllerAnimated:YES];
 }
 
 - (void)showFeedbackBlueOK:(BOOL)blueOK
@@ -563,9 +614,10 @@ static const CGFloat kWideThreshold = 700.0;
 
 - (BOOL)textFieldShouldReturn:(UITextField *)textField
 {
-    if (textField == self.blueField)
+    if (textField == self.yellowField)
     {
-        [self.yellowField becomeFirstResponder];
+        // Yellow is first – Return moves to blue (my count).
+        [self.blueField becomeFirstResponder];
     }
     else
     {

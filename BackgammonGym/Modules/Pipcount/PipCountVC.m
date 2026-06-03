@@ -8,6 +8,7 @@
 //
 
 #import "PipCountVC.h"
+#import "UIViewController+BGGHomeButton.h"
 #import "PipCountWarmupVC.h"
 #import "PipCountClusterVC.h"
 #import "PipCountTrainingVC.h"
@@ -68,6 +69,7 @@ static NSString * sectionSymbol(PipCountSection section)
     self.view.backgroundColor = [UIColor systemBackgroundColor];
     self.title = @"Pip Count";
 
+    [self installHomeButton];
     [self setupContainerView];
     [self setupMenuButton];
     [self showSection:PipCountSectionWarmup];
