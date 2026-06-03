@@ -12,6 +12,7 @@
 #import "BGGBoardState.h"
 #import "PipCountVC.h"
 #import "SettingsVC.h"
+#import "PositionBrowserVC.h"
 
 @interface StartVC () <UICollectionViewDataSource,
                        UICollectionViewDelegate,
@@ -210,9 +211,10 @@ didSelectItemAtIndexPath:(NSIndexPath *)indexPath
             break;
 
         case BGGStartTileKindCollection:
-            [Tools showNotImplementedAlertFromViewController:self
-                                                     feature:@"Collections"
-                                                 description:@"Here's where you can save your own positions"];
+        {
+            PositionBrowserVC *vc = [[PositionBrowserVC alloc] init];
+            [self.navigationController pushViewController:vc animated:YES];
+        }
             break;
 
         case BGGStartTileKindStatistics:

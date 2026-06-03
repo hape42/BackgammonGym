@@ -15,6 +15,7 @@
 #import "PipCountExerciseVC.h"
 #import "UIViewController+BGGHomeButton.h"
 #import "BGGBoardView.h"
+#import "BGGBoardIDView.h"
 #import "BGGBoardGeometry.h"
 #import "BGGBoardState.h"
 #import "BGGPosition.h"
@@ -26,7 +27,8 @@ static const CGFloat kWideThreshold = 700.0;
 @interface PipCountExerciseVC () <UITextFieldDelegate>
 
 // Board
-@property (nonatomic, strong) BGGBoardView  *boardView;
+@property (nonatomic, strong) BGGBoardView    *boardView;
+@property (nonatomic, strong) BGGBoardIDView  *boardIDView;
 
 // Controls container
 @property (nonatomic, strong) UIView        *controlsView;
@@ -116,6 +118,11 @@ static const CGFloat kWideThreshold = 700.0;
     CGFloat ratio = kBGGBoardHeight / kBGGBoardWidth;
     [[self.boardView.heightAnchor constraintEqualToAnchor:self.boardView.widthAnchor
                                                multiplier:ratio] setActive:YES];
+
+    // ID view sits directly below the board
+    self.boardIDView = [[BGGBoardIDView alloc] init];
+    self.boardIDView.translatesAutoresizingMaskIntoConstraints = NO;
+    [self.view addSubview:self.boardIDView];
 
     // Controls container
     self.controlsView = [[UIView alloc] init];
@@ -274,6 +281,12 @@ static const CGFloat kWideThreshold = 700.0;
     [NSLayoutConstraint activateConstraints:@[
         [self.boardView.topAnchor     constraintEqualToAnchor:safe.topAnchor    constant:8.0],
         [self.boardView.leadingAnchor constraintEqualToAnchor:safe.leadingAnchor constant:8.0],
+
+        [self.boardIDView.topAnchor     constraintEqualToAnchor:self.boardView.bottomAnchor
+                                                       constant:4.0],
+        [self.boardIDView.leadingAnchor constraintEqualToAnchor:self.boardView.leadingAnchor],
+        [self.boardIDView.trailingAnchor constraintEqualToAnchor:self.boardView.trailingAnchor],
+
         [self.controlsView.topAnchor  constraintEqualToAnchor:safe.topAnchor],
         [self.controlsView.trailingAnchor constraintEqualToAnchor:safe.trailingAnchor],
     ]];
@@ -441,6 +454,7 @@ static const CGFloat kWideThreshold = 700.0;
 
     BGGPositionEntry *entry   = self.positions[(NSUInteger)self.currentIndex];
     self.boardView.boardState = [entry boardState];
+    [self.boardIDView updateWithBoardState:[entry boardState]];
 
     self.progressLabel.text   = [NSString stringWithFormat:@"%ld / %ld",
                                  (long)(self.currentIndex + 1), (long)self.totalCount];

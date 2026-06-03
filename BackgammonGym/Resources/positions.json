@@ -1,7 +1,7 @@
 {
   "positions": [
     {
-      "id": "4HPwATDgc/ABMA",
+      "id": "4HPwATDgc/ABMA:QYkqASAAIAAA",
       "tags": ["race", "pipcount", "cluster"],
       "difficulty": 1,
       "caption": "Starting position",
@@ -9,7 +9,7 @@
       "note": "Standard starting position"
     },
     {
-      "id": "u7sNAADbtg8AAA",
+      "id": "u7sNAADbtg8AAA:MAH2AAAAAAAE",
       "tags": ["bearoff", "pipcount", "cluster"],
       "difficulty": 1,
       "caption": "A typical bear off position",
@@ -17,7 +17,7 @@
       "note": ""
     },
     {
-      "id": "22aICAbG3j0AAA",
+      "id": "22aICAbG3j0AAA:MAEAAAAAAAAA",
       "tags": ["holding", "cluster", "pipcount", "contact"],
       "difficulty": 2,
       "caption": "Typical Holding game",
