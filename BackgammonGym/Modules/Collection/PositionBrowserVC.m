@@ -235,7 +235,6 @@ static const CGFloat    kRowHeight  = 200.0;
     [super viewDidLoad];
     self.view.backgroundColor = [UIColor systemBackgroundColor];
     self.title = @"Positions";
-    [self installHomeButton];
 
     // Add button (right)
     UIBarButtonItem *addBtn = [[UIBarButtonItem alloc]
@@ -253,6 +252,8 @@ static const CGFloat    kRowHeight  = 200.0;
     exportBtn.tintColor = [UIColor colorNamed:@"AccentColor"];
 
     self.navigationItem.rightBarButtonItems = @[addBtn, exportBtn];
+
+    [self updateLeftBarButtons];
 
     self.allPositions      = [[PositionDatabase sharedDatabase] allPositions];
     self.filteredPositions = self.allPositions;
@@ -443,6 +444,48 @@ forRowAtIndexPath:(NSIndexPath *)indexPath
     [self presentViewController:share animated:YES completion:nil];
 }
 
+- (void)resetTapped
+{
+    UIAlertController *alert = [UIAlertController
+        alertControllerWithTitle:@"Reset to bundle?"
+                         message:@"This deletes the local edits and reloads the "
+                                  "positions shipped with the app. Make sure you "
+                                  "have exported your changes first."
+                  preferredStyle:UIAlertControllerStyleAlert];
+
+    [alert addAction:[UIAlertAction actionWithTitle:@"Cancel"
+                                              style:UIAlertActionStyleCancel
+                                            handler:nil]];
+
+    [alert addAction:[UIAlertAction actionWithTitle:@"Reset"
+                                              style:UIAlertActionStyleDestructive
+                                            handler:^(UIAlertAction *action) {
+        [[PositionDatabase sharedDatabase] resetToBundle];
+        [self reloadData];
+        [self updateLeftBarButtons];
+    }]];
+
+    [self presentViewController:alert animated:YES completion:nil];
+}
+
+// Home button always; reset button added only in editing mode.
+- (void)updateLeftBarButtons
+{
+    [self installHomeButton];
+    UIBarButtonItem *homeItem = self.navigationItem.leftBarButtonItem;
+
+    if ([[PositionDatabase sharedDatabase] isEditingMode])
+    {
+        UIBarButtonItem *resetBtn = [[UIBarButtonItem alloc]
+                                     initWithImage:[UIImage systemImageNamed:@"arrow.counterclockwise"]
+                                             style:UIBarButtonItemStylePlain
+                                            target:self
+                                            action:@selector(resetTapped)];
+        resetBtn.tintColor = [UIColor colorNamed:@"AccentColor"];
+        self.navigationItem.leftBarButtonItems = @[homeItem, resetBtn];
+    }
+}
+
 - (void)openEditorForEntry:(nullable BGGPositionEntry *)entry
 {
     BGGPositionEditorVC *editor = [[BGGPositionEditorVC alloc] initWithEntry:entry];
@@ -455,6 +498,8 @@ forRowAtIndexPath:(NSIndexPath *)indexPath
 - (void)editorDidSaveEntry:(BGGPositionEntry *)entry isNewEntry:(BOOL)isNew
 {
     [self reloadData];
+    // The first edit creates the Documents override – show the reset button.
+    [self updateLeftBarButtons];
 }
 
 #pragma mark - Reload

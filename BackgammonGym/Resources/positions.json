@@ -10,7 +10,7 @@
       ],
       "caption" : "Starting position",
       "note" : "Standard starting position",
-      "text" : "Count every checker: multiply its point number by the number of checkers on it, then add everything up. Both players start at exactly 167."
+      "text" : "Count every checker: multiply its point number by the number of checkers on it, then add everything up. \\nBoth players start at exactly 167."
     },
     {
       "difficulty" : 1,

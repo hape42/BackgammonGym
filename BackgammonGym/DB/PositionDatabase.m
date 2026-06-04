@@ -134,10 +134,54 @@ static const NSUInteger kMaxTags = 5;
     self = [super init];
     if (self)
     {
-        [self ensureDocumentsFileExists];
-        [self loadFromDocuments];
+        [self reload];
     }
     return self;
+}
+
+// Loads positions following the Bundle-first strategy:
+//   - If a Documents/positions.json exists (developer editing mode), use it.
+//   - Otherwise read the read-only bundle copy.
+// This way app updates always ship new positions via the bundle, and the
+// Documents file is only a temporary developer override.
+- (void)reload
+{
+    NSURL *docsURL = [self documentsJSONURL];
+    BOOL hasDocs = [[NSFileManager defaultManager] fileExistsAtPath:docsURL.path];
+
+    if (hasDocs)
+    {
+        NSLog(@"[PositionDatabase] editing mode: reading Documents/positions.json");
+        [self loadFromURL:docsURL];
+    }
+    else
+    {
+        NSURL *bundleURL = [[NSBundle mainBundle] URLForResource:@"positions"
+                                                   withExtension:@"json"];
+        NSLog(@"[PositionDatabase] reading bundle positions.json");
+        [self loadFromURL:bundleURL];
+    }
+}
+
+// YES if a Documents override file currently exists.
+- (BOOL)isEditingMode
+{
+    return [[NSFileManager defaultManager]
+            fileExistsAtPath:[self documentsJSONURL].path];
+}
+
+// Deletes the Documents override so the app reads the bundle again.
+- (void)resetToBundle
+{
+    NSURL *docsURL = [self documentsJSONURL];
+    if ([[NSFileManager defaultManager] fileExistsAtPath:docsURL.path])
+    {
+        NSError *error = nil;
+        [[NSFileManager defaultManager] removeItemAtURL:docsURL error:&error];
+        if (error) { NSLog(@"[PositionDatabase] reset failed: %@", error); }
+        else       { NSLog(@"[PositionDatabase] reset to bundle"); }
+    }
+    [self reload];
 }
 
 // MARK: - File management
@@ -150,46 +194,17 @@ static const NSUInteger kMaxTags = 5;
     return [docs URLByAppendingPathComponent:@"positions.json"];
 }
 
-// Copy bundle JSON to Documents on first launch.
-- (void)ensureDocumentsFileExists
-{
-    NSURL *dest = [self documentsJSONURL];
-    if ([[NSFileManager defaultManager] fileExistsAtPath:dest.path])
-    {
-        NSLog(@"[PositionDatabase] using Documents/positions.json");
-        return;
-    }
-
-    NSURL *bundle = [[NSBundle mainBundle] URLForResource:@"positions" withExtension:@"json"];
-    if (bundle == nil)
-    {
-        NSLog(@"[PositionDatabase] no positions.json in bundle – starting empty");
-        // Write empty JSON to Documents so we always have a writable file.
-        NSDictionary *empty = @{ @"positions": @[] };
-        NSData *data = [NSJSONSerialization dataWithJSONObject:empty
-                                                       options:NSJSONWritingPrettyPrinted
-                                                         error:nil];
-        [data writeToURL:dest atomically:YES];
-        return;
-    }
-
-    NSError *error = nil;
-    [[NSFileManager defaultManager] copyItemAtURL:bundle toURL:dest error:&error];
-    if (error)
-    {
-        NSLog(@"[PositionDatabase] could not copy bundle JSON: %@", error);
-    }
-    else
-    {
-        NSLog(@"[PositionDatabase] copied bundle JSON to Documents");
-    }
-}
-
 // MARK: - Loading
 
-- (void)loadFromDocuments
+- (void)loadFromURL:(NSURL *)url
 {
-    NSURL *url = [self documentsJSONURL];
+    if (url == nil)
+    {
+        NSLog(@"[PositionDatabase] no URL to load from");
+        _allPositions = @[];
+        return;
+    }
+
     NSError *error = nil;
     NSData *data = [NSData dataWithContentsOfURL:url options:0 error:&error];
     if (data == nil)

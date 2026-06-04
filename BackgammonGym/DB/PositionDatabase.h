@@ -77,6 +77,22 @@ NS_ASSUME_NONNULL_BEGIN
 // Remove an entry by positionID.
 - (void)removeEntryWithPositionID:(NSString *)positionID;
 
+// MARK: Storage mode (Bundle-first)
+
+// The app reads from the bundle by default. As soon as the developer edits
+// a position, a Documents/positions.json override is created and used until
+// it is reset. App updates ship new positions via the bundle, so the
+// developer must export edited positions back into the project.
+
+// YES if a Documents override currently exists (developer editing mode).
+- (BOOL)isEditingMode;
+
+// Reloads positions: Documents override if present, otherwise bundle.
+- (void)reload;
+
+// Deletes the Documents override, so the app reads the bundle again.
+- (void)resetToBundle;
+
 // MARK: Export
 
 // Returns the URL of the Documents JSON file for sharing.
