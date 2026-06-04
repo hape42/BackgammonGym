@@ -2,10 +2,15 @@
 //  PositionBrowserVC.m
 //  BackgammonGym
 //
+//  Visual browser for positions.json.
+//  Each position is shown as a BGGBoardCard (same size as Warm-up),
+//  with tags and the GNU combined ID below it.
+//  A tag filter bar at the top narrows the list.
+//
 
 #import "PositionBrowserVC.h"
 #import "PositionDatabase.h"
-#import "BGGBoardView.h"
+#import "BGGBoardCard.h"
 #import "BGGBoardIDView.h"
 #import "BGGBoardState.h"
 #import "BGGBoardGeometry.h"
@@ -13,219 +18,161 @@
 #import "UIViewController+BGGHomeButton.h"
 #import "BGGPositionEditorVC.h"
 
-static NSString * const kCellID     = @"PositionCell";
-static const CGFloat    kBoardWidth = 240.0;
-static const CGFloat    kRowHeight  = 200.0;
+// MARK: - Position card view
 
-// MARK: - Wrapping tag view
+// One card: BGGBoardCard + tag chips + ID view + optional edit/delete buttons.
+@interface BGGPositionCardView : UIView
 
-// A simple view that lays out tag chips left-to-right and wraps to a new
-// line when the available width is exceeded. Used in each table cell.
-@interface BGGTagWrapView : UIView
-- (void)setTags:(NSArray<NSString *> *)tags;
-@end
+- (instancetype)initWithEntry:(BGGPositionEntry *)entry
+                       design:(NSString *)design
+                   editTarget:(id)target
+                   editAction:(SEL)editAction
+                 deleteTarget:(id)target2
+                 deleteAction:(SEL)deleteAction;
 
-@implementation BGGTagWrapView
-
-- (void)setTags:(NSArray<NSString *> *)tags
-{
-    for (UIView *v in self.subviews) { [v removeFromSuperview]; }
-
-    UIColor *accent = [UIColor colorNamed:@"AccentColor"] ?: [UIColor systemRedColor];
-    CGFloat x = 0, y = 0;
-    CGFloat chipH = 18.0, gap = 4.0;
-
-    for (NSString *tag in tags)
-    {
-        UILabel *chip = [[UILabel alloc] init];
-        chip.text            = tag;
-        chip.font            = [UIFont systemFontOfSize:10.0 weight:UIFontWeightSemibold];
-        chip.textColor       = accent;
-        chip.backgroundColor = [accent colorWithAlphaComponent:0.12];
-        chip.layer.cornerRadius = 4.0;
-        chip.clipsToBounds   = YES;
-        chip.textAlignment   = NSTextAlignmentCenter;
-        [chip sizeToFit];
-        CGFloat w = chip.bounds.size.width + 10.0;
-
-        // Wrap to next line if needed
-        CGFloat maxX = self.bounds.size.width > 0 ? self.bounds.size.width : 200.0;
-        if (x + w > maxX && x > 0)
-        {
-            x = 0;
-            y += chipH + gap;
-        }
-        chip.frame = CGRectMake(x, y, w, chipH);
-        [self addSubview:chip];
-        x += w + gap;
-    }
-}
-
-// Tell Auto Layout how tall this view needs to be after chips are laid out.
-- (CGSize)intrinsicContentSize
-{
-    CGFloat maxY = 0;
-    for (UIView *v in self.subviews)
-    {
-        maxY = MAX(maxY, CGRectGetMaxY(v.frame));
-    }
-    return CGSizeMake(UIViewNoIntrinsicMetric, maxY > 0 ? maxY : 18.0);
-}
-
-- (void)layoutSubviews
-{
-    [super layoutSubviews];
-    // Re-layout chips whenever our width changes (rotation, etc.)
-    NSArray<NSString *> *tags = [self.subviews valueForKey:@"text"];
-    if (tags.count > 0) { [self setTags:tags]; }
-    [self invalidateIntrinsicContentSize];
-}
+@property (nonatomic, strong, readonly) BGGPositionEntry *entry;
 
 @end
 
-// MARK: - Cell
+@implementation BGGPositionCardView
 
-@interface PositionBrowserCell : UITableViewCell
-@property (nonatomic, strong) BGGBoardView    *boardView;
-@property (nonatomic, strong) BGGBoardIDView  *boardIDView;
-@property (nonatomic, strong) UILabel         *captionLabel;
-@property (nonatomic, strong) UILabel         *posTextLabel;
-@property (nonatomic, strong) BGGTagWrapView  *tagsView;
-@property (nonatomic, strong) UILabel         *idLabel;
-@property (nonatomic, strong) UILabel         *difficultyLabel;
-@end
-
-@implementation PositionBrowserCell
-
-- (instancetype)initWithStyle:(UITableViewCellStyle)style
-              reuseIdentifier:(nullable NSString *)reuseIdentifier
+- (instancetype)initWithEntry:(BGGPositionEntry *)entry
+                       design:(NSString *)design
+                   editTarget:(id)editTarget
+                   editAction:(SEL)editAction
+                 deleteTarget:(id)deleteTarget
+                 deleteAction:(SEL)deleteAction
 {
-    self = [super initWithStyle:style reuseIdentifier:reuseIdentifier];
-    if (self) { [self buildSubviews]; }
+    self = [super init];
+    if (!self) { return nil; }
+    _entry = entry;
+
+    self.translatesAutoresizingMaskIntoConstraints = NO;
+
+    // Separator line at top
+    UIView *sep = [[UIView alloc] init];
+    sep.backgroundColor = [UIColor separatorColor];
+    sep.translatesAutoresizingMaskIntoConstraints = NO;
+    [self addSubview:sep];
+
+    // Board card (same component as Warm-up)
+    BGGBoardCard *card = [[BGGBoardCard alloc]
+                          initWithCaption:entry.caption
+                          explanationText:entry.text
+                               boardState:[entry boardState]];
+    card.boardDesign = design;
+    card.translatesAutoresizingMaskIntoConstraints = NO;
+    [self addSubview:card];
+
+    // Tag chips row
+    UIView *tagsRow = [self buildTagsRowForEntry:entry];
+    [self addSubview:tagsRow];
+
+    // ID + copy button
+    BGGBoardIDView *idView = [[BGGBoardIDView alloc] init];
+    idView.translatesAutoresizingMaskIntoConstraints = NO;
+    [idView updateWithBoardState:[entry boardState]];
+    [self addSubview:idView];
+
+    // Edit / Delete buttons
+    UIButton *editBtn = [UIButton buttonWithType:UIButtonTypeSystem];
+    [editBtn setTitle:@"Edit" forState:UIControlStateNormal];
+    editBtn.tintColor = [UIColor colorNamed:@"AccentColor"] ?: [UIColor systemRedColor];
+    editBtn.translatesAutoresizingMaskIntoConstraints = NO;
+    editBtn.accessibilityIdentifier = entry.positionID;
+    [editBtn addTarget:editTarget action:editAction
+      forControlEvents:UIControlEventTouchUpInside];
+    [self addSubview:editBtn];
+
+    UIButton *deleteBtn = [UIButton buttonWithType:UIButtonTypeSystem];
+    [deleteBtn setTitle:@"Delete" forState:UIControlStateNormal];
+    deleteBtn.tintColor = [UIColor systemRedColor];
+    deleteBtn.translatesAutoresizingMaskIntoConstraints = NO;
+    deleteBtn.accessibilityIdentifier = entry.positionID;
+    [deleteBtn addTarget:deleteTarget action:deleteAction
+       forControlEvents:UIControlEventTouchUpInside];
+    [self addSubview:deleteBtn];
+
+    CGFloat m = 16.0;
+
+    [NSLayoutConstraint activateConstraints:@[
+        // Separator
+        [sep.topAnchor     constraintEqualToAnchor:self.topAnchor],
+        [sep.leadingAnchor constraintEqualToAnchor:self.leadingAnchor],
+        [sep.trailingAnchor constraintEqualToAnchor:self.trailingAnchor],
+        [sep.heightAnchor  constraintEqualToConstant:0.5],
+
+        // Board card
+        [card.topAnchor     constraintEqualToAnchor:sep.bottomAnchor constant:m],
+        [card.leadingAnchor constraintEqualToAnchor:self.leadingAnchor constant:m],
+        [card.trailingAnchor constraintEqualToAnchor:self.trailingAnchor constant:-m],
+
+        // Tags
+        [tagsRow.topAnchor     constraintEqualToAnchor:card.bottomAnchor constant:8.0],
+        [tagsRow.leadingAnchor constraintEqualToAnchor:self.leadingAnchor constant:m],
+        [tagsRow.trailingAnchor constraintEqualToAnchor:self.trailingAnchor constant:-m],
+
+        // ID view
+        [idView.topAnchor     constraintEqualToAnchor:tagsRow.bottomAnchor constant:6.0],
+        [idView.leadingAnchor constraintEqualToAnchor:self.leadingAnchor constant:m],
+        [idView.trailingAnchor constraintEqualToAnchor:self.trailingAnchor constant:-m],
+
+        // Edit / Delete buttons
+        [editBtn.topAnchor    constraintEqualToAnchor:idView.bottomAnchor constant:4.0],
+        [editBtn.leadingAnchor constraintEqualToAnchor:self.leadingAnchor constant:m],
+        [editBtn.bottomAnchor constraintEqualToAnchor:self.bottomAnchor constant:-m],
+
+        [deleteBtn.topAnchor    constraintEqualToAnchor:editBtn.topAnchor],
+        [deleteBtn.leadingAnchor constraintEqualToAnchor:editBtn.trailingAnchor constant:16.0],
+        [deleteBtn.bottomAnchor constraintEqualToAnchor:self.bottomAnchor constant:-m],
+    ]];
+
     return self;
 }
 
-- (void)buildSubviews
+- (UIView *)buildTagsRowForEntry:(BGGPositionEntry *)entry
 {
-    CGFloat pad = 8.0;
+    UIView *row = [[UIView alloc] init];
+    row.translatesAutoresizingMaskIntoConstraints = NO;
 
-    self.boardView = [[BGGBoardView alloc] init];
-    self.boardView.translatesAutoresizingMaskIntoConstraints = NO;
-    self.boardView.showsPointNumbers = NO;
-    self.boardView.showsCube         = YES;
-    self.boardView.showsDice         = YES;
-    self.boardView.clipsToBounds     = YES;
-    self.boardView.layer.cornerRadius = 6.0;
-    [self.contentView addSubview:self.boardView];
+    UIColor *accent = [UIColor colorNamed:@"AccentColor"] ?: [UIColor systemRedColor];
+    CGFloat x = 0, chipH = 22.0, gap = 6.0;
 
-    // ID + copy button below the board
-    self.boardIDView = [[BGGBoardIDView alloc] init];
-    self.boardIDView.translatesAutoresizingMaskIntoConstraints = NO;
-    [self.contentView addSubview:self.boardIDView];
+    for (NSString *tag in entry.tags)
+    {
+        UILabel *chip = [[UILabel alloc] init];
+        chip.text            = tag;
+        chip.font            = [UIFont systemFontOfSize:12.0 weight:UIFontWeightMedium];
+        chip.textColor       = accent;
+        chip.backgroundColor = [accent colorWithAlphaComponent:0.12];
+        chip.layer.cornerRadius = 5.0;
+        chip.clipsToBounds   = YES;
+        chip.textAlignment   = NSTextAlignmentCenter;
+        [chip sizeToFit];
+        CGFloat w = chip.bounds.size.width + 12.0;
+        chip.frame = CGRectMake(x, 0, w, chipH);
+        [row addSubview:chip];
+        x += w + gap;
+    }
 
-    self.captionLabel = [[UILabel alloc] init];
-    self.captionLabel.font          = [UIFont preferredFontForTextStyle:UIFontTextStyleCallout];
-    self.captionLabel.numberOfLines = 2;
-    self.captionLabel.translatesAutoresizingMaskIntoConstraints = NO;
-    [self.contentView addSubview:self.captionLabel];
-
-    self.posTextLabel = [[UILabel alloc] init];
-    self.posTextLabel.font          = [UIFont preferredFontForTextStyle:UIFontTextStyleCaption1];
-    self.posTextLabel.textColor     = [UIColor secondaryLabelColor];
-    self.posTextLabel.numberOfLines = 3;
-    self.posTextLabel.translatesAutoresizingMaskIntoConstraints = NO;
-    [self.contentView addSubview:self.posTextLabel];
-
-    self.tagsView = [[BGGTagWrapView alloc] init];
-    self.tagsView.translatesAutoresizingMaskIntoConstraints = NO;
-    [self.contentView addSubview:self.tagsView];
-
-    self.idLabel = [[UILabel alloc] init];
-    self.idLabel.font      = [UIFont monospacedSystemFontOfSize:10.0 weight:UIFontWeightRegular];
-    self.idLabel.textColor = [UIColor tertiaryLabelColor];
-    self.idLabel.numberOfLines = 1;
-    self.idLabel.translatesAutoresizingMaskIntoConstraints = NO;
-    [self.contentView addSubview:self.idLabel];
-
-    self.difficultyLabel = [[UILabel alloc] init];
-    self.difficultyLabel.font      = [UIFont preferredFontForTextStyle:UIFontTextStyleCaption2];
-    self.difficultyLabel.textColor = [UIColor secondaryLabelColor];
-    self.difficultyLabel.translatesAutoresizingMaskIntoConstraints = NO;
-    [self.contentView addSubview:self.difficultyLabel];
-
-    [NSLayoutConstraint activateConstraints:@[
-        // Board: top left, fixed size
-        [self.boardView.leadingAnchor  constraintEqualToAnchor:self.contentView.leadingAnchor
-                                                      constant:pad],
-        [self.boardView.topAnchor      constraintEqualToAnchor:self.contentView.topAnchor
-                                                      constant:pad],
-        [self.boardView.widthAnchor    constraintEqualToConstant:kBoardWidth],
-        [self.boardView.heightAnchor   constraintEqualToConstant:kBoardWidth * (kBGGBoardHeight / kBGGBoardWidth)],
-
-        // Caption: top right
-        [self.captionLabel.topAnchor      constraintEqualToAnchor:self.contentView.topAnchor
-                                                         constant:pad],
-        [self.captionLabel.leadingAnchor  constraintEqualToAnchor:self.boardView.trailingAnchor
-                                                         constant:pad],
-        [self.captionLabel.trailingAnchor constraintEqualToAnchor:self.contentView.trailingAnchor
-                                                         constant:-pad],
-
-        // Text below caption
-        [self.posTextLabel.topAnchor      constraintEqualToAnchor:self.captionLabel.bottomAnchor
-                                                         constant:3.0],
-        [self.posTextLabel.leadingAnchor  constraintEqualToAnchor:self.captionLabel.leadingAnchor],
-        [self.posTextLabel.trailingAnchor constraintEqualToAnchor:self.captionLabel.trailingAnchor],
-
-        // Tags below text
-        [self.tagsView.topAnchor      constraintEqualToAnchor:self.posTextLabel.bottomAnchor
-                                                     constant:6.0],
-        [self.tagsView.leadingAnchor  constraintEqualToAnchor:self.captionLabel.leadingAnchor],
-        [self.tagsView.trailingAnchor constraintEqualToAnchor:self.captionLabel.trailingAnchor],
-
-        // Difficulty dots: bottom left of right column
-        [self.difficultyLabel.bottomAnchor  constraintEqualToAnchor:self.contentView.bottomAnchor
-                                                           constant:-pad],
-        [self.difficultyLabel.leadingAnchor constraintEqualToAnchor:self.captionLabel.leadingAnchor],
-
-        // ID + copy button: bottom right
-        [self.boardIDView.bottomAnchor   constraintEqualToAnchor:self.contentView.bottomAnchor
-                                                        constant:-pad],
-        [self.boardIDView.leadingAnchor  constraintEqualToAnchor:self.difficultyLabel.trailingAnchor
-                                                        constant:8.0],
-        [self.boardIDView.trailingAnchor constraintEqualToAnchor:self.contentView.trailingAnchor
-                                                        constant:-pad],
-    ]];
-}
-
-- (void)configureWithEntry:(BGGPositionEntry *)entry design:(NSString *)design
-{
-    self.boardView.boardDesign = design;
-    self.boardView.boardState  = [entry boardState];
-    [self.boardIDView updateWithBoardState:[entry boardState]];
-    self.captionLabel.text     = entry.caption.length > 0 ? entry.caption : @"";
-    self.posTextLabel.text     = entry.text.length > 0 ? entry.text : @"";
-    self.idLabel.text          = entry.positionID;
-
-    NSMutableString *dots = [NSMutableString string];
-    for (NSInteger i = 0; i < entry.difficulty; i++)  { [dots appendString:@"●"]; }
-    for (NSInteger i = entry.difficulty; i < 3; i++)   { [dots appendString:@"○"]; }
-    self.difficultyLabel.text = dots;
-
-    [self.tagsView setTags:entry.tags];
+    [row.heightAnchor constraintEqualToConstant:chipH].active = YES;
+    return row;
 }
 
 @end
 
 // MARK: - ViewController
 
-@interface PositionBrowserVC () <UITableViewDataSource, UITableViewDelegate,
-                                  BGGPositionEditorDelegate>
+@interface PositionBrowserVC () <BGGPositionEditorDelegate>
 @property (nonatomic, strong) UIScrollView                *tagScrollView;
 @property (nonatomic, strong) UIStackView                 *tagStack;
-@property (nonatomic, strong) UITableView                 *tableView;
+@property (nonatomic, strong) UIScrollView                *scrollView;
+@property (nonatomic, strong) UIStackView                 *cardStack;
 @property (nonatomic, strong) NSArray<BGGPositionEntry *> *allPositions;
 @property (nonatomic, strong) NSArray<BGGPositionEntry *> *filteredPositions;
 @property (nonatomic, copy)   NSString                    *activeTag;
+// Map from positionID to entry for edit/delete button callbacks
+@property (nonatomic, strong) NSMutableDictionary<NSString *, BGGPositionEntry *> *entryByPositionID;
 @end
 
 @implementation PositionBrowserVC
@@ -236,21 +183,20 @@ static const CGFloat    kRowHeight  = 200.0;
     self.view.backgroundColor = [UIColor systemBackgroundColor];
     self.title = @"Positions";
 
-    // Add button (right)
+    self.entryByPositionID = [NSMutableDictionary dictionary];
+
+    // Right: Add + Export
     UIBarButtonItem *addBtn = [[UIBarButtonItem alloc]
                                initWithBarButtonSystemItem:UIBarButtonSystemItemAdd
                                                    target:self
                                                    action:@selector(addTapped)];
     addBtn.tintColor = [UIColor colorNamed:@"AccentColor"];
-
-    // Export button (right, next to Add)
     UIBarButtonItem *exportBtn = [[UIBarButtonItem alloc]
                                   initWithImage:[UIImage systemImageNamed:@"square.and.arrow.up"]
                                           style:UIBarButtonItemStylePlain
                                          target:self
                                          action:@selector(exportTapped)];
     exportBtn.tintColor = [UIColor colorNamed:@"AccentColor"];
-
     self.navigationItem.rightBarButtonItems = @[addBtn, exportBtn];
 
     [self updateLeftBarButtons];
@@ -259,7 +205,8 @@ static const CGFloat    kRowHeight  = 200.0;
     self.filteredPositions = self.allPositions;
 
     [self buildTagBar];
-    [self buildTableView];
+    [self buildScrollView];
+    [self rebuildCards];
 }
 
 #pragma mark - Tag bar
@@ -284,13 +231,11 @@ static const CGFloat    kRowHeight  = 200.0;
         [self.tagScrollView.trailingAnchor constraintEqualToAnchor:safe.trailingAnchor constant:-12.0],
         [self.tagScrollView.heightAnchor   constraintEqualToConstant:36.0],
 
-        // Stack pins to the scroll view's content layout guide on all sides.
-        // This defines the scrollable content width so it can scroll horizontally.
-        [self.tagStack.topAnchor      constraintEqualToAnchor:self.tagScrollView.contentLayoutGuide.topAnchor],
-        [self.tagStack.bottomAnchor   constraintEqualToAnchor:self.tagScrollView.contentLayoutGuide.bottomAnchor],
-        [self.tagStack.leadingAnchor  constraintEqualToAnchor:self.tagScrollView.contentLayoutGuide.leadingAnchor],
+        [self.tagStack.topAnchor     constraintEqualToAnchor:self.tagScrollView.contentLayoutGuide.topAnchor],
+        [self.tagStack.bottomAnchor  constraintEqualToAnchor:self.tagScrollView.contentLayoutGuide.bottomAnchor],
+        [self.tagStack.leadingAnchor constraintEqualToAnchor:self.tagScrollView.contentLayoutGuide.leadingAnchor],
         [self.tagStack.trailingAnchor constraintEqualToAnchor:self.tagScrollView.contentLayoutGuide.trailingAnchor],
-        [self.tagStack.heightAnchor   constraintEqualToAnchor:self.tagScrollView.frameLayoutGuide.heightAnchor],
+        [self.tagStack.heightAnchor  constraintEqualToAnchor:self.tagScrollView.frameLayoutGuide.heightAnchor],
     ]];
 
     NSMutableOrderedSet *tagSet = [NSMutableOrderedSet orderedSet];
@@ -309,8 +254,6 @@ static const CGFloat    kRowHeight  = 200.0;
     btn.titleLabel.font    = [UIFont systemFontOfSize:13.0 weight:UIFontWeightMedium];
     btn.layer.cornerRadius = 14.0;
     btn.layer.borderWidth  = 1.0;
-    // contentEdgeInsets is deprecated in iOS 15 but the configuration API
-    // would override the manual background/border styling in applyChipStyle:.
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
     btn.contentEdgeInsets  = UIEdgeInsetsMake(4, 12, 4, 12);
@@ -358,75 +301,96 @@ static const CGFloat    kRowHeight  = 200.0;
         ? self.allPositions
         : [self.allPositions filteredArrayUsingPredicate:
            [NSPredicate predicateWithFormat:@"tags CONTAINS %@", self.activeTag]];
-    [self.tableView reloadData];
+
+    [self rebuildCards];
 }
 
-#pragma mark - Table view
+#pragma mark - Scroll view + cards
 
-- (void)buildTableView
+- (void)buildScrollView
 {
-    self.tableView = [[UITableView alloc] initWithFrame:CGRectZero
-                                                  style:UITableViewStylePlain];
-    self.tableView.translatesAutoresizingMaskIntoConstraints = NO;
-    self.tableView.dataSource         = self;
-    self.tableView.delegate           = self;
-    self.tableView.rowHeight          = kRowHeight;
-    self.tableView.estimatedRowHeight = kRowHeight;
-    self.tableView.separatorInset     = UIEdgeInsetsMake(0, kBoardWidth + 16.0, 0, 0);
-    [self.tableView registerClass:[PositionBrowserCell class]
-           forCellReuseIdentifier:kCellID];
-    [self.view addSubview:self.tableView];
+    self.scrollView = [[UIScrollView alloc] init];
+    self.scrollView.translatesAutoresizingMaskIntoConstraints = NO;
+    [self.view addSubview:self.scrollView];
+
+    self.cardStack = [[UIStackView alloc] init];
+    self.cardStack.axis    = UILayoutConstraintAxisVertical;
+    self.cardStack.spacing = 0;
+    self.cardStack.translatesAutoresizingMaskIntoConstraints = NO;
+    [self.scrollView addSubview:self.cardStack];
 
     UILayoutGuide *safe = self.view.safeAreaLayoutGuide;
     [NSLayoutConstraint activateConstraints:@[
-        [self.tableView.topAnchor      constraintEqualToAnchor:self.tagScrollView.bottomAnchor
-                                                      constant:8.0],
-        [self.tableView.leadingAnchor  constraintEqualToAnchor:safe.leadingAnchor],
-        [self.tableView.trailingAnchor constraintEqualToAnchor:safe.trailingAnchor],
-        [self.tableView.bottomAnchor   constraintEqualToAnchor:safe.bottomAnchor],
+        [self.scrollView.topAnchor      constraintEqualToAnchor:self.tagScrollView.bottomAnchor
+                                                       constant:8.0],
+        [self.scrollView.leadingAnchor  constraintEqualToAnchor:safe.leadingAnchor],
+        [self.scrollView.trailingAnchor constraintEqualToAnchor:safe.trailingAnchor],
+        [self.scrollView.bottomAnchor   constraintEqualToAnchor:safe.bottomAnchor],
+
+        [self.cardStack.topAnchor      constraintEqualToAnchor:self.scrollView.contentLayoutGuide.topAnchor],
+        [self.cardStack.leadingAnchor  constraintEqualToAnchor:self.scrollView.contentLayoutGuide.leadingAnchor],
+        [self.cardStack.trailingAnchor constraintEqualToAnchor:self.scrollView.contentLayoutGuide.trailingAnchor],
+        [self.cardStack.bottomAnchor   constraintEqualToAnchor:self.scrollView.contentLayoutGuide.bottomAnchor],
+        [self.cardStack.widthAnchor    constraintEqualToAnchor:self.scrollView.frameLayoutGuide.widthAnchor],
     ]];
 }
 
-- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
+- (void)rebuildCards
 {
-    return (NSInteger)self.filteredPositions.count;
+    // Remove old cards
+    for (UIView *v in self.cardStack.arrangedSubviews)
+    {
+        [self.cardStack removeArrangedSubview:v];
+        [v removeFromSuperview];
+    }
+    [self.entryByPositionID removeAllObjects];
+
+    NSString *design = [Tools currentBoardDesign];
+
+    for (BGGPositionEntry *entry in self.filteredPositions)
+    {
+        self.entryByPositionID[entry.positionID] = entry;
+
+        BGGPositionCardView *card = [[BGGPositionCardView alloc]
+                                     initWithEntry:entry
+                                            design:design
+                                        editTarget:self
+                                        editAction:@selector(editButtonTapped:)
+                                      deleteTarget:self
+                                      deleteAction:@selector(deleteButtonTapped:)];
+        [self.cardStack addArrangedSubview:card];
+    }
 }
 
-- (UITableViewCell *)tableView:(UITableView *)tableView
-         cellForRowAtIndexPath:(NSIndexPath *)indexPath
+#pragma mark - Edit / Delete button callbacks
+
+- (void)editButtonTapped:(UIButton *)sender
 {
-    PositionBrowserCell *cell = [tableView dequeueReusableCellWithIdentifier:kCellID
-                                                                forIndexPath:indexPath];
-    BGGPositionEntry *entry = self.filteredPositions[(NSUInteger)indexPath.row];
-    [cell configureWithEntry:entry design:[Tools currentBoardDesign]];
-    cell.selectionStyle = UITableViewCellSelectionStyleNone;
-    return cell;
+    BGGPositionEntry *entry = self.entryByPositionID[sender.accessibilityIdentifier];
+    if (entry) { [self openEditorForEntry:entry]; }
 }
 
-// Tap → Edit
-- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
+- (void)deleteButtonTapped:(UIButton *)sender
 {
-    [tableView deselectRowAtIndexPath:indexPath animated:YES];
-    BGGPositionEntry *entry = self.filteredPositions[(NSUInteger)indexPath.row];
-    [self openEditorForEntry:entry];
+    BGGPositionEntry *entry = self.entryByPositionID[sender.accessibilityIdentifier];
+    if (!entry) { return; }
+
+    UIAlertController *alert = [UIAlertController
+        alertControllerWithTitle:@"Delete position?"
+                         message:entry.caption.length > 0 ? entry.caption : entry.positionID
+                  preferredStyle:UIAlertControllerStyleAlert];
+    [alert addAction:[UIAlertAction actionWithTitle:@"Cancel"
+                                              style:UIAlertActionStyleCancel handler:nil]];
+    [alert addAction:[UIAlertAction actionWithTitle:@"Delete"
+                                              style:UIAlertActionStyleDestructive
+                                            handler:^(UIAlertAction *a) {
+        [[PositionDatabase sharedDatabase] removeEntryWithPositionID:entry.positionID];
+        [self reloadData];
+    }]];
+    [self presentViewController:alert animated:YES completion:nil];
 }
 
-// Swipe to delete
-- (BOOL)tableView:(UITableView *)tableView
-canEditRowAtIndexPath:(NSIndexPath *)indexPath { return YES; }
-
-- (void)tableView:(UITableView *)tableView
-commitEditingStyle:(UITableViewCellEditingStyle)editingStyle
-forRowAtIndexPath:(NSIndexPath *)indexPath
-{
-    if (editingStyle != UITableViewCellEditingStyleDelete) { return; }
-
-    BGGPositionEntry *entry = self.filteredPositions[(NSUInteger)indexPath.row];
-    [[PositionDatabase sharedDatabase] removeEntryWithPositionID:entry.positionID];
-    [self reloadData];
-}
-
-#pragma mark - Add / Export
+#pragma mark - Add / Export / Reset
 
 - (void)addTapped
 {
@@ -448,42 +412,20 @@ forRowAtIndexPath:(NSIndexPath *)indexPath
 {
     UIAlertController *alert = [UIAlertController
         alertControllerWithTitle:@"Reset to bundle?"
-                         message:@"This deletes the local edits and reloads the "
-                                  "positions shipped with the app. Make sure you "
-                                  "have exported your changes first."
+                         message:@"This deletes your local edits and reloads the "
+                                  "positions shipped with the app. Export first if "
+                                  "you want to keep your changes."
                   preferredStyle:UIAlertControllerStyleAlert];
-
     [alert addAction:[UIAlertAction actionWithTitle:@"Cancel"
-                                              style:UIAlertActionStyleCancel
-                                            handler:nil]];
-
+                                              style:UIAlertActionStyleCancel handler:nil]];
     [alert addAction:[UIAlertAction actionWithTitle:@"Reset"
                                               style:UIAlertActionStyleDestructive
-                                            handler:^(UIAlertAction *action) {
+                                            handler:^(UIAlertAction *a) {
         [[PositionDatabase sharedDatabase] resetToBundle];
         [self reloadData];
         [self updateLeftBarButtons];
     }]];
-
     [self presentViewController:alert animated:YES completion:nil];
-}
-
-// Home button always; reset button added only in editing mode.
-- (void)updateLeftBarButtons
-{
-    [self installHomeButton];
-    UIBarButtonItem *homeItem = self.navigationItem.leftBarButtonItem;
-
-    if ([[PositionDatabase sharedDatabase] isEditingMode])
-    {
-        UIBarButtonItem *resetBtn = [[UIBarButtonItem alloc]
-                                     initWithImage:[UIImage systemImageNamed:@"arrow.counterclockwise"]
-                                             style:UIBarButtonItemStylePlain
-                                            target:self
-                                            action:@selector(resetTapped)];
-        resetBtn.tintColor = [UIColor colorNamed:@"AccentColor"];
-        self.navigationItem.leftBarButtonItems = @[homeItem, resetBtn];
-    }
 }
 
 - (void)openEditorForEntry:(nullable BGGPositionEntry *)entry
@@ -498,8 +440,25 @@ forRowAtIndexPath:(NSIndexPath *)indexPath
 - (void)editorDidSaveEntry:(BGGPositionEntry *)entry isNewEntry:(BOOL)isNew
 {
     [self reloadData];
-    // The first edit creates the Documents override – show the reset button.
     [self updateLeftBarButtons];
+}
+
+#pragma mark - Left bar buttons
+
+- (void)updateLeftBarButtons
+{
+    [self installHomeButton];
+    if ([[PositionDatabase sharedDatabase] isEditingMode])
+    {
+        UIBarButtonItem *homeItem = self.navigationItem.leftBarButtonItem;
+        UIBarButtonItem *resetBtn = [[UIBarButtonItem alloc]
+                                     initWithImage:[UIImage systemImageNamed:@"arrow.counterclockwise"]
+                                             style:UIBarButtonItemStylePlain
+                                            target:self
+                                            action:@selector(resetTapped)];
+        resetBtn.tintColor = [UIColor colorNamed:@"AccentColor"];
+        self.navigationItem.leftBarButtonItems = @[homeItem, resetBtn];
+    }
 }
 
 #pragma mark - Reload
@@ -507,16 +466,11 @@ forRowAtIndexPath:(NSIndexPath *)indexPath
 - (void)reloadData
 {
     self.allPositions = [[PositionDatabase sharedDatabase] allPositions];
-    if (self.activeTag)
-    {
-        self.filteredPositions = [self.allPositions filteredArrayUsingPredicate:
-            [NSPredicate predicateWithFormat:@"tags CONTAINS %@", self.activeTag]];
-    }
-    else
-    {
-        self.filteredPositions = self.allPositions;
-    }
-    [self.tableView reloadData];
+    self.filteredPositions = self.activeTag
+        ? [self.allPositions filteredArrayUsingPredicate:
+           [NSPredicate predicateWithFormat:@"tags CONTAINS %@", self.activeTag]]
+        : self.allPositions;
+    [self rebuildCards];
 }
 
 @end
