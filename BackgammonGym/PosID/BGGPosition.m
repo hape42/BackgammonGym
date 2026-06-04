@@ -11,13 +11,16 @@ static const char kBase64Chars[] =
     "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 
 // Position ID is 80 bits = 10 bytes = 14 Base64 chars (padding omitted).
+// Byte/char counts are #define rather than static const so they can be used
+// as C array sizes without triggering "variable length array folded to
+// constant array" warnings.
 static const NSInteger kPositionIDBits  = 80;
-static const NSInteger kPositionIDBytes = 10;
-static const NSInteger kPositionIDChars = 14;
+#define kPositionIDBytes  10
+#define kPositionIDChars  14
 
 // Match ID is 66 bits, stored in 9 bytes, encoded as 12 Base64 chars.
-static const NSInteger kMatchIDBytes = 9;
-static const NSInteger kMatchIDChars = 12;
+#define kMatchIDBytes      9
+#define kMatchIDChars     12
 
 @implementation BGGPosition
 

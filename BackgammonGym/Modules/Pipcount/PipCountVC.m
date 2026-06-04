@@ -71,8 +71,8 @@ static NSString * sectionSymbol(PipCountSection section)
 
     [self installHomeButton];
     [self setupContainerView];
-    [self setupMenuButton];
     [self showSection:PipCountSectionWarmup];
+    [self setupMenuButton];
 }
 
 #pragma mark - Container
@@ -96,15 +96,13 @@ static NSString * sectionSymbol(PipCountSection section)
 
 - (void)setupMenuButton
 {
-    UIBarButtonItem *item = [[UIBarButtonItem alloc]
-                             initWithImage:[UIImage systemImageNamed:@"list.bullet"]
-                                     style:UIBarButtonItemStylePlain
-                                    target:nil
-                                    action:nil];
-    item.menu = [self buildMenu];
-    item.primaryAction = nil;
-    item.tintColor = [UIColor colorNamed:@"AccentColor"];
+    UIButton *button = [UIButton buttonWithType:UIButtonTypeSystem];
+    [button setImage:[UIImage systemImageNamed:@"list.bullet"] forState:UIControlStateNormal];
+    button.tintColor = [UIColor colorNamed:@"AccentColor"];
+    button.menu = [self buildMenu];
+    button.showsMenuAsPrimaryAction = YES;
 
+    UIBarButtonItem *item = [[UIBarButtonItem alloc] initWithCustomView:button];
     self.navigationItem.rightBarButtonItem = item;
 }
 
@@ -173,7 +171,12 @@ static NSString * sectionSymbol(PipCountSection section)
     self.navigationItem.title = sectionTitle(section);
 
     // Rebuild the menu so the checkmark moves to the new section.
-    self.navigationItem.rightBarButtonItem.menu = [self buildMenu];
+    // The menu lives on the custom UIButton, not the bar button item.
+    if ([self.navigationItem.rightBarButtonItem.customView isKindOfClass:[UIButton class]])
+    {
+        UIButton *button = (UIButton *)self.navigationItem.rightBarButtonItem.customView;
+        button.menu = [self buildMenu];
+    }
 }
 
 - (UIViewController *)childForSection:(PipCountSection)section

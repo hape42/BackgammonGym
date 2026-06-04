@@ -11,6 +11,7 @@
 #import "BGGBoardGeometry.h"
 #import "Tools.h"
 #import "UIViewController+BGGHomeButton.h"
+#import "BGGPositionEditorVC.h"
 
 static NSString * const kCellID     = @"PositionCell";
 static const CGFloat    kBoardWidth = 240.0;
@@ -217,7 +218,8 @@ static const CGFloat    kRowHeight  = 200.0;
 
 // MARK: - ViewController
 
-@interface PositionBrowserVC () <UITableViewDataSource, UITableViewDelegate>
+@interface PositionBrowserVC () <UITableViewDataSource, UITableViewDelegate,
+                                  BGGPositionEditorDelegate>
 @property (nonatomic, strong) UIScrollView                *tagScrollView;
 @property (nonatomic, strong) UIStackView                 *tagStack;
 @property (nonatomic, strong) UITableView                 *tableView;
@@ -234,8 +236,27 @@ static const CGFloat    kRowHeight  = 200.0;
     self.view.backgroundColor = [UIColor systemBackgroundColor];
     self.title = @"Positions";
     [self installHomeButton];
+
+    // Add button (right)
+    UIBarButtonItem *addBtn = [[UIBarButtonItem alloc]
+                               initWithBarButtonSystemItem:UIBarButtonSystemItemAdd
+                                                   target:self
+                                                   action:@selector(addTapped)];
+    addBtn.tintColor = [UIColor colorNamed:@"AccentColor"];
+
+    // Export button (right, next to Add)
+    UIBarButtonItem *exportBtn = [[UIBarButtonItem alloc]
+                                  initWithImage:[UIImage systemImageNamed:@"square.and.arrow.up"]
+                                          style:UIBarButtonItemStylePlain
+                                         target:self
+                                         action:@selector(exportTapped)];
+    exportBtn.tintColor = [UIColor colorNamed:@"AccentColor"];
+
+    self.navigationItem.rightBarButtonItems = @[addBtn, exportBtn];
+
     self.allPositions      = [[PositionDatabase sharedDatabase] allPositions];
     self.filteredPositions = self.allPositions;
+
     [self buildTagBar];
     [self buildTableView];
 }
@@ -287,7 +308,12 @@ static const CGFloat    kRowHeight  = 200.0;
     btn.titleLabel.font    = [UIFont systemFontOfSize:13.0 weight:UIFontWeightMedium];
     btn.layer.cornerRadius = 14.0;
     btn.layer.borderWidth  = 1.0;
+    // contentEdgeInsets is deprecated in iOS 15 but the configuration API
+    // would override the manual background/border styling in applyChipStyle:.
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
     btn.contentEdgeInsets  = UIEdgeInsetsMake(4, 12, 4, 12);
+#pragma clang diagnostic pop
     btn.accessibilityIdentifier = tag ?: @"";
     [btn addTarget:self action:@selector(tagChipTapped:)
   forControlEvents:UIControlEventTouchUpInside];
@@ -374,6 +400,78 @@ static const CGFloat    kRowHeight  = 200.0;
     [cell configureWithEntry:entry design:[Tools currentBoardDesign]];
     cell.selectionStyle = UITableViewCellSelectionStyleNone;
     return cell;
+}
+
+// Tap → Edit
+- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    [tableView deselectRowAtIndexPath:indexPath animated:YES];
+    BGGPositionEntry *entry = self.filteredPositions[(NSUInteger)indexPath.row];
+    [self openEditorForEntry:entry];
+}
+
+// Swipe to delete
+- (BOOL)tableView:(UITableView *)tableView
+canEditRowAtIndexPath:(NSIndexPath *)indexPath { return YES; }
+
+- (void)tableView:(UITableView *)tableView
+commitEditingStyle:(UITableViewCellEditingStyle)editingStyle
+forRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    if (editingStyle != UITableViewCellEditingStyleDelete) { return; }
+
+    BGGPositionEntry *entry = self.filteredPositions[(NSUInteger)indexPath.row];
+    [[PositionDatabase sharedDatabase] removeEntryWithPositionID:entry.positionID];
+    [self reloadData];
+}
+
+#pragma mark - Add / Export
+
+- (void)addTapped
+{
+    [self openEditorForEntry:nil];
+}
+
+- (void)exportTapped
+{
+    NSURL *url = [[PositionDatabase sharedDatabase] documentsJSONURL];
+    UIActivityViewController *share = [[UIActivityViewController alloc]
+                                       initWithActivityItems:@[url]
+                                       applicationActivities:nil];
+    share.popoverPresentationController.barButtonItem =
+        self.navigationItem.rightBarButtonItems.firstObject;
+    [self presentViewController:share animated:YES completion:nil];
+}
+
+- (void)openEditorForEntry:(nullable BGGPositionEntry *)entry
+{
+    BGGPositionEditorVC *editor = [[BGGPositionEditorVC alloc] initWithEntry:entry];
+    editor.delegate = self;
+    [self.navigationController pushViewController:editor animated:YES];
+}
+
+#pragma mark - BGGPositionEditorDelegate
+
+- (void)editorDidSaveEntry:(BGGPositionEntry *)entry isNewEntry:(BOOL)isNew
+{
+    [self reloadData];
+}
+
+#pragma mark - Reload
+
+- (void)reloadData
+{
+    self.allPositions = [[PositionDatabase sharedDatabase] allPositions];
+    if (self.activeTag)
+    {
+        self.filteredPositions = [self.allPositions filteredArrayUsingPredicate:
+            [NSPredicate predicateWithFormat:@"tags CONTAINS %@", self.activeTag]];
+    }
+    else
+    {
+        self.filteredPositions = self.allPositions;
+    }
+    [self.tableView reloadData];
 }
 
 @end

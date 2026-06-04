@@ -5,7 +5,6 @@
 
 #import "BGGBoardStyleCell.h"
 
-static const CGFloat kCellHeight    = 100.0;
 static const CGFloat kPreviewHeight = 90.0;   // board preview image height
 static const CGFloat kPadding       = 8.0;
 
