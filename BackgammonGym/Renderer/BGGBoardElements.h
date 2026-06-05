@@ -38,15 +38,6 @@ typedef NS_ENUM(NSInteger, BGGPointShade)
     BGGPointShadeLight = 1,
 };
 
-// Off-checker stacking direction.
-typedef NS_ENUM(NSInteger, BGGOffDirection)
-{
-    BGGOffDirectionTop    = 0,
-    BGGOffDirectionBottom = 1,
-    BGGOffDirectionAll    = 2,
-};
-
-
 @interface BGGBoardElements : NSObject
 
 // Designated initializer. schema is the board design number (4, 5, 6, ...).
@@ -55,17 +46,15 @@ typedef NS_ENUM(NSInteger, BGGOffDirection)
 
 @property (nonatomic, readonly) NSInteger schema;
 
-// Returns the board background image for this schema, or nil for schema <= 4
-// (which use backgroundColor instead).
+// Returns the board background image for this schema, or nil if none exists
+// (the caller then uses ColorBoard as a plain background).
 - (nullable UIImage *)boardBackgroundImage;
 
 // Returns the named color asset for this schema.
 // Handles the namespace prefix automatically: "4/ColorBoard" etc.
 - (nullable UIColor *)colorNamed:(NSString *)name;
 
-// Returns a fully composited tongue image including checkers.
-// For schema <= 4 this is a direct asset lookup.
-// For schema >= 5 this is drawn at runtime.
+// Returns a fully composited tongue image including checkers, drawn at runtime.
 - (nullable UIImage *)pointImageForShade:(BGGPointShade)shade
                                direction:(BGGPointDirection)direction
                             checkerColor:(BGGCheckerColor)color
@@ -76,10 +65,8 @@ typedef NS_ENUM(NSInteger, BGGOffDirection)
 - (nullable UIImage *)barImageForCheckerColor:(BGGCheckerColor)color
                                  checkerCount:(NSInteger)count;
 
-// Returns an off-checker image.
-- (nullable UIImage *)offImageForCheckerColor:(BGGCheckerColor)color
-                                    direction:(BGGOffDirection)direction
-                                 checkerCount:(NSInteger)count;
+// Returns a single lying-down off checker. The caller stacks as many as needed.
+- (nullable UIImage *)offCheckerImageForColor:(BGGCheckerColor)color;
 
 @end
 

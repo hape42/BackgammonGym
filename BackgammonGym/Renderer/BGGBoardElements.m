@@ -6,7 +6,8 @@
 #import "BGGBoardElements.h"
 
 // These match the constants I used in DailyGammon.
-static const NSInteger kSchemaDrawThreshold = 5;   // schema >= 5 draws at runtime
+// Schema 4 was rebuilt to work like schema 5+, so all schemas now draw at
+// runtime and there is no longer a pre-rendered-PNG special case.
 static const CGFloat   kNativeCheckerSize   = 50.0; // checker PNG is 50x50 in native coords
 
 @implementation BGGBoardElements
@@ -33,11 +34,9 @@ static const CGFloat   kNativeCheckerSize   = 50.0; // checker PNG is 50x50 in n
 
 #pragma mark - Background
 
-// Schema >= 5 may ship a background image that covers the playing field.
-// Schema <= 4 use a plain backgroundColor, so this returns nil for them.
+// All schemas ship a background image that covers the playing field.
 - (nullable UIImage *)boardBackgroundImage
 {
-    if (_schema < kSchemaDrawThreshold) { return nil; }
     NSString *name = [NSString stringWithFormat:@"%ld/background", (long)_schema];
     return [UIImage imageNamed:name];
 }
@@ -50,49 +49,15 @@ static const CGFloat   kNativeCheckerSize   = 50.0; // checker PNG is 50x50 in n
                             checkerCount:(NSInteger)count
                               pointIndex:(NSInteger)pointIndex
 {
-    if (_schema < kSchemaDrawThreshold)
-    {
-        // Schema <= 4: one pre-rendered PNG covers tongue + checkers.
-        return [UIImage imageNamed:[self pointAssetNameForShade:shade
-                                                     direction:direction
-                                                  checkerColor:color
-                                                  checkerCount:count]];
-    }
-    else
-    {
-        // Schema >= 5: draw tongue and checkers separately at runtime.
-        return [self drawPointForShade:shade
-                             direction:direction
-                          checkerColor:color
-                          checkerCount:count
-                            pointIndex:pointIndex];
-    }
+    // All schemas draw tongue and checkers separately at runtime.
+    return [self drawPointForShade:shade
+                         direction:direction
+                      checkerColor:color
+                      checkerCount:count
+                        pointIndex:pointIndex];
 }
 
-// Builds the asset name for schema <= 4, e.g. "4/pt_lt_down_b7".
-- (NSString *)pointAssetNameForShade:(BGGPointShade)shade
-                           direction:(BGGPointDirection)direction
-                        checkerColor:(BGGCheckerColor)color
-                        checkerCount:(NSInteger)count
-{
-    NSString *shadeStr = (shade == BGGPointShadeLight) ? @"lt" : @"dk";
-    NSString *dirStr   = (direction == BGGPointDirectionDown) ? @"down" : @"up";
-
-    NSString *base;
-    if (count == 0)
-    {
-        base = [NSString stringWithFormat:@"pt_%@_%@0", shadeStr, dirStr];
-    }
-    else
-    {
-        NSString *colorStr = (color == BGGCheckerColorDark) ? @"b" : @"y";
-        base = [NSString stringWithFormat:@"pt_%@_%@_%@%ld",
-                shadeStr, dirStr, colorStr, (long)count];
-    }
-    return [NSString stringWithFormat:@"%ld/%@", (long)_schema, base];
-}
-
-// Draws a point (tongue + checkers) at runtime for schema >= 5.
+// Draws a point (tongue + checkers) at runtime.
 // Mirrors the logic from drawPointForSchema:... in DailyGammon.
 - (nullable UIImage *)drawPointForShade:(BGGPointShade)shade
                               direction:(BGGPointDirection)direction
@@ -191,21 +156,11 @@ static const CGFloat   kNativeCheckerSize   = 50.0; // checker PNG is 50x50 in n
 - (nullable UIImage *)barImageForCheckerColor:(BGGCheckerColor)color
                                  checkerCount:(NSInteger)count
 {
-    if (_schema < kSchemaDrawThreshold)
-    {
-        // Schema <= 4: pre-rendered asset.
-        NSString *colorStr = (color == BGGCheckerColorDark) ? @"b" : @"y";
-        NSString *name = [NSString stringWithFormat:@"%ld/bar_%@%ld",
-                          (long)_schema, colorStr, (long)count];
-        return [UIImage imageNamed:name];
-    }
-    else
-    {
-        return [self drawBarForCheckerColor:color checkerCount:count];
-    }
+    // All schemas draw the bar checker stack at runtime.
+    return [self drawBarForCheckerColor:color checkerCount:count];
 }
 
-// Draws a bar checker stack at runtime for schema >= 5.
+// Draws a bar checker stack at runtime.
 - (nullable UIImage *)drawBarForCheckerColor:(BGGCheckerColor)color
                                 checkerCount:(NSInteger)count
 {
@@ -241,77 +196,14 @@ static const CGFloat   kNativeCheckerSize   = 50.0; // checker PNG is 50x50 in n
 
 #pragma mark - Off image
 
-- (nullable UIImage *)offImageForCheckerColor:(BGGCheckerColor)color
-                                    direction:(BGGOffDirection)direction
-                                 checkerCount:(NSInteger)count
+// Returns a single lying-down off checker (the off_dark / off_light asset).
+// The caller (BGGBoardView) stacks as many as needed, one per slot.
+- (nullable UIImage *)offCheckerImageForColor:(BGGCheckerColor)color
 {
-    if (_schema < kSchemaDrawThreshold)
-    {
-        // Schema <= 4: pre-rendered asset, e.g. "4/off_b2_top".
-        NSString *colorStr = (color == BGGCheckerColorDark) ? @"b" : @"y";
-        NSString *dirStr;
-        switch (direction)
-        {
-            case BGGOffDirectionTop:    dirStr = @"top"; break;
-            case BGGOffDirectionBottom: dirStr = @"bot"; break;
-            default:                    dirStr = nil;    break;
-        }
-
-        NSString *name;
-        if (dirStr != nil)
-        {
-            name = [NSString stringWithFormat:@"%ld/off_%@%ld_%@",
-                    (long)_schema, colorStr, (long)count, dirStr];
-        }
-        else
-        {
-            // off_b5 / off_y5 – combined image for >= 5.
-            name = [NSString stringWithFormat:@"%ld/off_%@5", (long)_schema, colorStr];
-        }
-        return [UIImage imageNamed:name];
-    }
-    else
-    {
-        return [self drawOffForCheckerColor:color direction:direction checkerCount:count];
-    }
-}
-
-// Draws off-checkers at runtime for schema >= 5.
-- (nullable UIImage *)drawOffForCheckerColor:(BGGCheckerColor)color
-                                   direction:(BGGOffDirection)direction
-                                checkerCount:(NSInteger)count
-{
-    CGFloat w = kNativeCheckerSize;
-    UIView *offView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, 230.0, 350.0)];
-
-    NSString *checkerName = (color == BGGCheckerColorDark)
+    NSString *name = (color == BGGCheckerColorDark)
         ? [NSString stringWithFormat:@"%ld/off_dark",  (long)_schema]
         : [NSString stringWithFormat:@"%ld/off_light", (long)_schema];
-
-    for (NSInteger i = 0; i < count; i++)
-    {
-        UIImageView *iv = [[UIImageView alloc]
-                           initWithImage:[UIImage imageNamed:checkerName]];
-        CGRect f = iv.frame;
-        f.origin.x = 15.0;
-        switch (direction)
-        {
-            case BGGOffDirectionBottom:
-                f.origin.y = offView.frame.size.height - 100.0 - (CGFloat)i * w;
-                break;
-            case BGGOffDirectionTop:
-                f.origin.y = w + (CGFloat)i * w;
-                break;
-            case BGGOffDirectionAll:
-            default:
-                f.origin.y = w + (CGFloat)i * w;
-                break;
-        }
-        iv.frame = f;
-        [offView addSubview:iv];
-    }
-
-    return [self imageFromView:offView];
+    return [UIImage imageNamed:name];
 }
 
 #pragma mark - Utilities

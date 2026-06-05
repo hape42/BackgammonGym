@@ -7,7 +7,6 @@
 #import "BGGBoardState.h"
 #import "BGGBoardGeometry.h"
 #import "BGGBoardElements.h"
-#import "Tools.h"
 
 @interface BGGBoardView ()
 @property (nonatomic, strong) BGGBoardElements *elements;
@@ -39,7 +38,7 @@
 
 - (void)commonInit
 {
-    _boardDesign       = [Tools currentBoardDesign];
+    _boardDesign       = @"4";
     _showsPointNumbers = NO;
     _showsCube         = YES;
     _showsDice         = YES;
@@ -476,51 +475,36 @@
     }
 }
 
-// Bear-off checkers use the off_* images which show checkers lying on their side.
+// Bear-off checkers are shown edge-on: each off_dark / off_light asset is a
+// flat horizontal bar (native 230x50). I keep its aspect ratio, fit the width
+// to the cube area, and stack the checkers from the outside in.
 - (void)drawOffStack:(NSInteger)count
               isBlue:(BOOL)isBlue
          inUpperHalf:(BOOL)upper
                scale:(CGFloat)scale
               origin:(CGPoint)origin
 {
-    BGGCheckerColor  color = isBlue ? BGGCheckerColorDark : BGGCheckerColorLight;
-    BGGOffDirection  dir   = upper ? BGGOffDirectionTop : BGGOffDirectionBottom;
-    CGFloat slotH = kBGGPointsHeight / 5.0;
-    CGFloat nativeX = kBGGCubeAreaX + (kBGGCubeWidth - kBGGCheckerWidth) / 2.0;
+    BGGCheckerColor color = isBlue ? BGGCheckerColorDark : BGGCheckerColorLight;
+    UIImage *checker = [self.elements offCheckerImageForColor:color];
+    if (checker == nil) { return; }
 
-    NSInteger visible = MIN(count, 4);
-    for (NSInteger i = 1; i <= visible; i++)
+    // Width fills the cube area; height follows the asset's aspect ratio.
+    CGFloat barW = kBGGCubeWidth - 10.0;                          // small inset
+    CGFloat barH = barW * (checker.size.height / checker.size.width);
+    CGFloat nativeX = kBGGCubeAreaX + (kBGGCubeWidth - barW) / 2.0;
+
+    for (NSInteger i = 0; i < count; i++)
     {
-        UIImage *img = [self.elements offImageForCheckerColor:color
-                                                    direction:dir
-                                                 checkerCount:i];
+        // Upper player stacks downward from the top edge,
+        // lower player upward from the bottom edge.
         CGFloat nativeY = upper
-            ? kBGGTopTongueY + (CGFloat)(i - 1) * slotH
-            : kBGGBoardHeight - kBGGNumberHeight - (CGFloat)i * slotH;
+            ? kBGGNumberHeight + (CGFloat)i * barH
+            : kBGGBoardHeight - kBGGNumberHeight - (CGFloat)(i + 1) * barH;
 
-        CGRect frame = [self scaleRect:CGRectMake(nativeX, nativeY,
-                                                   kBGGCheckerWidth, slotH)
+        CGRect frame = [self scaleRect:CGRectMake(nativeX, nativeY, barW, barH)
                                  scale:scale origin:origin];
         UIImageView *iv = [[UIImageView alloc] initWithFrame:frame];
-        iv.image = img;
-        iv.contentMode = UIViewContentModeScaleToFill;
-        [self addSubview:iv];
-    }
-
-    if (count >= 5)
-    {
-        UIImage *img = [self.elements offImageForCheckerColor:color
-                                                    direction:BGGOffDirectionAll
-                                                 checkerCount:5];
-        CGFloat nativeY = upper
-            ? kBGGTopTongueY
-            : kBGGBoardHeight - kBGGNumberHeight - slotH;
-
-        CGRect frame = [self scaleRect:CGRectMake(nativeX, nativeY,
-                                                   kBGGCheckerWidth, slotH)
-                                 scale:scale origin:origin];
-        UIImageView *iv = [[UIImageView alloc] initWithFrame:frame];
-        iv.image = img;
+        iv.image       = checker;
         iv.contentMode = UIViewContentModeScaleToFill;
         [self addSubview:iv];
     }

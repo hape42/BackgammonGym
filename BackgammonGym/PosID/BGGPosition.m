@@ -330,7 +330,51 @@ static void writeBits(uint8_t *bytes, NSInteger bitPos, NSUInteger val, NSIntege
         [self applyMatchID:matchID toBoardState:board];
     }
 
+    // The Position ID always encodes the on-roll player first.
+    // BGBlitz exports from the perspective of the player on roll.
+    // If Yellow is on roll, the board is from Yellow's perspective,
+    // so Blue and Yellow are swapped – we need to flip the board
+    // so that our user (Blue) always sits at the bottom.
+    if (board.onRoll == BGGPlayerYellow)
+    {
+        [self flipBoard:board];
+    }
+
     return board;
+}
+
+// Swaps Blue and Yellow, mirrors point numbers.
+// Used to normalise boards exported from Yellow's perspective.
++ (void)flipBoard:(BGGBoardState *)board
+{
+    // Mirror checker positions: point p ↔ point (25 - p)
+    NSInteger tmp[25];  // 1-based, index 1..24
+    for (NSInteger p = 1; p <= 24; p++)
+    {
+        tmp[p] = [board checkersOnPoint:p];
+    }
+    for (NSInteger p = 1; p <= 24; p++)
+    {
+        // Negate because Blue↔Yellow are stored as positive↔negative
+        [board setCheckers:-tmp[25 - p] onPoint:p];
+    }
+
+    // Swap bar
+    NSInteger tmpBar  = board.barBlue;
+    board.barBlue     = board.barYellow;
+    board.barYellow   = tmpBar;
+
+    // Swap off
+    NSInteger tmpOff  = board.offBlue;
+    board.offBlue     = board.offYellow;
+    board.offYellow   = tmpOff;
+
+    // Swap cube owner
+    if (board.cubeOwner == BGGPlayerBlue)        board.cubeOwner = BGGPlayerYellow;
+    else if (board.cubeOwner == BGGPlayerYellow) board.cubeOwner = BGGPlayerBlue;
+
+    // onRoll is now Blue (we normalised to Blue's perspective)
+    board.onRoll = BGGPlayerBlue;
 }
 
 // MARK: - Position ID encode
