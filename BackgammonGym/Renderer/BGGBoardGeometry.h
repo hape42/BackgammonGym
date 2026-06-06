@@ -71,4 +71,19 @@ static inline CGFloat BGGTongueLeftX(NSInteger slot)
     return kBGGRightHalfX + (CGFloat)(slot - 6) * kBGGCheckerWidth;
 }
 
+// ── Off tray inner area (the light recess that holds borne-off checkers) ──
+//
+//  A real board's off tray is exactly as tall as the tongue area and holds
+//  exactly 15 checkers. So the tray height equals kBGGPointsHeight and each
+//  borne-off checker is kBGGPointsHeight / 15 tall.
+//  There are two trays, aligned vertically with the upper and lower tongues.
+//  Horizontally the tray is one checker wide, centred in the cube strip.
+
+static const CGFloat kBGGOffTrayWidth  = kBGGCheckerWidth;                       // 40
+static const CGFloat kBGGOffTrayX      = kBGGCubeAreaX + (kBGGCubeWidth - kBGGCheckerWidth) / 2.0;  // centred
+static const CGFloat kBGGOffTrayHeight = kBGGPointsHeight;                       // 200, holds 15
+
+static const CGFloat kBGGOffTopTrayY    = kBGGTopTongueY;     // aligns with upper tongues
+static const CGFloat kBGGOffBottomTrayY = kBGGBottomTongueY;  // aligns with lower tongues
+
 #endif /* BGGBoardGeometry_h */

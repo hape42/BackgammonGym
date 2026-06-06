@@ -475,33 +475,34 @@
     }
 }
 
-// Bear-off checkers are shown edge-on: each off_dark / off_light asset is a
-// flat horizontal bar (native 230x50). I keep its aspect ratio, fit the width
-// to the cube area, and stack the checkers from the outside in.
+// Bear-off checkers are shown edge-on as flat horizontal bars.
+// A real off tray holds exactly 15 checkers over the tongue height, so each
+// checker is kBGGOffTrayHeight / 15 tall. The upper tray holds the opponent's
+// checkers, the lower tray mine; both fill from the board edge inward.
 - (void)drawOffStack:(NSInteger)count
               isBlue:(BOOL)isBlue
          inUpperHalf:(BOOL)upper
                scale:(CGFloat)scale
               origin:(CGPoint)origin
 {
+    if (count <= 0) { return; }
+
     BGGCheckerColor color = isBlue ? BGGCheckerColorDark : BGGCheckerColorLight;
     UIImage *checker = [self.elements offCheckerImageForColor:color];
     if (checker == nil) { return; }
 
-    // Width fills the cube area; height follows the asset's aspect ratio.
-    CGFloat barW = kBGGCubeWidth - 10.0;                          // small inset
-    CGFloat barH = barW * (checker.size.height / checker.size.width);
-    CGFloat nativeX = kBGGCubeAreaX + (kBGGCubeWidth - barW) / 2.0;
+    CGFloat barW  = kBGGOffTrayWidth;
+    CGFloat barH  = kBGGOffTrayHeight / 15.0;
+    CGFloat trayY = upper ? kBGGOffTopTrayY : kBGGOffBottomTrayY;
 
     for (NSInteger i = 0; i < count; i++)
     {
-        // Upper player stacks downward from the top edge,
-        // lower player upward from the bottom edge.
+        // Upper tray fills top-down, lower tray bottom-up.
         CGFloat nativeY = upper
-            ? kBGGNumberHeight + (CGFloat)i * barH
-            : kBGGBoardHeight - kBGGNumberHeight - (CGFloat)(i + 1) * barH;
+            ? trayY + (CGFloat)i * barH
+            : trayY + kBGGOffTrayHeight - (CGFloat)(i + 1) * barH;
 
-        CGRect frame = [self scaleRect:CGRectMake(nativeX, nativeY, barW, barH)
+        CGRect frame = [self scaleRect:CGRectMake(kBGGOffTrayX, nativeY, barW, barH)
                                  scale:scale origin:origin];
         UIImageView *iv = [[UIImageView alloc] initWithFrame:frame];
         iv.image       = checker;
