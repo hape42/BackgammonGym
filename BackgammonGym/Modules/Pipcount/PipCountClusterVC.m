@@ -80,22 +80,11 @@ static NSString * const kPlaceholderID = @"4HPwATDgc/ABMA";
     // via the position ID. Replace each ID below with the real one from your
     // JSON. Caption and explanation come from the entry, not from code.
     BGGBoardCard *rp1 = [self cardForPositionID:@"AAAAsG0DAAAAAA:cAnkAAAAEAAE"];
+    BGGBoardCard *rp2 = [self cardForPositionID:@"AAAAtm0DAAAAAA:cIkoARAAAAAE"];
+    BGGBoardCard *rp3 = [self cardForPositionID:@"AAAAwOcDAAAAAA:cIkoARAAAAAE"];
+    BGGBoardCard *rp4 = [self cardForPositionID:@"AAAAgA0AAAAAAA:cIkoARAAAAAE"];
+    BGGBoardCard *rp5 = [self cardForPositionID:@"AAAAAB8AAAAAAA:cIkoARAAAAAE"];
 
-    BGGBoardCard *rp2 = [self placeholderCard:@"RP 2 – Closed Board"
-        explanation:@"The standard 6-point prime plus two checkers on the ace point → 42. "
-                    @"Think of it as a 5-prime around point 4 (count = 40) plus 2."];
-
-    BGGBoardCard *rp3 = [self placeholderCard:@"RP 3 – Five and Eight"
-        explanation:@"Five checkers each on points 6 and 8 → 70. "
-                    @"A useful pattern in your home board."];
-
-    BGGBoardCard *rp4 = [self placeholderCard:@"RP 4 – Seven and Eight"
-        explanation:@"Two checkers each on points 7 and 8 → 30. "
-                    @"A compact cluster that comes up often."];
-
-    BGGBoardCard *rp5 = [self placeholderCard:@"RP 5 – Five on Eight"
-        explanation:@"Five checkers on point 8 → 40. "
-                    @"Simple, but worth memorizing as a standalone cluster."];
 
     BGGBoardCard *rp6 = [self placeholderCard:@"RP 6 – Midpoint and Bar"
         explanation:@"Two checkers each on the midpoint (13) and the opponent's bar point (18) → 62. "

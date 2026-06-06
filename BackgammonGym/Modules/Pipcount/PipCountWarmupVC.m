@@ -11,6 +11,7 @@
 #import "PipCountWarmupVC.h"
 #import "BGGBoardCard.h"
 #import "BGGPosition.h"
+#import "PositionDatabase.h"
 
 @interface PipCountWarmupVC ()
 @property (nonatomic, strong) UIScrollView *scrollView;
@@ -88,10 +89,13 @@
     [self.contentView addSubview:card2];
 
     // ── Board 3:  ──────────────────────────────────────────────
+    BGGPositionEntry *entry = [[PositionDatabase sharedDatabase]
+                               entryForPositionID:@"22aICAbG3j0AAA:MAEAAAAAAAAA"];
+
     BGGBoardCard *card3 = [[BGGBoardCard alloc]
-                           initWithCaption:@"A typical holding game"
-                           explanationText:@"Pipcount Player 1: 113 pips - Player 2 : 91 pips"
-                            boardState:[BGGPosition boardStateFromPositionID:@"22aICAbG3j0AAA:MAEgAUAACAAE"]];
+                           initWithCaption:entry.caption
+                           explanationText:entry.text
+                                boardState:[entry boardState]];
     card3.isPlaceholder = NO;
     card3.translatesAutoresizingMaskIntoConstraints = NO;
     [self.contentView addSubview:card3];

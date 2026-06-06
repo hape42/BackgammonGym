@@ -337,8 +337,10 @@
 
 - (void)rebuildCards
 {
-    // Remove old cards
-    for (UIView *v in self.cardStack.arrangedSubviews)
+    // Remove old cards. Copy the array first – removing while iterating over
+    // arrangedSubviews skips elements and leaves stale cards behind.
+    NSArray *oldCards = [self.cardStack.arrangedSubviews copy];
+    for (UIView *v in oldCards)
     {
         [self.cardStack removeArrangedSubview:v];
         [v removeFromSuperview];

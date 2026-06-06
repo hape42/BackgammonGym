@@ -5,8 +5,7 @@
       "id" : "4HPwATDgc\/ABMA:QYkqASAAIAAA",
       "tags" : [
         "race",
-        "pipcount",
-        "cluster"
+        "pipcount"
       ],
       "caption" : "Starting position",
       "note" : "Standard starting position",
@@ -18,7 +17,8 @@
       "tags" : [
         "bearoff",
         "pipcount",
-        "cluster"
+        "cluster",
+        "training"
       ],
       "caption" : "A typical bear off position",
       "note" : "",
@@ -31,22 +31,67 @@
         "holding",
         "cluster",
         "pipcount",
-        "contact"
+        "contact",
+        "training"
       ],
       "caption" : "Typical Holding game",
-      "note" : "",
-      "text" : "Pipcount Player 1: 113 pips - Player 2: 91 pips"
+      "note" : "Test",
+      "text" : "My checker: I know there are 42 pips on the closed board. Two checker are missing on the 5th, so 32 pips. 1 checker on the 10th. That makes 42. 2 checker on the 21st = 42. That makes 84. 1 checker on the 16th, that makes 100, + 1 checker on the 13th = total 113\n\nThere are certainly several ways to count the opponent’s checker. For example, I mentally move the checker from 8 and 6 to 7, giving 11 × 7 = 77. \n2 checker on 5 = 87. \n2 checker on 2 = 91.\n\nWith a little practice, counting a position like this takes less than 5 seconds.\n"
     },
     {
       "difficulty" : 1,
       "id" : "AAAAsG0DAAAAAA:cAnkAAAAEAAE",
       "tags" : [
-        "cluster",
-        "pipcount"
+        "pipcount",
+        "cluster"
       ],
       "caption" : "Reference Position 1:  5-Prime",
       "note" : "",
-      "text" : "Multiply the midpoint of any 5-prime by 10 and you have just counted a cluster of ten checkers.\\n This position shows a 5-prime from the 4-point to the 8-point.\n\\n \\n The 6-point is the midpoint and the count for these ten checkers = 60 pips (6 × 10.) This is so because 5's and 7's average out to 6's, and 4's and 8's also average out to 6's.\n\n\\n \\n PipCount = 60."
+      "text" : "Multiply the midpoint of any 5-prime by 10 and you have just counted a cluster of ten checkers.\\n This position shows a 5-prime from the 4-point to the 8-point.\nThe 6-point is the midpoint and the count for these ten checkers = 60 pips (6 × 10.) This is so because 5's and 7's average out to 6's, and 4's and 8's also average out to 6's.\n\nPipCount = 60."
+    },
+    {
+      "difficulty" : 1,
+      "id" : "AAAAtm0DAAAAAA:cIkoARAAAAAE",
+      "tags" : [
+        "pipcount",
+        "cluster"
+      ],
+      "caption" : "Reference Position 2:  Closed Board",
+      "note" : "",
+      "text" : "This is just a 5-prime around the 4-point plus two checkers on the ace point.\n\nPipCount = 42."
+    },
+    {
+      "difficulty" : 1,
+      "id" : "AAAAwOcDAAAAAA:cIkoARAAAAAE",
+      "tags" : [
+        "cluster",
+        "pipcount"
+      ],
+      "caption" : "Reference Position 3",
+      "note" : "",
+      "text" : "Five checkers each on the 6- and 8-points.\n\nPipCount = 70."
+    },
+    {
+      "difficulty" : 1,
+      "id" : "AAAAgA0AAAAAAA:cIkoARAAAAAE",
+      "tags" : [
+        "cluster",
+        "pipcount"
+      ],
+      "caption" : "Reference Position 4",
+      "note" : "",
+      "text" : "Two checkers each on the 7- and 8-points.\n\nPipCount = 30."
+    },
+    {
+      "difficulty" : 1,
+      "id" : "AAAAAB8AAAAAAA:cIkoARAAAAAE",
+      "tags" : [
+        "cluster",
+        "pipcount"
+      ],
+      "caption" : "Reference Position 5",
+      "note" : "",
+      "text" : "Five checkers on the 8-point.\n\nPipCount = 40."
     }
   ]
 }
