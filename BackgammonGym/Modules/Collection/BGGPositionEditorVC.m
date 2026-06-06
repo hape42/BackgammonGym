@@ -9,7 +9,6 @@
 #import "BGGPosition.h"
 #import "BGGBoardState.h"
 #import "Tools.h"
-#import "UIViewController+BGGHomeButton.h"
 
 static const NSUInteger kMaxTags = 5;
 
@@ -85,7 +84,6 @@ static NSArray<NSString *> * defaultTags(void)
     self.view.backgroundColor = [UIColor systemGroupedBackgroundColor];
     self.title = self.isNewEntry ? @"Add Position" : @"Edit Position";
 
-    [self installHomeButton];
     [self setupNavigationButtons];
     [self buildUI];
     [self populateFields];
@@ -97,12 +95,25 @@ static NSArray<NSString *> * defaultTags(void)
 
 - (void)setupNavigationButtons
 {
+    UIBarButtonItem *cancel = [[UIBarButtonItem alloc]
+                               initWithBarButtonSystemItem:UIBarButtonSystemItemCancel
+                                                   target:self
+                                                   action:@selector(cancelTapped)];
+    cancel.tintColor = [UIColor colorNamed:@"AccentColor"];
+    self.navigationItem.leftBarButtonItem = cancel;
+    self.navigationItem.hidesBackButton   = YES;
+
     UIBarButtonItem *save = [[UIBarButtonItem alloc]
                              initWithBarButtonSystemItem:UIBarButtonSystemItemSave
                                                  target:self
                                                  action:@selector(saveTapped)];
     save.tintColor = [UIColor colorNamed:@"AccentColor"];
     self.navigationItem.rightBarButtonItem = save;
+}
+
+- (void)cancelTapped
+{
+    [self.navigationController popViewControllerAnimated:YES];
 }
 
 #pragma mark - UI
