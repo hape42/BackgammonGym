@@ -291,6 +291,15 @@ static const NSUInteger kMaxTags = 5;
     return filtered[arc4random_uniform((uint32_t)filtered.count)];
 }
 
+- (nullable BGGPositionEntry *)entryForPositionID:(NSString *)positionID
+{
+    for (BGGPositionEntry *e in self.allPositions)
+    {
+        if ([e.positionID isEqualToString:positionID]) { return e; }
+    }
+    return nil;
+}
+
 // MARK: - Editing
 
 - (void)addEntry:(BGGPositionEntry *)entry

@@ -66,6 +66,10 @@ NS_ASSUME_NONNULL_BEGIN
                                       difficulty:(NSInteger)difficulty;
 - (nullable BGGPositionEntry *)randomPositionForTag:(NSString *)tag;
 
+// Returns the entry with the given position ID, or nil if not found.
+// Matches on the full combined ID (posID:matchID) as stored in the JSON.
+- (nullable BGGPositionEntry *)entryForPositionID:(NSString *)positionID;
+
 // MARK: Editing (writes to Documents immediately)
 
 // Add a new entry. Does nothing if positionID already exists.

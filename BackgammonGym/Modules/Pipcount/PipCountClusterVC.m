@@ -10,6 +10,7 @@
 #import "PipCountClusterVC.h"
 #import "BGGBoardCard.h"
 #import "BGGPosition.h"
+#import "PositionDatabase.h"
 
 // The starting position is used as a placeholder for every board
 // that still needs a real position ID from BGBlitz.
@@ -75,10 +76,10 @@ static NSString * const kPlaceholderID = @"4HPwATDgc/ABMA";
     [self.contentView addSubview:refHeader];
 
     // ── The seven reference positions ─────────────────────────────────────
-    BGGBoardCard *rp1 = [self placeholderCard:@"RP 1 – 5-Prime"
-        explanation:@"Ten checkers on five consecutive points. Multiply the midpoint value by 10. "
-                    @"A prime from points 4 to 8 has midpoint 6 → count = 60. "
-                    @"Works because the outer points always average out to the midpoint."];
+    // Each card now pulls its board, caption and text from positions.json
+    // via the position ID. Replace each ID below with the real one from your
+    // JSON. Caption and explanation come from the entry, not from code.
+    BGGBoardCard *rp1 = [self cardForPositionID:@"AAAAsG0DAAAAAA:cAnkAAAAEAAE"];
 
     BGGBoardCard *rp2 = [self placeholderCard:@"RP 2 – Closed Board"
         explanation:@"The standard 6-point prime plus two checkers on the ace point → 42. "
@@ -223,6 +224,39 @@ static NSString * const kPlaceholderID = @"4HPwATDgc/ABMA";
 }
 
 #pragma mark - Factory helpers
+
+// Builds a card from a real position in the database, identified by its
+// position ID. Caption and explanation text come from the JSON entry.
+// Falls back to a red placeholder card if the ID is not found, so a missing
+// entry is obvious during development.
+- (BGGBoardCard *)cardForPositionID:(NSString *)positionID
+{
+    BGGPositionEntry *entry = [[PositionDatabase sharedDatabase]
+                               entryForPositionID:positionID];
+
+    if (entry == nil)
+    {
+        BGGBoardCard *missing = [[BGGBoardCard alloc]
+            initWithCaption:@"⚠ Position not found"
+            explanationText:positionID
+                 boardState:[BGGPosition boardStateFromPositionID:kPlaceholderID]];
+        missing.isPlaceholder     = YES;
+        missing.showsPointNumbers = YES;
+        missing.showsCube         = NO;
+        missing.showsDice         = NO;
+        return missing;
+    }
+
+    BGGBoardCard *card = [[BGGBoardCard alloc]
+                          initWithCaption:entry.caption
+                          explanationText:entry.text
+                               boardState:[entry boardState]];
+    card.isPlaceholder     = NO;
+    card.showsPointNumbers = YES;
+    card.showsCube         = NO;
+    card.showsDice         = NO;
+    return card;
+}
 
 - (BGGBoardCard *)placeholderCard:(NSString *)caption
                       explanation:(NSString *)explanation
