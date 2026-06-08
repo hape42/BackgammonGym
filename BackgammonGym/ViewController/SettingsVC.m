@@ -13,6 +13,7 @@ static NSString * const kCellID = @"BGGBoardStyleCell";
 @interface SettingsVC () <UITableViewDataSource, UITableViewDelegate>
 
 @property (nonatomic, strong) UITableView   *tableView;
+@property (nonatomic, strong) UILabel       *versionLabel;
 @property (nonatomic, strong) UILabel       *selectBoard;
 @property (nonatomic, strong) NSArray<NSDictionary *> *boardsArray;
 
@@ -29,6 +30,18 @@ static NSString * const kCellID = @"BGGBoardStyleCell";
     self.title = @"Settings";
     [self setupBoardArray];
     [self setupContent];
+}
+
+#pragma mark - Version
+
+// "Backgammon Gym Version 1.0 build 356"
+- (NSString *)versionString
+{
+    NSDictionary *info = [NSBundle mainBundle].infoDictionary;
+    NSString *version  = info[@"CFBundleShortVersionString"] ?: @"?";
+    NSString *build    = info[@"CFBundleVersion"]            ?: @"?";
+    return [NSString stringWithFormat:@"Backgammon Gym Version %@ build %@",
+            version, build];
 }
 
 #pragma mark - Board data
@@ -68,6 +81,15 @@ static NSString * const kCellID = @"BGGBoardStyleCell";
 
     UILayoutGuide *safe = self.view.safeAreaLayoutGuide;
 
+    // Version / build label
+    self.versionLabel = [[UILabel alloc] init];
+    self.versionLabel.text          = [self versionString];
+    self.versionLabel.font          = [UIFont preferredFontForTextStyle:UIFontTextStyleFootnote];
+    self.versionLabel.textColor     = [UIColor secondaryLabelColor];
+    self.versionLabel.textAlignment = NSTextAlignmentCenter;
+    self.versionLabel.translatesAutoresizingMaskIntoConstraints = NO;
+    [self.view addSubview:self.versionLabel];
+
     // Header label
     self.selectBoard = [[UILabel alloc] init];
     self.selectBoard.text = @"Select Board Style";
@@ -89,12 +111,16 @@ static NSString * const kCellID = @"BGGBoardStyleCell";
     [self.view addSubview:self.tableView];
 
     [NSLayoutConstraint activateConstraints:@[
-        [self.selectBoard.topAnchor      constraintEqualToAnchor:safe.topAnchor    constant:10.0],
+        [self.selectBoard.topAnchor      constraintEqualToAnchor:safe.topAnchor constant:10.0],
         [self.selectBoard.centerXAnchor  constraintEqualToAnchor:safe.centerXAnchor],
         [self.selectBoard.heightAnchor   constraintEqualToConstant:35.0],
 
+        [self.versionLabel.bottomAnchor   constraintEqualToAnchor:safe.bottomAnchor constant:-8.0],
+        [self.versionLabel.leadingAnchor  constraintEqualToAnchor:safe.leadingAnchor constant:16.0],
+        [self.versionLabel.trailingAnchor constraintEqualToAnchor:safe.trailingAnchor constant:-16.0],
+
         [self.tableView.topAnchor        constraintEqualToAnchor:self.selectBoard.bottomAnchor constant:10.0],
-        [self.tableView.bottomAnchor     constraintEqualToAnchor:safe.bottomAnchor constant:-10.0],
+        [self.tableView.bottomAnchor     constraintEqualToAnchor:self.versionLabel.topAnchor constant:-10.0],
         [self.tableView.centerXAnchor    constraintEqualToAnchor:safe.centerXAnchor],
         [self.tableView.widthAnchor      constraintEqualToConstant:400.0],
     ]];

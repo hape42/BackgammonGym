@@ -13,10 +13,12 @@
 #import "PipCountVC.h"
 #import "SettingsVC.h"
 #import "PositionBrowserVC.h"
+#import <MessageUI/MessageUI.h>
 
 @interface StartVC () <UICollectionViewDataSource,
                        UICollectionViewDelegate,
-                       UICollectionViewDelegateFlowLayout>
+                       UICollectionViewDelegateFlowLayout,
+                       MFMailComposeViewControllerDelegate>
 
 @property (nonatomic, strong) UICollectionView *collectionView;
 @property (nonatomic, strong) NSArray<BGGStartTile *> *tiles;
@@ -230,13 +232,59 @@ didSelectItemAtIndexPath:(NSIndexPath *)indexPath
             break;
 
         case BGGStartTileKindFeedback:
-            [Tools showNotImplementedAlertFromViewController:self
-                                                     feature:@"Feedback"
-                                                 description:nil];
+            [self presentFeedbackMail];
             break;
     }
 }
 
+
+#pragma mark - Feedback mail
+
+// "Backgammon Gym Version 1.0 build 36"
+- (NSString *)versionString
+{
+    NSDictionary *info = [NSBundle mainBundle].infoDictionary;
+    NSString *version  = info[@"CFBundleShortVersionString"] ?: @"?";
+    NSString *build    = info[@"CFBundleVersion"]            ?: @"?";
+    return [NSString stringWithFormat:@"Backgammon Gym Version %@ build %@",
+            version, build];
+}
+
+- (void)presentFeedbackMail
+{
+    if (![MFMailComposeViewController canSendMail])
+    {
+        UIAlertController *alert = [UIAlertController
+            alertControllerWithTitle:@"No Mail Account"
+                             message:@"Please set up a mail account, or write to "
+                                     @"BackgammonGym@hape42.de from your device."
+                      preferredStyle:UIAlertControllerStyleAlert];
+        [alert addAction:[UIAlertAction actionWithTitle:@"OK"
+                                                  style:UIAlertActionStyleDefault
+                                                handler:nil]];
+        [self presentViewController:alert animated:YES completion:nil];
+        return;
+    }
+
+    MFMailComposeViewController *mail = [[MFMailComposeViewController alloc] init];
+    mail.mailComposeDelegate = self;
+    [mail setToRecipients:@[@"BackgammonGym@hape42.de"]];
+    [mail setSubject:@"Backgammon Gym – Feedback"];
+
+    // Pre-fill the body with a blank line for the user and the version line
+    // at the bottom, so I know which build a report refers to.
+    NSString *body = [NSString stringWithFormat:@"\n\n\n—\n%@", [self versionString]];
+    [mail setMessageBody:body isHTML:NO];
+
+    [self presentViewController:mail animated:YES completion:nil];
+}
+
+- (void)mailComposeController:(MFMailComposeViewController *)controller
+         didFinishWithResult:(MFMailComposeResult)result
+                       error:(NSError *)error
+{
+    [controller dismissViewControllerAnimated:YES completion:nil];
+}
 
 - (void)setupButtonTapped:(UIBarButtonItem *)sender
 {
