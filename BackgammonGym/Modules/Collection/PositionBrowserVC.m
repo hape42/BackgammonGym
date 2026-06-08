@@ -68,10 +68,11 @@
     UIView *tagsRow = [self buildTagsRowForEntry:entry];
     [self addSubview:tagsRow];
 
-    // ID + copy button
+    // ID + copy button. Show the exact ID from the JSON so it can be pasted
+    // straight back into BGBlitz – not a re-encoded version of the board.
     BGGBoardIDView *idView = [[BGGBoardIDView alloc] init];
     idView.translatesAutoresizingMaskIntoConstraints = NO;
-    [idView updateWithBoardState:[entry boardState]];
+    [idView updateWithID:entry.positionID];
     [self addSubview:idView];
 
     // Edit / Delete buttons

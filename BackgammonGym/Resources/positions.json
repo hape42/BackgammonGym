@@ -22,7 +22,7 @@
       ],
       "caption" : "A typical bear off position",
       "note" : "",
-      "text" : "Pipcount Player 1: 51 pips - Player 2: 60 pips"
+      "text" : "Pipcount Player: 51 pips - Opponent: 60 pips"
     },
     {
       "difficulty" : 2,
@@ -92,6 +92,82 @@
       "caption" : "Reference Position 5",
       "note" : "",
       "text" : "Five checkers on the 8-point.\n\nPipCount = 40."
+    },
+    {
+      "difficulty" : 1,
+      "id" : "AAAAAGAwAAAAAA:cImoAAAAAAAE",
+      "tags" : [
+        "cluster",
+        "pipcount"
+      ],
+      "caption" : "Reference Position 6",
+      "note" : "",
+      "text" : "Two checkers each on the midpoint and opponent's bar point.\n\nPipCount = 62."
+    },
+    {
+      "difficulty" : 1,
+      "id" : "AAAAAGABAAAAAA:cAkgAXAAMAAE",
+      "tags" : [
+        "pipcount",
+        "cluster"
+      ],
+      "caption" : "Reference Position 7",
+      "note" : "",
+      "text" : "Two checkers on the midpoint and one on the 14 point.\n\nPipCount = 40."
+    },
+    {
+      "difficulty" : 1,
+      "id" : "eB4AALA3AAAAAA:cAkuAWAAOAAE",
+      "tags" : [
+        "cluster",
+        "pipcount"
+      ],
+      "caption" : "Using 5-Point as Key Point",
+      "note" : "",
+      "text" : "This position shows two examples of counting a cluster of eight checkers all at once as if they were eight 5's = 40.\n\nPlayer = 40. Opponent = 40."
+    },
+    {
+      "difficulty" : 1,
+      "id" : "AAAYCgAAMwEAAA:cAkuAWAAOAAE",
+      "tags" : [
+        "cluster",
+        "pipcount"
+      ],
+      "caption" : "Using 20-Point as Key Point",
+      "note" : "",
+      "text" : "The 20-point (opponent's 5-point) is the most useful key point. All checkers in your opponent's home board should be counted as 20 plus the pips required to get to the 20-point.\n\nPlayer's count is 108 which can be visualized as five 20's + 4 (two each from the 22-point to the 20-point) + 4 (one from 24-point to 20 point).\n\nOpponent's count is 89, visualized as four 20's + 4 + 5 (for the checker on the bar)."
+    },
+    {
+      "difficulty" : 1,
+      "id" : "ANgAAAYADAAAAA:cAlqAAAAAAAE",
+      "tags" : [
+        "pipcount",
+        "cluster"
+      ],
+      "caption" : "Mirror - Example 1",
+      "note" : "",
+      "text" : "Player: (20 + 5 = 25) × 2 = 50.\n\nOpponent: (13 + 12 = 25) × 2 = 50.\n\nPlayer = 50. Opponent = 50."
+    },
+    {
+      "difficulty" : 1,
+      "id" : "wAAYoAAAoAAAAA:cAlqAAAAAAAE",
+      "tags" : [
+        "pipcount",
+        "cluster"
+      ],
+      "caption" : "Mirror - Example 2",
+      "note" : "",
+      "text" : "Player: (23 + 2 = 25) + (24 + 1 = 25) = 50 .\n\nOpponent: (18 + 7 = 25) × 2 = 50.\n\nPlayer = 50. Opponent = 50."
+    },
+    {
+      "difficulty" : 1,
+      "id" : "ttkYAQy43RSAIQ:cAkgATAACAAE",
+      "tags" : [
+
+      ],
+      "caption" : "",
+      "note" : "",
+      "text" : "Player's checker can be easily counted in three clusters: 40 (eight 5's) + 33 (RP4 + 3 pips) + 64 (three 20's + 4) = 137.\n\nDivide Opponent's checkers into three clusters: 44 (5-prime + 4 pips forward, 2 each from the 7-point to the 5-point) + 33 (three 10's + 3 pips from 13 to 10) + 44 (two 20's + 4) = 121.\n\nPlayer = 137. Opponent = 121."
     }
   ]
 }

@@ -76,6 +76,12 @@
 
 #pragma mark - Public
 
+- (void)updateWithID:(nullable NSString *)combinedID
+{
+    self.currentID    = combinedID;
+    self.idLabel.text = combinedID.length > 0 ? combinedID : @"–";
+}
+
 - (void)updateWithBoardState:(nullable BGGBoardState *)boardState
 {
     if (boardState == nil)

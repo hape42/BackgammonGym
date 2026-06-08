@@ -76,38 +76,29 @@ static NSString * const kPlaceholderID = @"4HPwATDgc/ABMA";
     [self.contentView addSubview:refHeader];
 
     // ── The seven reference positions ─────────────────────────────────────
-    // Each card now pulls its board, caption and text from positions.json
-    // via the position ID. Replace each ID below with the real one from your
-    // JSON. Caption and explanation come from the entry, not from code.
+    
     BGGBoardCard *rp1 = [self cardForPositionID:@"AAAAsG0DAAAAAA:cAnkAAAAEAAE"];
     BGGBoardCard *rp2 = [self cardForPositionID:@"AAAAtm0DAAAAAA:cIkoARAAAAAE"];
     BGGBoardCard *rp3 = [self cardForPositionID:@"AAAAwOcDAAAAAA:cIkoARAAAAAE"];
     BGGBoardCard *rp4 = [self cardForPositionID:@"AAAAgA0AAAAAAA:cIkoARAAAAAE"];
     BGGBoardCard *rp5 = [self cardForPositionID:@"AAAAAB8AAAAAAA:cIkoARAAAAAE"];
+    BGGBoardCard *rp6 = [self cardForPositionID:@"AAAAAGAwAAAAAA:cImoAAAAAAAE"];
+    BGGBoardCard *rp7 = [self cardForPositionID:@"AAAAAGABAAAAAA:cAkgAXAAMAAE"];
 
-
-    BGGBoardCard *rp6 = [self placeholderCard:@"RP 6 – Midpoint and Bar"
-        explanation:@"Two checkers each on the midpoint (13) and the opponent's bar point (18) → 62. "
-                    @"One of two reference positions whose total doesn't end in zero."];
-
-    BGGBoardCard *rp7 = [self placeholderCard:@"RP 7 – Midpoint and Fourteen"
-        explanation:@"Two checkers on the midpoint (13) and one on point 14 → 40. "
-                    @"The second exception – useful for stacks near the midpoint."];
 
     // ── Section header: Key Points ────────────────────────────────────────
     UILabel *keyHeader = [self sectionHeader:@"Key Points"];
     keyHeader.translatesAutoresizingMaskIntoConstraints = NO;
     [self.contentView addSubview:keyHeader];
+    
+    UILabel *keypointIntro = [self bodyLabel:
+                              @"The two key points most often used are the 5-point and the 20-point (opponent's 5-point). \n"
+                              @"The 10-, 13- and 15-points are also quite valuable.  "];
+    keypointIntro.translatesAutoresizingMaskIntoConstraints = NO;
+    [self.contentView addSubview:keypointIntro];
 
-    BGGBoardCard *kp1 = [self placeholderCard:@"Key Point – Your 5-Point"
-        explanation:@"Eight checkers that can all be imagined on your 5-point contribute 40 pips. "
-                    @"Treat scattered checkers near point 5 as if they were all sitting there, "
-                    @"then adjust for the actual distance."];
-
-    BGGBoardCard *kp2 = [self placeholderCard:@"Key Point – Opponent's 5-Point (Point 20)"
-        explanation:@"The most useful key point. Checkers deep in the opponent's home board "
-                    @"are all treated as sitting on point 20, then you add the extra pips. "
-                    @"Five checkers on point 20 = 100; if two are actually on point 22, add 4."];
+    BGGBoardCard *kp1 = [self cardForPositionID:@"eB4AALA3AAAAAA:cAkuAWAAOAAE"];
+    BGGBoardCard *kp2 = [self cardForPositionID:@"AAAYCgAAMwEAAA:cAkuAWAAOAAE"];
 
     // ── Section header: Mirrors ───────────────────────────────────────────
     UILabel *mirrorHeader = [self sectionHeader:@"Mirrors"];
@@ -115,18 +106,13 @@ static NSString * const kPlaceholderID = @"4HPwATDgc/ABMA";
     [self.contentView addSubview:mirrorHeader];
 
     UILabel *mirrorIntro = [self bodyLabel:
-        @"Any point plus its mirror-opposite always totals 25: points 1+24, 6+19, 12+13. "
-        @"Four checkers in mirror positions therefore count 50, no matter where exactly they sit."];
+        @"Mirrors are another important counting tool. Any point on the board plus its mirror-opposite point equals 25.\n"
+        @"For example, the 5-point + 20-point, the 1-point + 24-point, and the 12-point + 13-point all total 25 pips. It follows that any cluster of 4 checkers in mirror positions total 50. "];
     mirrorIntro.translatesAutoresizingMaskIntoConstraints = NO;
     [self.contentView addSubview:mirrorIntro];
 
-    BGGBoardCard *mirror1 = [self placeholderCard:@"Mirrors – Example 1"
-        explanation:@"Two checkers on point 5, two on point 20: (5+20) × 2 = 50. "
-                    @"Two checkers on point 12, two on point 13: (12+13) × 2 = 50."];
-
-    BGGBoardCard *mirror2 = [self placeholderCard:@"Mirrors – Example 2"
-        explanation:@"Two checkers on point 23, two on point 2: (23+2) × 2 = 50. "
-                    @"Two checkers on point 18, two on point 7: (18+7) × 2 = 50."];
+    BGGBoardCard *mirror1 = [self cardForPositionID:@"eB4AALA3AAAAAA:cAkuAWAAOAAE"];
+    BGGBoardCard *mirror2 = [self cardForPositionID:@"eB4AALA3AAAAAA:cAkuAWAAOAAE"];
 
     // ── Section header: Mental Shifting ───────────────────────────────────
     UILabel *shiftHeader = [self sectionHeader:@"Mental Shifting"];
@@ -134,20 +120,41 @@ static NSString * const kPlaceholderID = @"4HPwATDgc/ABMA";
     [self.contentView addSubview:shiftHeader];
 
     UILabel *shiftIntro = [self bodyLabel:
-        @"Real positions rarely arrive pre-packaged as reference positions. "
-        @"The technique is to mentally slide checkers until a recognizable cluster forms, "
-        @"then compensate for the distance moved."];
+        @"It would be nice if every time you needed a pip count, the board would consist of clusters as previously described. "
+        @"Unfortunately, that doesn't happen. Fortunately, these easy-to-count clusters are relatively simple to form by mentally moving the checkers where you want them. "];
     shiftIntro.translatesAutoresizingMaskIntoConstraints = NO;
     [self.contentView addSubview:shiftIntro];
 
-    BGGBoardCard *shift1 = [self placeholderCard:@"One-Way Shift"
-        explanation:@"Move checkers forward to a key point and add the distance to the cluster value. "
-                    @"Three checkers on point 13, shifted to point 10: count = 30 + 9 (3 pips × 3 checkers) = 39."];
+    UILabel *shiftOneWayHeader = [self sectionHeader:@"One-Way Mental Shift"];
+    shiftOneWayHeader.translatesAutoresizingMaskIntoConstraints = NO;
+    [self.contentView addSubview:shiftOneWayHeader];
 
-    BGGBoardCard *shift2 = [self placeholderCard:@"Two-Way Shift"
-        explanation:@"Move one checker forward and another backward by the same number of pips. "
-                    @"The shifts cancel out – the total is unchanged. "
-                    @"Two checkers on points 6 and 8 can be shifted to the 7-point to form a 5-prime."];
+    UILabel *shiftOneWayIntro = [self bodyLabel:
+        @"One-way mental shifting involves moving the checkers forward to key points or reference positions and then adding the forward movement to the value of the key points or reference positions. "];
+    shiftOneWayIntro.translatesAutoresizingMaskIntoConstraints = NO;
+    [self.contentView addSubview:shiftOneWayIntro];
+
+    BGGBoardCard *shift1 = [self cardForPositionID:@"ttkYAQy43RSAIQ:cAkgATAACAAE"];
+    UILabel *shiftOneWayConclusion = [self bodyLabel:
+        @"Note that two of opponent's checkers were shifted to opponent's 5-point which is occupied by player's checkers. When shifting one player's checkers, the other player's checker position can be ignored. "];
+    shiftOneWayConclusion.translatesAutoresizingMaskIntoConstraints = NO;
+    [self.contentView addSubview:shiftOneWayConclusion];
+
+    UILabel *shiftTwoWayHeader = [self sectionHeader:@"Two-Way Mental Shift"];
+    shiftTwoWayHeader.translatesAutoresizingMaskIntoConstraints = NO;
+    [self.contentView addSubview:shiftTwoWayHeader];
+
+    UILabel *shiftTwoWayIntro = [self bodyLabel:
+        @"Two-way mental shifting differs from one-way mental shifting in that checkers are shifted either forward or backward to key points or reference positions and then compensating shifts are made in the opposite direction on the same side of the board, or in the same direction on opposite sides of the board. "];
+    shiftTwoWayIntro.translatesAutoresizingMaskIntoConstraints = NO;
+    [self.contentView addSubview:shiftTwoWayIntro];
+
+    BGGBoardCard *shift2 = [self cardForPositionID:@"ttkYAQy43RSAIQ:cAkgATAACAAE"];
+
+    UILabel *shiftTwoWayConclusion = [self bodyLabel:
+        @"It should be noted that there are often several cluster counting choices available. \nFor instance, in player's position above, instead of forming a 5-prime, you could have shifted the two 9-point checkers to the 8-point and compensated by shifting the two 5-point checkers to the 6-point to form RP3. This cluster is also 70 pips."];
+    shiftTwoWayConclusion.translatesAutoresizingMaskIntoConstraints = NO;
+    [self.contentView addSubview:shiftTwoWayConclusion];
 
     // ── Sources ───────────────────────────────────────────────────────────
     UILabel *sources = [self sourcesLabel];
@@ -172,9 +179,13 @@ static NSString * const kPlaceholderID = @"4HPwATDgc/ABMA";
 
     NSArray *chain = @[intro, refHeader,
                        rp1, rp2, rp3, rp4, rp5, rp6, rp7,
-                       keyHeader, kp1, kp2,
+                       keyHeader,keypointIntro, kp1, kp2,
                        mirrorHeader, mirrorIntro, mirror1, mirror2,
-                       shiftHeader, shiftIntro, shift1, shift2,
+                       shiftHeader, shiftIntro,
+                       shiftOneWayHeader, shiftOneWayIntro,
+                       shift1,shiftOneWayConclusion,
+                       shiftTwoWayHeader, shiftTwoWayIntro,
+                       shift2,shiftTwoWayConclusion,
                        sources];
 
     NSMutableArray *constraints = [NSMutableArray array];

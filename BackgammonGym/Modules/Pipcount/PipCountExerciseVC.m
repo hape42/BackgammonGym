@@ -454,7 +454,7 @@ static const CGFloat kWideThreshold = 700.0;
 
     BGGPositionEntry *entry   = self.positions[(NSUInteger)self.currentIndex];
     self.boardView.boardState = [entry boardState];
-    [self.boardIDView updateWithBoardState:[entry boardState]];
+    [self.boardIDView updateWithID:entry.positionID];
 
     self.progressLabel.text   = [NSString stringWithFormat:@"%ld / %ld",
                                  (long)(self.currentIndex + 1), (long)self.totalCount];
