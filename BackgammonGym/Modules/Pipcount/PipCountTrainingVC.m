@@ -9,6 +9,7 @@
 
 - (BOOL)showsPointNumbers { return YES; }
 - (BOOL)measureTime       { return NO;  }
+- (NSArray<NSString *> *)requiredTags { return @[@"pipcount", @"training"]; }
 
 - (void)viewDidLoad
 {

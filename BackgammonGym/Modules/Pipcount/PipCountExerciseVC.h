@@ -21,6 +21,11 @@ NS_ASSUME_NONNULL_BEGIN
 // Training: NO   Workout: YES
 @property (nonatomic, assign, readonly) BOOL measureTime;
 
+// Override in subclasses – defines which tags filter the positions for
+// this module. Combined with logical AND, e.g. @[@"pipcount", @"training"].
+// The base implementation returns an empty array (no positions).
+- (NSArray<NSString *> *)requiredTags;
+
 @end
 
 NS_ASSUME_NONNULL_END

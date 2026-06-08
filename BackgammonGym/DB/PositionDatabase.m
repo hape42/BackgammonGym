@@ -284,6 +284,25 @@ static const NSUInteger kMaxTags = 5;
              tag, (long)difficulty]];
 }
 
+// Returns entries that carry every tag in the array (logical AND).
+// An empty tags array returns no positions – a module must always
+// specify at least one tag to define its set.
+- (NSArray<BGGPositionEntry *> *)positionsForTags:(NSArray<NSString *> *)tags
+{
+    if (tags.count == 0) { return @[]; }
+
+    return [self.allPositions filteredArrayUsingPredicate:
+            [NSPredicate predicateWithBlock:^BOOL(BGGPositionEntry *entry,
+                                                  NSDictionary<NSString *, id> *bindings)
+    {
+        for (NSString *tag in tags)
+        {
+            if (![entry hasTag:tag]) { return NO; }
+        }
+        return YES;
+    }]];
+}
+
 - (nullable BGGPositionEntry *)randomPositionForTag:(NSString *)tag
 {
     NSArray<BGGPositionEntry *> *filtered = [self positionsForTag:tag];

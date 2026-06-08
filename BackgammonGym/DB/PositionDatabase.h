@@ -64,6 +64,11 @@ NS_ASSUME_NONNULL_BEGIN
 - (NSArray<BGGPositionEntry *> *)positionsForTag:(NSString *)tag;
 - (NSArray<BGGPositionEntry *> *)positionsForTag:(NSString *)tag
                                       difficulty:(NSInteger)difficulty;
+
+// Returns entries that carry ALL of the given tags (logical AND).
+// Used to combine a topic tag (e.g. "pipcount") with a purpose tag
+// (e.g. "training"), so a position only appears where it belongs.
+- (NSArray<BGGPositionEntry *> *)positionsForTags:(NSArray<NSString *> *)tags;
 - (nullable BGGPositionEntry *)randomPositionForTag:(NSString *)tag;
 
 // Returns the entry with the given position ID, or nil if not found.

@@ -47,7 +47,7 @@
       ],
       "caption" : "Reference Position 1:  5-Prime",
       "note" : "",
-      "text" : "Multiply the midpoint of any 5-prime by 10 and you have just counted a cluster of ten checkers.\\n This position shows a 5-prime from the 4-point to the 8-point.\nThe 6-point is the midpoint and the count for these ten checkers = 60 pips (6 × 10.) This is so because 5's and 7's average out to 6's, and 4's and 8's also average out to 6's.\n\nPipCount = 60."
+      "text" : "Multiply the midpoint of any 5-prime by 10 and you have just counted a cluster of ten checkers.\nThis position shows a 5-prime from the 4-point to the 8-point.\nThe 6-point is the midpoint and the count for these ten checkers = 60 pips (6 × 10.) This is so because 5's and 7's average out to 6's, and 4's and 8's also average out to 6's.\n\nPipCount = 60."
     },
     {
       "difficulty" : 1,

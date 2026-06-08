@@ -26,6 +26,11 @@ static const CGFloat kWideThreshold = 700.0;
 
 @interface PipCountExerciseVC () <UITextFieldDelegate>
 
+// Scroll container – lets the board scroll up out of the way when the
+// keyboard appears, keeping the input fields reachable.
+@property (nonatomic, strong) UIScrollView  *scrollView;
+@property (nonatomic, strong) UIView        *contentView;
+
 // Board
 @property (nonatomic, strong) BGGBoardView    *boardView;
 @property (nonatomic, strong) BGGBoardIDView  *boardIDView;
@@ -74,6 +79,9 @@ static const CGFloat kWideThreshold = 700.0;
 - (BOOL)showsPointNumbers { return NO; }
 - (BOOL)measureTime       { return NO; }
 
+// Base implementation – subclasses must override to define their position set.
+- (NSArray<NSString *> *)requiredTags { return @[]; }
+
 #pragma mark - Lifecycle
 
 - (void)viewDidLoad
@@ -82,6 +90,21 @@ static const CGFloat kWideThreshold = 700.0;
     self.view.backgroundColor = [UIColor systemBackgroundColor];
     [self installHomeButton];
     [self buildUI];
+    [self registerForKeyboardNotifications];
+}
+
+- (void)registerForKeyboardNotifications
+{
+    NSNotificationCenter *nc = [NSNotificationCenter defaultCenter];
+    [nc addObserver:self selector:@selector(keyboardWillChangeFrame:)
+               name:UIKeyboardWillChangeFrameNotification object:nil];
+    [nc addObserver:self selector:@selector(keyboardWillHide:)
+               name:UIKeyboardWillHideNotification object:nil];
+}
+
+- (void)dealloc
+{
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
 }
 
 - (void)viewDidAppear:(BOOL)animated
@@ -103,8 +126,33 @@ static const CGFloat kWideThreshold = 700.0;
 
 - (void)buildUI
 {
-    UILayoutGuide *safe = self.view.safeAreaLayoutGuide;
     CGFloat m = 16.0;
+
+    // Scroll view fills the safe area. All content lives inside contentView.
+    self.scrollView = [[UIScrollView alloc] init];
+    self.scrollView.translatesAutoresizingMaskIntoConstraints = NO;
+    self.scrollView.keyboardDismissMode = UIScrollViewKeyboardDismissModeInteractive;
+    [self.view addSubview:self.scrollView];
+
+    self.contentView = [[UIView alloc] init];
+    self.contentView.translatesAutoresizingMaskIntoConstraints = NO;
+    [self.scrollView addSubview:self.contentView];
+
+    UILayoutGuide *safe = self.view.safeAreaLayoutGuide;
+    [NSLayoutConstraint activateConstraints:@[
+        [self.scrollView.topAnchor      constraintEqualToAnchor:safe.topAnchor],
+        [self.scrollView.leadingAnchor  constraintEqualToAnchor:safe.leadingAnchor],
+        [self.scrollView.trailingAnchor constraintEqualToAnchor:safe.trailingAnchor],
+        [self.scrollView.bottomAnchor   constraintEqualToAnchor:safe.bottomAnchor],
+
+        // contentView spans the scroll view's content area and matches its
+        // width, so layout is driven vertically and only scrolls when needed.
+        [self.contentView.topAnchor      constraintEqualToAnchor:self.scrollView.topAnchor],
+        [self.contentView.leadingAnchor  constraintEqualToAnchor:self.scrollView.leadingAnchor],
+        [self.contentView.trailingAnchor constraintEqualToAnchor:self.scrollView.trailingAnchor],
+        [self.contentView.bottomAnchor   constraintEqualToAnchor:self.scrollView.bottomAnchor],
+        [self.contentView.widthAnchor    constraintEqualToAnchor:self.scrollView.widthAnchor],
+    ]];
 
     // Board view
     self.boardView = [[BGGBoardView alloc] init];
@@ -113,7 +161,7 @@ static const CGFloat kWideThreshold = 700.0;
     self.boardView.showsPointNumbers = self.showsPointNumbers;
     self.boardView.showsCube         = NO;
     self.boardView.showsDice         = NO;
-    [self.view addSubview:self.boardView];
+    [self.contentView addSubview:self.boardView];
 
     CGFloat ratio = kBGGBoardHeight / kBGGBoardWidth;
     [[self.boardView.heightAnchor constraintEqualToAnchor:self.boardView.widthAnchor
@@ -122,12 +170,12 @@ static const CGFloat kWideThreshold = 700.0;
     // ID view sits directly below the board
     self.boardIDView = [[BGGBoardIDView alloc] init];
     self.boardIDView.translatesAutoresizingMaskIntoConstraints = NO;
-    [self.view addSubview:self.boardIDView];
+    [self.contentView addSubview:self.boardIDView];
 
     // Controls container
     self.controlsView = [[UIView alloc] init];
     self.controlsView.translatesAutoresizingMaskIntoConstraints = NO;
-    [self.view addSubview:self.controlsView];
+    [self.contentView addSubview:self.controlsView];
 
     // Progress label
     self.progressLabel = [[UILabel alloc] init];
@@ -275,20 +323,30 @@ static const CGFloat kWideThreshold = 700.0;
         [self.cancelAfterNextButton.trailingAnchor constraintEqualToAnchor:self.controlsView.trailingAnchor
                                                                   constant:-m],
         [self.cancelAfterNextButton.heightAnchor constraintEqualToConstant:44.0],
+
+        // Pin the container's bottom to the last button so controlsView has a
+        // defined height from its content. Without this the view collapses
+        // inside the scroll view and nothing scrolls. cancelAfterNextButton
+        // stays in the layout even while hidden, so this anchor is stable.
+        [self.controlsView.bottomAnchor constraintEqualToAnchor:self.cancelAfterNextButton.bottomAnchor
+                                                       constant:m],
     ]];
 
-    // Outer layout pins – direction-independent parts
+    // Outer layout pins – direction-independent parts.
+    // Everything is relative to contentView (the scroll view's content).
     [NSLayoutConstraint activateConstraints:@[
-        [self.boardView.topAnchor     constraintEqualToAnchor:safe.topAnchor    constant:8.0],
-        [self.boardView.leadingAnchor constraintEqualToAnchor:safe.leadingAnchor constant:8.0],
+        [self.boardView.topAnchor     constraintEqualToAnchor:self.contentView.topAnchor     constant:8.0],
+        [self.boardView.leadingAnchor constraintEqualToAnchor:self.contentView.leadingAnchor constant:8.0],
 
         [self.boardIDView.topAnchor     constraintEqualToAnchor:self.boardView.bottomAnchor
                                                        constant:4.0],
         [self.boardIDView.leadingAnchor constraintEqualToAnchor:self.boardView.leadingAnchor],
         [self.boardIDView.trailingAnchor constraintEqualToAnchor:self.boardView.trailingAnchor],
 
-        [self.controlsView.topAnchor  constraintEqualToAnchor:safe.topAnchor],
-        [self.controlsView.trailingAnchor constraintEqualToAnchor:safe.trailingAnchor],
+        // controlsView.top is direction-dependent and set in viewDidLayoutSubviews:
+        // wide  -> pinned to contentView.top (board left, controls right, both at top)
+        // narrow-> pinned below the board ID view (board on top, controls below)
+        [self.controlsView.trailingAnchor constraintEqualToAnchor:self.contentView.trailingAnchor],
     ]];
 }
 
@@ -352,30 +410,37 @@ static const CGFloat kWideThreshold = 700.0;
     [NSLayoutConstraint deactivateConstraints:self.narrowConstraints ?: @[]];
     self.isWideLayout = wide;
 
-    UILayoutGuide *safe = self.view.safeAreaLayoutGuide;
-
     if (wide)
     {
+        // Board left, controls right. The board width follows the visible
+        // width (safe), but vertical anchors hang off contentView so the
+        // scroll view can size its content.
         self.wideConstraints = @[
+            [self.controlsView.topAnchor   constraintEqualToAnchor:self.contentView.topAnchor],
             [self.boardView.trailingAnchor constraintEqualToAnchor:self.controlsView.leadingAnchor
                                                           constant:-8.0],
-            [self.boardView.bottomAnchor   constraintLessThanOrEqualToAnchor:safe.bottomAnchor
-                                                                     constant:-8.0],
-            [self.boardView.widthAnchor    constraintEqualToAnchor:safe.widthAnchor
+            [self.boardView.widthAnchor    constraintEqualToAnchor:self.contentView.widthAnchor
                                                         multiplier:0.60],
-            [self.controlsView.bottomAnchor constraintLessThanOrEqualToAnchor:safe.bottomAnchor],
+            // Whichever column is taller defines the content height.
+            [self.contentView.bottomAnchor constraintGreaterThanOrEqualToAnchor:self.boardView.bottomAnchor
+                                                                       constant:8.0],
+            [self.contentView.bottomAnchor constraintGreaterThanOrEqualToAnchor:self.controlsView.bottomAnchor
+                                                                       constant:8.0],
         ];
         [NSLayoutConstraint activateConstraints:self.wideConstraints];
     }
     else
     {
+        // Board on top (full width), ID row, then controls below.
+        // controlsView.bottom drives the content height so the page scrolls.
         self.narrowConstraints = @[
-            [self.boardView.trailingAnchor  constraintEqualToAnchor:safe.trailingAnchor
+            [self.boardView.trailingAnchor  constraintEqualToAnchor:self.contentView.trailingAnchor
                                                            constant:-8.0],
-            [self.controlsView.topAnchor    constraintEqualToAnchor:self.boardView.bottomAnchor
+            [self.controlsView.topAnchor    constraintEqualToAnchor:self.boardIDView.bottomAnchor
                                                            constant:8.0],
-            [self.controlsView.leadingAnchor constraintEqualToAnchor:safe.leadingAnchor],
-            [self.controlsView.bottomAnchor  constraintLessThanOrEqualToAnchor:safe.bottomAnchor],
+            [self.controlsView.leadingAnchor constraintEqualToAnchor:self.contentView.leadingAnchor],
+            [self.contentView.bottomAnchor   constraintEqualToAnchor:self.controlsView.bottomAnchor
+                                                             constant:8.0],
         ];
         [NSLayoutConstraint activateConstraints:self.narrowConstraints];
     }
@@ -386,7 +451,7 @@ static const CGFloat kWideThreshold = 700.0;
 - (void)showCountPicker
 {
     NSArray<BGGPositionEntry *> *all = [[PositionDatabase sharedDatabase]
-                                        positionsForTag:@"pipcount"];
+                                        positionsForTags:[self requiredTags]];
     NSInteger available = (NSInteger)all.count;
     NSString *message   = [NSString stringWithFormat:@"%ld positions available", (long)available];
 
@@ -569,6 +634,45 @@ static const CGFloat kWideThreshold = 700.0;
 
     self.feedbackLabel.text = msg;
     [UIView animateWithDuration:0.2 animations:^{ self.feedbackLabel.alpha = 1.0; }];
+}
+
+#pragma mark - Keyboard
+
+// When the keyboard appears, inset the scroll view by the part of the scroll
+// view that the keyboard actually covers, then scroll the active field into
+// view. The overlap is measured against the scroll view's frame in its own
+// superview, which correctly accounts for the safe-area pin at the bottom.
+- (void)keyboardWillChangeFrame:(NSNotification *)note
+{
+    CGRect kbScreen = [note.userInfo[UIKeyboardFrameEndUserInfoKey] CGRectValue];
+
+    // Keyboard frame in the scroll view's superview coordinate space.
+    UIView *refView = self.scrollView.superview;
+    CGRect kbInRef  = [refView convertRect:kbScreen fromView:nil];
+
+    // How far the keyboard reaches up into the scroll view's frame.
+    CGFloat overlap = CGRectGetMaxY(self.scrollView.frame) - CGRectGetMinY(kbInRef);
+    if (overlap < 0.0) { overlap = 0.0; }
+
+    self.scrollView.contentInset =
+        UIEdgeInsetsMake(0.0, 0.0, overlap, 0.0);
+    self.scrollView.verticalScrollIndicatorInsets =
+        UIEdgeInsetsMake(0.0, 0.0, overlap, 0.0);
+
+    // Scroll so the whole controls block (fields + buttons) is reachable.
+    // Using controlsView guarantees the buttons below the active field are
+    // included, not just the field itself.
+    [self.view layoutIfNeeded];
+
+    CGRect r = [self.contentView convertRect:self.controlsView.frame
+                                    fromView:self.controlsView.superview];
+    [self.scrollView scrollRectToVisible:r animated:YES];
+}
+
+- (void)keyboardWillHide:(NSNotification *)note
+{
+    self.scrollView.contentInset = UIEdgeInsetsZero;
+    self.scrollView.verticalScrollIndicatorInsets = UIEdgeInsetsZero;
 }
 
 #pragma mark - Timer
