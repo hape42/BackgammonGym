@@ -11,6 +11,12 @@
 - (BOOL)measureTime       { return YES; }
 - (NSArray<NSString *> *)requiredTags { return @[@"pipcount", @"training"]; }
 
+- (NSString *)infoText
+{
+    return @"No numbers on the board, just like at a real table. The timer "
+           @"runs live so you train under tournament conditions.";
+}
+
 - (void)viewDidLoad
 {
     [super viewDidLoad];

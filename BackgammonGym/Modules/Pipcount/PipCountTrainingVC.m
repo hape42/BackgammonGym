@@ -11,6 +11,12 @@
 - (BOOL)measureTime       { return NO;  }
 - (NSArray<NSString *> *)requiredTags { return @[@"pipcount", @"training"]; }
 
+- (NSString *)infoText
+{
+    return @"Point numbers are shown on the board. Take as much time as you "
+           @"like — the timer is just for your information.";
+}
+
 - (void)viewDidLoad
 {
     [super viewDidLoad];

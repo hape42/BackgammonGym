@@ -163,11 +163,34 @@
       "difficulty" : 1,
       "id" : "ttkYAQy43RSAIQ:cAkgATAACAAE",
       "tags" : [
-
+        "pipcount",
+        "cluster"
+      ],
+      "caption" : "One-Way Mental Shift",
+      "note" : "",
+      "text" : "Player's checker can be easily counted in three clusters: 40 (eight 5's) + 33 (RP4 + 3 pips) + 64 (three 20's + 4) = 137.\n\nDivide Opponent's checkers into three clusters: 44 (5-prime + 4 pips forward, 2 each from the 7-point to the 5-point) + 33 (three 10's + 3 pips from 13 to 10) + 44 (two 20's + 4) = 121.\n\nPlayer = 137. Opponent = 121."
+    },
+    {
+      "difficulty" : 1,
+      "id" : "NrtFABTYtuMAIA:MIHlADAAEAAE",
+      "tags" : [
+        "pipcount",
+        "training"
       ],
       "caption" : "",
       "note" : "",
-      "text" : "Player's checker can be easily counted in three clusters: 40 (eight 5's) + 33 (RP4 + 3 pips) + 64 (three 20's + 4) = 137.\n\nDivide Opponent's checkers into three clusters: 44 (5-prime + 4 pips forward, 2 each from the 7-point to the 5-point) + 33 (three 10's + 3 pips from 13 to 10) + 44 (two 20's + 4) = 121.\n\nPlayer = 137. Opponent = 121."
+      "text" : ""
+    },
+    {
+      "difficulty" : 1,
+      "id" : "2NbBAQawc8MHAA:cInlADAAEAAE",
+      "tags" : [
+        "pipcount",
+        "cluster"
+      ],
+      "caption" : "Two-Way Mental Shift",
+      "note" : "",
+      "text" : "Players's spare checkers on the 6- and 8- points are on the same side of the board. By shifting them one pip in opposite directions to the 7-point, a 5-prime is formed. Player's position can easily be counted in two clusters: 70 (5-prime) + 65 (five 13's) = 135.\n\nOpponent's spare checkers on the 8- and 13-points are on opposite sides of the board. By shifting them in the same direction, in this case left-to-right, a 5-prime is formed (RP1) and RP7 is also formed. Opponent's position can then be counted in three clusters: 60 + 40 + 42 (two 20's + 2) = 142.\n\nPlayer = 135. Opponent = 142."
     }
   ]
 }

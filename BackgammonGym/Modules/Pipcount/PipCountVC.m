@@ -30,8 +30,8 @@ static NSString * sectionTitle(PipCountSection section)
     {
         case PipCountSectionWarmup:   return @"Warm-up";
         case PipCountSectionCluster:  return @"Cluster";
-        case PipCountSectionTraining: return @"Training";
-        case PipCountSectionWorkout:  return @"Workout";
+        case PipCountSectionTraining: return @"Training Pipcount";
+        case PipCountSectionWorkout:  return @"Workout Pipcount";
         case PipCountSectionProgress: return @"Progress";
     }
 }

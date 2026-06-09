@@ -149,7 +149,7 @@ static NSString * const kPlaceholderID = @"4HPwATDgc/ABMA";
     shiftTwoWayIntro.translatesAutoresizingMaskIntoConstraints = NO;
     [self.contentView addSubview:shiftTwoWayIntro];
 
-    BGGBoardCard *shift2 = [self cardForPositionID:@"ttkYAQy43RSAIQ:cAkgATAACAAE"];
+    BGGBoardCard *shift2 = [self cardForPositionID:@"2NbBAQawc8MHAA:cInlADAAEAAE"];
 
     UILabel *shiftTwoWayConclusion = [self bodyLabel:
         @"It should be noted that there are often several cluster counting choices available. \nFor instance, in player's position above, instead of forming a 5-prime, you could have shifted the two 9-point checkers to the 8-point and compensated by shifting the two 5-point checkers to the 6-point to form RP3. This cluster is also 70 pips."];

@@ -26,6 +26,10 @@ NS_ASSUME_NONNULL_BEGIN
 // The base implementation returns an empty array (no positions).
 - (NSArray<NSString *> *)requiredTags;
 
+// Override in subclasses – a short explanatory line shown above the board
+// describing the mode. The base implementation returns nil (no info line).
+- (nullable NSString *)infoText;
+
 @end
 
 NS_ASSUME_NONNULL_END

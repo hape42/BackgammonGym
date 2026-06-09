@@ -21,6 +21,7 @@
 #import "BGGPosition.h"
 #import "PositionDatabase.h"
 #import "Tools.h"
+#import "BGGTimeColor.h"
 
 static const CGFloat kWideThreshold = 700.0;
 
@@ -30,6 +31,9 @@ static const CGFloat kWideThreshold = 700.0;
 // keyboard appears, keeping the input fields reachable.
 @property (nonatomic, strong) UIScrollView  *scrollView;
 @property (nonatomic, strong) UIView        *contentView;
+
+// Optional explanatory line above the board (set from -infoText).
+@property (nonatomic, strong) UILabel       *infoLabel;
 
 // Board
 @property (nonatomic, strong) BGGBoardView    *boardView;
@@ -56,6 +60,7 @@ static const CGFloat kWideThreshold = 700.0;
 
 // Feedback
 @property (nonatomic, strong) UILabel       *feedbackLabel;
+@property (nonatomic, strong) UILabel       *timeBadge;
 
 // Timer
 @property (nonatomic, strong) NSTimer       *timer;
@@ -81,6 +86,9 @@ static const CGFloat kWideThreshold = 700.0;
 
 // Base implementation – subclasses must override to define their position set.
 - (NSArray<NSString *> *)requiredTags { return @[]; }
+
+// Base implementation – no info line. Subclasses override.
+- (nullable NSString *)infoText { return nil; }
 
 #pragma mark - Lifecycle
 
@@ -154,6 +162,15 @@ static const CGFloat kWideThreshold = 700.0;
         [self.contentView.widthAnchor    constraintEqualToAnchor:self.scrollView.widthAnchor],
     ]];
 
+    // Optional info line above the board (mode explanation).
+    self.infoLabel               = [[UILabel alloc] init];
+    self.infoLabel.numberOfLines = 0;
+    self.infoLabel.font          = [UIFont preferredFontForTextStyle:UIFontTextStyleFootnote];
+    self.infoLabel.textColor     = [UIColor secondaryLabelColor];
+    self.infoLabel.text          = [self infoText];
+    self.infoLabel.translatesAutoresizingMaskIntoConstraints = NO;
+    [self.contentView addSubview:self.infoLabel];
+
     // Board view
     self.boardView = [[BGGBoardView alloc] init];
     self.boardView.translatesAutoresizingMaskIntoConstraints = NO;
@@ -190,7 +207,7 @@ static const CGFloat kWideThreshold = 700.0;
     self.timerLabel.font          = [UIFont monospacedDigitSystemFontOfSize:15.0
                                                                      weight:UIFontWeightMedium];
     self.timerLabel.textColor     = [UIColor secondaryLabelColor];
-    self.timerLabel.textAlignment = NSTextAlignmentRight;
+    self.timerLabel.textAlignment = NSTextAlignmentCenter;
     // Timer label – visible only in Workout (live countdown pressure).
     // In Training the time is shown in the feedback after checking.
     self.timerLabel.hidden = !self.measureTime;
@@ -228,6 +245,19 @@ static const CGFloat kWideThreshold = 700.0;
     self.feedbackLabel.alpha         = 0.0;
     self.feedbackLabel.translatesAutoresizingMaskIntoConstraints = NO;
     [self.controlsView addSubview:self.feedbackLabel];
+
+    // Time badge – a coloured pill showing the answer time after a check.
+    // Colour comes from BGGTimeColor (green / orange / red by threshold).
+    self.timeBadge = [[UILabel alloc] init];
+    self.timeBadge.font          = [UIFont monospacedDigitSystemFontOfSize:17.0
+                                                                    weight:UIFontWeightSemibold];
+    self.timeBadge.textColor     = [UIColor whiteColor];
+    self.timeBadge.textAlignment = NSTextAlignmentCenter;
+    self.timeBadge.layer.cornerRadius = 11.0;
+    self.timeBadge.layer.masksToBounds = YES;
+    self.timeBadge.alpha         = 0.0;
+    self.timeBadge.translatesAutoresizingMaskIntoConstraints = NO;
+    [self.controlsView addSubview:self.timeBadge];
 
     // Next button – hidden until after Check
     self.nextButton = [self actionButtonWithTitle:@"Next →"
@@ -308,7 +338,13 @@ static const CGFloat kWideThreshold = 700.0;
         [self.feedbackLabel.trailingAnchor constraintEqualToAnchor:self.controlsView.trailingAnchor
                                                           constant:-m],
 
-        [self.nextButton.topAnchor       constraintEqualToAnchor:self.feedbackLabel.bottomAnchor
+        // Time badge – centred pill below the feedback line.
+        [self.timeBadge.topAnchor        constraintEqualToAnchor:self.feedbackLabel.bottomAnchor
+                                                        constant:8.0],
+        [self.timeBadge.centerXAnchor    constraintEqualToAnchor:self.controlsView.centerXAnchor],
+        [self.timeBadge.heightAnchor     constraintEqualToConstant:30.0],
+
+        [self.nextButton.topAnchor       constraintEqualToAnchor:self.timeBadge.bottomAnchor
                                                         constant:12.0],
         [self.nextButton.leadingAnchor   constraintEqualToAnchor:self.controlsView.leadingAnchor
                                                         constant:m],
@@ -335,7 +371,12 @@ static const CGFloat kWideThreshold = 700.0;
     // Outer layout pins – direction-independent parts.
     // Everything is relative to contentView (the scroll view's content).
     [NSLayoutConstraint activateConstraints:@[
-        [self.boardView.topAnchor     constraintEqualToAnchor:self.contentView.topAnchor     constant:8.0],
+        // Info line spans the full content width at the very top.
+        [self.infoLabel.topAnchor      constraintEqualToAnchor:self.contentView.topAnchor     constant:m],
+        [self.infoLabel.leadingAnchor  constraintEqualToAnchor:self.contentView.leadingAnchor constant:m],
+        [self.infoLabel.trailingAnchor constraintEqualToAnchor:self.contentView.trailingAnchor constant:-m],
+
+        [self.boardView.topAnchor     constraintEqualToAnchor:self.infoLabel.bottomAnchor    constant:8.0],
         [self.boardView.leadingAnchor constraintEqualToAnchor:self.contentView.leadingAnchor constant:8.0],
 
         [self.boardIDView.topAnchor     constraintEqualToAnchor:self.boardView.bottomAnchor
@@ -344,7 +385,7 @@ static const CGFloat kWideThreshold = 700.0;
         [self.boardIDView.trailingAnchor constraintEqualToAnchor:self.boardView.trailingAnchor],
 
         // controlsView.top is direction-dependent and set in viewDidLayoutSubviews:
-        // wide  -> pinned to contentView.top (board left, controls right, both at top)
+        // wide  -> pinned below the info line (board left, controls right)
         // narrow-> pinned below the board ID view (board on top, controls below)
         [self.controlsView.trailingAnchor constraintEqualToAnchor:self.contentView.trailingAnchor],
     ]];
@@ -416,7 +457,8 @@ static const CGFloat kWideThreshold = 700.0;
         // width (safe), but vertical anchors hang off contentView so the
         // scroll view can size its content.
         self.wideConstraints = @[
-            [self.controlsView.topAnchor   constraintEqualToAnchor:self.contentView.topAnchor],
+            [self.controlsView.topAnchor   constraintEqualToAnchor:self.infoLabel.bottomAnchor
+                                                          constant:8.0],
             [self.boardView.trailingAnchor constraintEqualToAnchor:self.controlsView.leadingAnchor
                                                           constant:-8.0],
             [self.boardView.widthAnchor    constraintEqualToAnchor:self.contentView.widthAnchor
@@ -526,6 +568,7 @@ static const CGFloat kWideThreshold = 700.0;
     self.blueField.text       = @"";
     self.yellowField.text     = @"";
     self.feedbackLabel.alpha  = 0.0;
+    self.timeBadge.alpha      = 0.0;
     self.submitButton.hidden  = NO;
     self.cancelButton.hidden  = NO;
     self.nextButton.hidden    = YES;
@@ -606,11 +649,8 @@ static const CGFloat kWideThreshold = 700.0;
 
     if (blueOK && yellowOK)
     {
-        NSString *timeStr = !self.measureTime
-            ? [NSString stringWithFormat:@"  ⏱ %lds", (long)self.elapsedSeconds]
-            : @"";
-        [msg appendFormat:@"✓  Correct!  %ld : %ld%@",
-         (long)correctBlue, (long)correctYellow, timeStr];
+        [msg appendFormat:@"✓  Correct!  %ld : %ld",
+         (long)correctBlue, (long)correctYellow];
         self.feedbackLabel.textColor = [UIColor systemGreenColor];
     }
     else
@@ -625,15 +665,28 @@ static const CGFloat kWideThreshold = 700.0;
             [msg appendFormat:@"✗  Opponent: you said %ld, correct: %ld",
              (long)self.yellowField.text.integerValue, (long)correctYellow];
         }
-        if (!self.measureTime)
-        {
-            [msg appendFormat:@"\n⏱ %lds", (long)self.elapsedSeconds];
-        }
         self.feedbackLabel.textColor = [UIColor systemRedColor];
     }
 
     self.feedbackLabel.text = msg;
-    [UIView animateWithDuration:0.2 animations:^{ self.feedbackLabel.alpha = 1.0; }];
+
+    // Show the answer time as a coloured badge in both modes.
+    [self showTimeBadge];
+
+    [UIView animateWithDuration:0.2 animations:^{
+        self.feedbackLabel.alpha = 1.0;
+        self.timeBadge.alpha     = 1.0;
+    }];
+}
+
+// Fills the time badge with the elapsed time and colours it by threshold.
+- (void)showTimeBadge
+{
+    NSInteger s = (NSInteger)self.elapsedSeconds;
+    // Leading/trailing spaces give the pill some horizontal padding,
+    // since UILabel has no intrinsic inset.
+    self.timeBadge.text            = [NSString stringWithFormat:@"  ⏱ %lds  ", (long)s];
+    self.timeBadge.backgroundColor = [BGGTimeColor colorForSeconds:s];
 }
 
 #pragma mark - Keyboard
@@ -694,8 +747,23 @@ static const CGFloat kWideThreshold = 700.0;
 - (void)updateTimerLabel
 {
     NSInteger s = (NSInteger)self.elapsedSeconds;
-    self.timerLabel.text = [NSString stringWithFormat:@"%ld:%02ld",
-                            (long)(s / 60), (long)(s % 60)];
+
+    // Workout shows the timer live and colours it by the current band.
+    // Training keeps the timer hidden, so this only affects the workout.
+    if (self.measureTime)
+    {
+        self.timerLabel.text = [NSString stringWithFormat:@"%ld:%02ld",
+                                (long)(s / 60), (long)(s % 60)];
+        self.timerLabel.textColor       = [UIColor whiteColor];
+        self.timerLabel.backgroundColor = [BGGTimeColor colorForSeconds:s];
+        self.timerLabel.layer.cornerRadius  = 8.0;
+        self.timerLabel.layer.masksToBounds = YES;
+    }
+    else
+    {
+        self.timerLabel.text = [NSString stringWithFormat:@"%ld:%02ld",
+                                (long)(s / 60), (long)(s % 60)];
+    }
 }
 
 #pragma mark - Summary
