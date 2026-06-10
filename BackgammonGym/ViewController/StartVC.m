@@ -49,7 +49,6 @@
     [self setupTiles];
     [self setupCollectionView];
     
-    BGGBoardState *test = [BGGBoardState startingPosition];
 }
 
 #pragma mark - Setup

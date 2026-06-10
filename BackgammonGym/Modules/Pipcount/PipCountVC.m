@@ -14,6 +14,7 @@
 #import "PipCountTrainingVC.h"
 #import "PipCountWorkoutVC.h"
 #import "PipCountProgressVC.h"
+#import "BackgammonGym-Swift.h"
 
 typedef NS_ENUM(NSInteger, PipCountSection)
 {
@@ -60,6 +61,12 @@ static NSString * sectionSymbol(PipCountSection section)
 @property (nonatomic, strong) PipCountWarmupVC *warmupVC;
 @property (nonatomic, strong) PipCountClusterVC *clusterVC;
 
+// Nav bar items kept as properties so showSection: can manage them
+// regardless of how many are currently shown.
+@property (nonatomic, strong) UIBarButtonItem *menuBarItem;
+@property (nonatomic, strong) UIButton        *menuButton;
+@property (nonatomic, strong) UIBarButtonItem *chartBarItem;
+
 @end
 
 @implementation PipCountVC
@@ -72,8 +79,8 @@ static NSString * sectionSymbol(PipCountSection section)
 
     [self installHomeButton];
     [self setupContainerView];
-    [self showSection:PipCountSectionWarmup];
     [self setupMenuButton];
+    [self showSection:PipCountSectionWarmup];
 }
 
 #pragma mark - Container
@@ -102,9 +109,38 @@ static NSString * sectionSymbol(PipCountSection section)
     button.tintColor = [UIColor colorNamed:@"AccentColor"];
     button.menu = [self buildMenu];
     button.showsMenuAsPrimaryAction = YES;
+    self.menuButton = button;
 
-    UIBarButtonItem *item = [[UIBarButtonItem alloc] initWithCustomView:button];
-    self.navigationItem.rightBarButtonItem = item;
+    self.menuBarItem = [[UIBarButtonItem alloc] initWithCustomView:button];
+
+    // Chart button, shown only while the Progress section is active.
+    self.chartBarItem = [[UIBarButtonItem alloc]
+        initWithImage:[UIImage systemImageNamed:@"chart.bar.xaxis"]
+                style:UIBarButtonItemStylePlain
+               target:self
+               action:@selector(showChart)];
+    self.chartBarItem.tintColor = [UIColor colorNamed:@"AccentColor"];
+
+    [self updateRightBarButtonsForSection:self.activeSection];
+}
+
+// Menu is always present; the chart button only in the Progress section.
+- (void)updateRightBarButtonsForSection:(PipCountSection)section
+{
+    if (section == PipCountSectionProgress)
+    {
+        self.navigationItem.rightBarButtonItems = @[self.menuBarItem, self.chartBarItem];
+    }
+    else
+    {
+        self.navigationItem.rightBarButtonItems = @[self.menuBarItem];
+    }
+}
+
+- (void)showChart
+{
+    PipTrendHostController *vc = [[PipTrendHostController alloc] init];
+    [self.navigationController pushViewController:vc animated:YES];
 }
 
 // Rebuild the menu so the checkmark reflects the current section.
@@ -171,13 +207,10 @@ static NSString * sectionSymbol(PipCountSection section)
     // Show the section name in the navigation bar.
     self.navigationItem.title = sectionTitle(section);
 
-    // Rebuild the menu so the checkmark moves to the new section.
-    // The menu lives on the custom UIButton, not the bar button item.
-    if ([self.navigationItem.rightBarButtonItem.customView isKindOfClass:[UIButton class]])
-    {
-        UIButton *button = (UIButton *)self.navigationItem.rightBarButtonItem.customView;
-        button.menu = [self buildMenu];
-    }
+    // Rebuild the menu so the checkmark moves to the new section, and show
+    // the chart button only in the Progress section.
+    self.menuButton.menu = [self buildMenu];
+    [self updateRightBarButtonsForSection:section];
 }
 
 - (UIViewController *)childForSection:(PipCountSection)section

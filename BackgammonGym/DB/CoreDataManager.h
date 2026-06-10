@@ -75,6 +75,18 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (NSArray<BGGEarnedAchievement *> *)getAllEarnedAchievements;
 
+// MARK: Aggregation for charts
+
+// Builds a chart-friendly array: one dictionary per workout, oldest first
+// (left to right on the time axis). Keys:
+//   @"label"      NSString  – short date, e.g. "10 Jun"
+//   @"percent"    NSNumber  – hit rate 0–100
+//   @"avgSeconds" NSNumber  – average answer time in seconds
+//   @"mode"       NSString  – "training" / "workout"
+//   @"count"      NSNumber  – number of attempts in the session
+// Optionally filtered by mode (pass nil for all).
+- (NSArray<NSDictionary *> *)sessionChartDataForMode:(nullable NSString *)mode;
+
 @end
 
 NS_ASSUME_NONNULL_END
