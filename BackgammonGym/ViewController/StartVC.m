@@ -50,8 +50,6 @@
     [self setupCollectionView];
     
     BGGBoardState *test = [BGGBoardState startingPosition];
-    NSLog(@"Blau gesamt: %ld", (long)[test totalCheckersForPlayer:BGGPlayerBlue]);
-    NSLog(@"Gültig: %d", [test isValidCheckerCount]);
 }
 
 #pragma mark - Setup

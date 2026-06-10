@@ -6,6 +6,7 @@
 //
 
 #import "AppDelegate.h"
+#import "CoreDataManager.h"
 
 @interface AppDelegate ()
 
@@ -23,6 +24,8 @@
     UINavigationBar.appearance.standardAppearance   = appearance;
     UINavigationBar.appearance.scrollEdgeAppearance = appearance;
     UINavigationBar.appearance.tintColor            = accent;
+
+    [CoreDataManager sharedManager];
 
     return YES;
 }
