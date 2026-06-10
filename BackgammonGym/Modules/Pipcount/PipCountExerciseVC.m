@@ -22,6 +22,7 @@
 #import "PositionDatabase.h"
 #import "Tools.h"
 #import "BGGTimeColor.h"
+#import "CoreDataManager.h"
 
 static const CGFloat kWideThreshold = 700.0;
 
@@ -72,6 +73,9 @@ static const CGFloat kWideThreshold = 700.0;
 @property (nonatomic, assign) NSInteger correctCount;
 @property (nonatomic, assign) NSInteger totalCount;
 
+// The Core Data workout for the running session (nil until started).
+@property (nonatomic, strong) BGGWorkout *currentWorkout;
+
 // Layout
 @property (nonatomic, strong) NSArray<NSLayoutConstraint *> *wideConstraints;
 @property (nonatomic, strong) NSArray<NSLayoutConstraint *> *narrowConstraints;
@@ -86,6 +90,11 @@ static const CGFloat kWideThreshold = 700.0;
 
 // Base implementation – subclasses must override to define their position set.
 - (NSArray<NSString *> *)requiredTags { return @[]; }
+
+// Identifiers stored with every workout and attempt. Subclasses override
+// modeIdentifier; the module stays "pipcount" across this class family.
+- (NSString *)moduleIdentifier { return @"pipcount"; }
+- (NSString *)modeIdentifier   { return @"";         }
 
 // Base implementation – no info line. Subclasses override.
 - (nullable NSString *)infoText { return nil; }
@@ -548,6 +557,14 @@ static const CGFloat kWideThreshold = 700.0;
     self.currentIndex = 0;
     self.correctCount = 0;
     self.totalCount   = count;
+
+    // Open a workout for this session. Attempts are added per check.
+    self.currentWorkout = [[CoreDataManager sharedManager]
+                           createWorkoutWithModule:[self moduleIdentifier]
+                                              mode:[self modeIdentifier]
+                                        totalCount:count];
+    [[CoreDataManager sharedManager] saveContext];
+
     [self showCurrentPosition];
 }
 
@@ -609,6 +626,21 @@ static const CGFloat kWideThreshold = 700.0;
     BOOL bothOK  = blueOK && yellowOK;
 
     if (bothOK) { self.correctCount++; }
+
+    // Persist this attempt immediately (crash-safe). Translate the internal
+    // Blue/Yellow board sides to the Player/Opponent storage convention:
+    // Blue is the user (bottom), Yellow is the opponent (top).
+    BGGPositionEntry *entry = self.positions[(NSUInteger)self.currentIndex];
+    CoreDataManager *cd = [CoreDataManager sharedManager];
+    [cd addAttemptToWorkout:self.currentWorkout
+                 positionID:entry.positionID
+                  isCorrect:bothOK
+                  elapsedMs:(NSInteger)(self.elapsedSeconds * 1000.0)
+                 userPlayer:userBlue
+               userOpponent:userYellow
+              correctPlayer:correctBlue
+            correctOpponent:correctYellow];
+    [cd saveContext];
 
     [self showFeedbackBlueOK:blueOK yellowOK:yellowOK
                  correctBlue:correctBlue correctYellow:correctYellow];
@@ -770,6 +802,13 @@ static const CGFloat kWideThreshold = 700.0;
 
 - (void)showSummary
 {
+    // The session ran to the end: stamp the workout as finished.
+    if (self.currentWorkout != nil)
+    {
+        self.currentWorkout.finishedAt = [NSDate date];
+        [[CoreDataManager sharedManager] saveContext];
+    }
+
     NSString *message = [NSString stringWithFormat:
                          @"%ld of %ld correct (%.0f%%)",
                          (long)self.correctCount, (long)self.totalCount,

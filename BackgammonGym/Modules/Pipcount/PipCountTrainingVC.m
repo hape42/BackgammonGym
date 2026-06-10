@@ -10,6 +10,7 @@
 - (BOOL)showsPointNumbers { return YES; }
 - (BOOL)measureTime       { return NO;  }
 - (NSArray<NSString *> *)requiredTags { return @[@"pipcount", @"training"]; }
+- (NSString *)modeIdentifier { return @"training"; }
 
 - (NSString *)infoText
 {

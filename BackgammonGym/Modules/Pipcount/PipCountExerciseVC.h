@@ -30,6 +30,12 @@ NS_ASSUME_NONNULL_BEGIN
 // describing the mode. The base implementation returns nil (no info line).
 - (nullable NSString *)infoText;
 
+// Identifiers stored with every workout and attempt for later filtering.
+// Base: module "pipcount", empty mode. Subclasses override modeIdentifier
+// ("training" / "workout").
+- (NSString *)moduleIdentifier;
+- (NSString *)modeIdentifier;
+
 @end
 
 NS_ASSUME_NONNULL_END
