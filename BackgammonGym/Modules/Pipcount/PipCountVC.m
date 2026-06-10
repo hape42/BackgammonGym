@@ -13,6 +13,7 @@
 #import "PipCountClusterVC.h"
 #import "PipCountTrainingVC.h"
 #import "PipCountWorkoutVC.h"
+#import "PipCountProgressVC.h"
 
 typedef NS_ENUM(NSInteger, PipCountSection)
 {
@@ -204,8 +205,7 @@ static NSString * sectionSymbol(PipCountSection section)
             return [[PipCountWorkoutVC alloc] init];
             
         case PipCountSectionProgress:
-            return [self placeholderForSection:section
-                                       subtitle:@"Your statistics, trends and achievements across all sessions."];
+            return [[PipCountProgressVC alloc] init];
     }
 }
 
