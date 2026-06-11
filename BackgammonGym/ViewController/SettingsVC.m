@@ -64,7 +64,8 @@ static NSString * const kCellID = @"BGGBoardStyleCell";
                               withHorizontalFittingPriority:UILayoutPriorityRequired
                                     verticalFittingPriority:UILayoutPriorityFittingSizeLevel].height;
 
-    if (ABS(header.frame.size.height - height) > 0.5)
+    if (ABS(header.frame.size.height - height) > 0.5 ||
+        ABS(header.frame.size.width  - targetWidth) > 0.5)
     {
         CGRect f = header.frame;
         f.size.height = height;
@@ -147,11 +148,20 @@ static NSString * const kCellID = @"BGGBoardStyleCell";
 
     self.tableView.tableHeaderView = [self buildHeaderView];
 
+    // The table is centered and capped at 400pt on wide screens, but on
+    // narrow phones it must shrink to fit inside the safe area with a margin,
+    // otherwise the header content (titles, steppers) gets clipped at the edges.
+    NSLayoutConstraint *maxWidth =
+        [self.tableView.widthAnchor constraintEqualToConstant:400.0];
+    maxWidth.priority = UILayoutPriorityDefaultHigh;   // yields when too wide
+
     [NSLayoutConstraint activateConstraints:@[
         [self.tableView.topAnchor        constraintEqualToAnchor:safe.topAnchor constant:10.0],
         [self.tableView.bottomAnchor     constraintEqualToAnchor:self.versionLabel.topAnchor constant:-10.0],
         [self.tableView.centerXAnchor    constraintEqualToAnchor:safe.centerXAnchor],
-        [self.tableView.widthAnchor      constraintEqualToConstant:400.0],
+        [self.tableView.leadingAnchor    constraintGreaterThanOrEqualToAnchor:safe.leadingAnchor constant:16.0],
+        [self.tableView.trailingAnchor   constraintLessThanOrEqualToAnchor:safe.trailingAnchor constant:-16.0],
+        maxWidth,
 
         [self.versionLabel.bottomAnchor   constraintEqualToAnchor:safe.bottomAnchor constant:-8.0],
         [self.versionLabel.leadingAnchor  constraintEqualToAnchor:safe.leadingAnchor constant:16.0],
@@ -182,18 +192,35 @@ static NSString * const kCellID = @"BGGBoardStyleCell";
     [header addSubview:rateGroup];
     [header addSubview:selectBoard];
 
+    // The three trailing constraints are set just below required priority.
+    // When the table first lays out, UIKit briefly imposes a width==0 on the
+    // header view (UIView-Encapsulated-Layout-Width) before viewDidLayoutSubviews
+    // sets the real width. At that instant leading==4 and trailing==-4 can't both
+    // hold, which logs a constraint conflict. Priority 999 lets the trailing
+    // edge yield for that one frame instead of breaking noisily; once the real
+    // width is in place everything satisfies cleanly.
+    NSLayoutConstraint *timeTrailing =
+        [timeGroup.trailingAnchor constraintEqualToAnchor:header.trailingAnchor constant:-4.0];
+    NSLayoutConstraint *rateTrailing =
+        [rateGroup.trailingAnchor constraintEqualToAnchor:header.trailingAnchor constant:-4.0];
+    NSLayoutConstraint *boardTrailing =
+        [selectBoard.trailingAnchor constraintEqualToAnchor:header.trailingAnchor constant:-4.0];
+    timeTrailing.priority  = 999;
+    rateTrailing.priority  = 999;
+    boardTrailing.priority = 999;
+
     [NSLayoutConstraint activateConstraints:@[
         [timeGroup.topAnchor      constraintEqualToAnchor:header.topAnchor constant:6.0],
-        [timeGroup.leadingAnchor  constraintEqualToAnchor:header.leadingAnchor],
-        [timeGroup.trailingAnchor constraintEqualToAnchor:header.trailingAnchor],
+        [timeGroup.leadingAnchor  constraintEqualToAnchor:header.leadingAnchor constant:4.0],
+        timeTrailing,
 
         [rateGroup.topAnchor      constraintEqualToAnchor:timeGroup.bottomAnchor constant:22.0],
-        [rateGroup.leadingAnchor  constraintEqualToAnchor:header.leadingAnchor],
-        [rateGroup.trailingAnchor constraintEqualToAnchor:header.trailingAnchor],
+        [rateGroup.leadingAnchor  constraintEqualToAnchor:header.leadingAnchor constant:4.0],
+        rateTrailing,
 
         [selectBoard.topAnchor       constraintEqualToAnchor:rateGroup.bottomAnchor constant:22.0],
-        [selectBoard.leadingAnchor   constraintEqualToAnchor:header.leadingAnchor],
-        [selectBoard.trailingAnchor  constraintEqualToAnchor:header.trailingAnchor],
+        [selectBoard.leadingAnchor   constraintEqualToAnchor:header.leadingAnchor constant:4.0],
+        boardTrailing,
         [selectBoard.bottomAnchor    constraintEqualToAnchor:header.bottomAnchor constant:-10.0],
     ]];
 
@@ -281,24 +308,37 @@ static NSString * const kCellID = @"BGGBoardStyleCell";
     [group addSubview:ok];
     [group addSubview:bad];
 
+    // Trailing constraints kept just below required, for the same reason as in
+    // buildHeaderView: during the table's first layout pass the header (and thus
+    // these nested groups) is briefly forced to width 0, which would otherwise
+    // make leading and trailing conflict and log noise.
+    NSLayoutConstraint *titleTrailing = [title.trailingAnchor constraintEqualToAnchor:group.trailingAnchor];
+    NSLayoutConstraint *goodTrailing  = [good.trailingAnchor  constraintEqualToAnchor:group.trailingAnchor];
+    NSLayoutConstraint *okTrailing    = [ok.trailingAnchor    constraintEqualToAnchor:group.trailingAnchor];
+    NSLayoutConstraint *badTrailing   = [bad.trailingAnchor   constraintEqualToAnchor:group.trailingAnchor];
+    titleTrailing.priority = 999;
+    goodTrailing.priority  = 999;
+    okTrailing.priority    = 999;
+    badTrailing.priority   = 999;
+
     [NSLayoutConstraint activateConstraints:@[
         [title.topAnchor      constraintEqualToAnchor:group.topAnchor],
         [title.leadingAnchor  constraintEqualToAnchor:group.leadingAnchor],
-        [title.trailingAnchor constraintEqualToAnchor:group.trailingAnchor],
+        titleTrailing,
 
         [good.topAnchor       constraintEqualToAnchor:title.bottomAnchor constant:10.0],
         [good.leadingAnchor   constraintEqualToAnchor:group.leadingAnchor],
-        [good.trailingAnchor  constraintEqualToAnchor:group.trailingAnchor],
+        goodTrailing,
         [good.heightAnchor    constraintEqualToConstant:38.0],
 
         [ok.topAnchor         constraintEqualToAnchor:good.bottomAnchor constant:8.0],
         [ok.leadingAnchor     constraintEqualToAnchor:group.leadingAnchor],
-        [ok.trailingAnchor    constraintEqualToAnchor:group.trailingAnchor],
+        okTrailing,
         [ok.heightAnchor      constraintEqualToConstant:38.0],
 
         [bad.topAnchor        constraintEqualToAnchor:ok.bottomAnchor constant:8.0],
         [bad.leadingAnchor    constraintEqualToAnchor:group.leadingAnchor],
-        [bad.trailingAnchor   constraintEqualToAnchor:group.trailingAnchor],
+        badTrailing,
         [bad.heightAnchor     constraintEqualToConstant:38.0],
 
         [group.bottomAnchor   constraintEqualToAnchor:bad.bottomAnchor],
