@@ -15,17 +15,21 @@ static NSString * const kCellID = @"BGGBoardStyleCell";
 
 @property (nonatomic, strong) UITableView   *tableView;
 @property (nonatomic, strong) UILabel       *versionLabel;
-@property (nonatomic, strong) UILabel       *selectBoard;
 @property (nonatomic, strong) NSArray<NSDictionary *> *boardsArray;
 
-// Timing thresholds
-@property (nonatomic, strong) UILabel    *timingHeader;
-@property (nonatomic, strong) UILabel    *greenBadge;
-@property (nonatomic, strong) UILabel    *orangeBadge;
-@property (nonatomic, strong) UILabel    *redBadge;
-@property (nonatomic, strong) UIStepper  *greenStepper;
-@property (nonatomic, strong) UIStepper  *orangeStepper;
-@property (nonatomic, strong) UIView     *timingGroup;
+// Answer-time threshold badges (seconds).
+@property (nonatomic, strong) UILabel    *timeGreenBadge;
+@property (nonatomic, strong) UILabel    *timeOrangeBadge;
+@property (nonatomic, strong) UILabel    *timeRedBadge;
+@property (nonatomic, strong) UIStepper  *timeGreenStepper;
+@property (nonatomic, strong) UIStepper  *timeOrangeStepper;
+
+// Hit-rate threshold badges (percent).
+@property (nonatomic, strong) UILabel    *rateGreenBadge;
+@property (nonatomic, strong) UILabel    *rateOrangeBadge;
+@property (nonatomic, strong) UILabel    *rateRedBadge;
+@property (nonatomic, strong) UIStepper  *rateGreenStepper;
+@property (nonatomic, strong) UIStepper  *rateOrangeStepper;
 
 @end
 
@@ -41,6 +45,33 @@ static NSString * const kCellID = @"BGGBoardStyleCell";
     [BGGTimeColor registerDefaults];
     [self setupBoardArray];
     [self setupContent];
+}
+
+// The table header view uses Auto Layout internally; translate that into a
+// concrete height once the bounds are known, otherwise the header collapses.
+- (void)viewDidLayoutSubviews
+{
+    [super viewDidLayoutSubviews];
+
+    UIView *header = self.tableView.tableHeaderView;
+    if (header == nil) { return; }
+
+    CGFloat targetWidth = self.tableView.bounds.size.width;
+    if (targetWidth <= 0) { return; }
+
+    CGFloat height = [header systemLayoutSizeFittingSize:
+                      CGSizeMake(targetWidth, UILayoutFittingCompressedSize.height)
+                              withHorizontalFittingPriority:UILayoutPriorityRequired
+                                    verticalFittingPriority:UILayoutPriorityFittingSizeLevel].height;
+
+    if (ABS(header.frame.size.height - height) > 0.5)
+    {
+        CGRect f = header.frame;
+        f.size.height = height;
+        f.size.width  = targetWidth;
+        header.frame  = f;
+        self.tableView.tableHeaderView = header;   // re-assign to apply
+    }
 }
 
 #pragma mark - Version
@@ -92,7 +123,7 @@ static NSString * const kCellID = @"BGGBoardStyleCell";
 
     UILayoutGuide *safe = self.view.safeAreaLayoutGuide;
 
-    // Version / build label
+    // Version / build label (pinned at the very bottom)
     self.versionLabel = [[UILabel alloc] init];
     self.versionLabel.text          = [self versionString];
     self.versionLabel.font          = [UIFont preferredFontForTextStyle:UIFontTextStyleFootnote];
@@ -101,129 +132,192 @@ static NSString * const kCellID = @"BGGBoardStyleCell";
     self.versionLabel.translatesAutoresizingMaskIntoConstraints = NO;
     [self.view addSubview:self.versionLabel];
 
-    // Timing thresholds group (two stepper rows)
-    [self setupTimingGroup];
-
-    // Header label
-    self.selectBoard = [[UILabel alloc] init];
-    self.selectBoard.text = @"Select Board Style";
-    self.selectBoard.translatesAutoresizingMaskIntoConstraints = NO;
-    [self.view addSubview:self.selectBoard];
-
-    // Table view
+    // Table view (board styles). The two threshold groups + the "Select Board
+    // Style" header live in the table's header view, so everything scrolls
+    // together without nesting scroll views.
     self.tableView = [[UITableView alloc] initWithFrame:CGRectZero style:UITableViewStylePlain];
     self.tableView.translatesAutoresizingMaskIntoConstraints = NO;
     self.tableView.backgroundColor = [UIColor clearColor];
     self.tableView.delegate   = self;
     self.tableView.dataSource = self;
     self.tableView.rowHeight  = 100.0;
-    self.tableView.layer.borderWidth  = 1.0;
-    self.tableView.layer.cornerRadius = 14.0;
-    self.tableView.layer.borderColor  = [UIColor colorNamed:@"ColorImages"].CGColor;
     [self.tableView registerClass:[BGGBoardStyleCell class]
            forCellReuseIdentifier:kCellID];
     [self.view addSubview:self.tableView];
 
-    [NSLayoutConstraint activateConstraints:@[
-        [self.timingGroup.topAnchor      constraintEqualToAnchor:safe.topAnchor constant:10.0],
-        [self.timingGroup.centerXAnchor  constraintEqualToAnchor:safe.centerXAnchor],
-        [self.timingGroup.widthAnchor    constraintEqualToConstant:400.0],
+    self.tableView.tableHeaderView = [self buildHeaderView];
 
-        [self.selectBoard.topAnchor      constraintEqualToAnchor:self.timingGroup.bottomAnchor constant:18.0],
-        [self.selectBoard.centerXAnchor  constraintEqualToAnchor:safe.centerXAnchor],
-        [self.selectBoard.heightAnchor   constraintEqualToConstant:35.0],
+    [NSLayoutConstraint activateConstraints:@[
+        [self.tableView.topAnchor        constraintEqualToAnchor:safe.topAnchor constant:10.0],
+        [self.tableView.bottomAnchor     constraintEqualToAnchor:self.versionLabel.topAnchor constant:-10.0],
+        [self.tableView.centerXAnchor    constraintEqualToAnchor:safe.centerXAnchor],
+        [self.tableView.widthAnchor      constraintEqualToConstant:400.0],
 
         [self.versionLabel.bottomAnchor   constraintEqualToAnchor:safe.bottomAnchor constant:-8.0],
         [self.versionLabel.leadingAnchor  constraintEqualToAnchor:safe.leadingAnchor constant:16.0],
         [self.versionLabel.trailingAnchor constraintEqualToAnchor:safe.trailingAnchor constant:-16.0],
-
-        [self.tableView.topAnchor        constraintEqualToAnchor:self.selectBoard.bottomAnchor constant:10.0],
-        [self.tableView.bottomAnchor     constraintEqualToAnchor:self.versionLabel.topAnchor constant:-10.0],
-        [self.tableView.centerXAnchor    constraintEqualToAnchor:safe.centerXAnchor],
-        [self.tableView.widthAnchor      constraintEqualToConstant:400.0],
     ]];
 }
 
-#pragma mark - Timing group
+#pragma mark - Header view (threshold groups + board section title)
 
-- (void)setupTimingGroup
+- (UIView *)buildHeaderView
 {
-    self.timingGroup = [[UIView alloc] init];
-    self.timingGroup.translatesAutoresizingMaskIntoConstraints = NO;
-    [self.view addSubview:self.timingGroup];
+    UIView *header = [[UIView alloc] init];
+    // A starting frame; the real height is computed in viewDidLayoutSubviews.
+    header.frame = CGRectMake(0, 0, 400, 400);
 
-    // Group header
-    self.timingHeader = [[UILabel alloc] init];
-    self.timingHeader.text      = @"Answer time thresholds";
-    self.timingHeader.font      = [UIFont preferredFontForTextStyle:UIFontTextStyleHeadline];
-    self.timingHeader.translatesAutoresizingMaskIntoConstraints = NO;
-    [self.timingGroup addSubview:self.timingHeader];
+    UIView *timeGroup = [self buildTimeGroup];
+    UIView *rateGroup = [self buildRateGroup];
 
-    // Badges show the time range in the matching colour.
-    self.greenBadge  = [self badge];
-    self.orangeBadge = [self badge];
-    self.redBadge    = [self badge];
+    UILabel *selectBoard = [[UILabel alloc] init];
+    selectBoard.text = @"Select Board Style";
+    selectBoard.font = [UIFont preferredFontForTextStyle:UIFontTextStyleHeadline];
+    selectBoard.translatesAutoresizingMaskIntoConstraints = NO;
 
-    // Good row: green badge + stepper
-    self.greenStepper = [[UIStepper alloc] init];
-    self.greenStepper.minimumValue = 1;
-    self.greenStepper.maximumValue = 300;
-    self.greenStepper.stepValue    = 1;
-    self.greenStepper.value        = (double)[BGGTimeColor greenMax];
-    self.greenStepper.tintColor    = [UIColor colorNamed:@"AccentColor"];
-    [self.greenStepper addTarget:self action:@selector(greenStepperChanged)
-                forControlEvents:UIControlEventValueChanged];
+    timeGroup.translatesAutoresizingMaskIntoConstraints = NO;
+    rateGroup.translatesAutoresizingMaskIntoConstraints = NO;
 
-    UIView *goodRow = [self rowWithTitle:[self rowTitle:@"Good"]
-                                   badge:self.greenBadge
-                                 stepper:self.greenStepper];
-    [self.timingGroup addSubview:goodRow];
-
-    // OK row: orange badge + stepper
-    self.orangeStepper = [[UIStepper alloc] init];
-    self.orangeStepper.minimumValue = 2;
-    self.orangeStepper.maximumValue = 600;
-    self.orangeStepper.stepValue    = 1;
-    self.orangeStepper.value        = (double)[BGGTimeColor orangeMax];
-    self.orangeStepper.tintColor    = [UIColor colorNamed:@"AccentColor"];
-    [self.orangeStepper addTarget:self action:@selector(orangeStepperChanged)
-                 forControlEvents:UIControlEventValueChanged];
-
-    UIView *okRow = [self rowWithTitle:[self rowTitle:@"OK"]
-                                 badge:self.orangeBadge
-                               stepper:self.orangeStepper];
-    [self.timingGroup addSubview:okRow];
-
-    // Bad row: red badge, no stepper (follows automatically from the OK value).
-    UIView *badRow = [self rowWithTitle:[self rowTitle:@"Bad"]
-                                  badge:self.redBadge
-                                stepper:nil];
-    [self.timingGroup addSubview:badRow];
+    [header addSubview:timeGroup];
+    [header addSubview:rateGroup];
+    [header addSubview:selectBoard];
 
     [NSLayoutConstraint activateConstraints:@[
-        [self.timingHeader.topAnchor      constraintEqualToAnchor:self.timingGroup.topAnchor],
-        [self.timingHeader.leadingAnchor  constraintEqualToAnchor:self.timingGroup.leadingAnchor],
-        [self.timingHeader.trailingAnchor constraintEqualToAnchor:self.timingGroup.trailingAnchor],
+        [timeGroup.topAnchor      constraintEqualToAnchor:header.topAnchor constant:6.0],
+        [timeGroup.leadingAnchor  constraintEqualToAnchor:header.leadingAnchor],
+        [timeGroup.trailingAnchor constraintEqualToAnchor:header.trailingAnchor],
 
-        [goodRow.topAnchor       constraintEqualToAnchor:self.timingHeader.bottomAnchor constant:10.0],
-        [goodRow.leadingAnchor   constraintEqualToAnchor:self.timingGroup.leadingAnchor],
-        [goodRow.trailingAnchor  constraintEqualToAnchor:self.timingGroup.trailingAnchor],
-        [goodRow.heightAnchor    constraintEqualToConstant:38.0],
+        [rateGroup.topAnchor      constraintEqualToAnchor:timeGroup.bottomAnchor constant:22.0],
+        [rateGroup.leadingAnchor  constraintEqualToAnchor:header.leadingAnchor],
+        [rateGroup.trailingAnchor constraintEqualToAnchor:header.trailingAnchor],
 
-        [okRow.topAnchor         constraintEqualToAnchor:goodRow.bottomAnchor constant:8.0],
-        [okRow.leadingAnchor     constraintEqualToAnchor:self.timingGroup.leadingAnchor],
-        [okRow.trailingAnchor    constraintEqualToAnchor:self.timingGroup.trailingAnchor],
-        [okRow.heightAnchor      constraintEqualToConstant:38.0],
-
-        [badRow.topAnchor        constraintEqualToAnchor:okRow.bottomAnchor constant:8.0],
-        [badRow.leadingAnchor    constraintEqualToAnchor:self.timingGroup.leadingAnchor],
-        [badRow.trailingAnchor   constraintEqualToAnchor:self.timingGroup.trailingAnchor],
-        [badRow.heightAnchor     constraintEqualToConstant:38.0],
-
-        [self.timingGroup.bottomAnchor constraintEqualToAnchor:badRow.bottomAnchor],
+        [selectBoard.topAnchor       constraintEqualToAnchor:rateGroup.bottomAnchor constant:22.0],
+        [selectBoard.leadingAnchor   constraintEqualToAnchor:header.leadingAnchor],
+        [selectBoard.trailingAnchor  constraintEqualToAnchor:header.trailingAnchor],
+        [selectBoard.bottomAnchor    constraintEqualToAnchor:header.bottomAnchor constant:-10.0],
     ]];
 
-    [self refreshTimingValues];
+    return header;
+}
+
+#pragma mark - Time threshold group
+
+- (UIView *)buildTimeGroup
+{
+    UIView *group = [[UIView alloc] init];
+
+    UILabel *title = [[UILabel alloc] init];
+    title.text = @"Answer time thresholds";
+    title.font = [UIFont preferredFontForTextStyle:UIFontTextStyleHeadline];
+    title.translatesAutoresizingMaskIntoConstraints = NO;
+    [group addSubview:title];
+
+    self.timeGreenBadge  = [self badge];
+    self.timeOrangeBadge = [self badge];
+    self.timeRedBadge    = [self badge];
+
+    self.timeGreenStepper = [self stepperWithMin:1 max:300
+                                           value:(double)[BGGTimeColor greenMax]
+                                          action:@selector(timeGreenChanged)];
+    self.timeOrangeStepper = [self stepperWithMin:2 max:600
+                                            value:(double)[BGGTimeColor orangeMax]
+                                           action:@selector(timeOrangeChanged)];
+
+    UIView *good = [self rowWithTitle:[self rowTitle:@"Good"] badge:self.timeGreenBadge
+                              stepper:self.timeGreenStepper];
+    UIView *ok   = [self rowWithTitle:[self rowTitle:@"OK"]   badge:self.timeOrangeBadge
+                              stepper:self.timeOrangeStepper];
+    UIView *bad  = [self rowWithTitle:[self rowTitle:@"Bad"]  badge:self.timeRedBadge
+                              stepper:nil];
+
+    [self stackGroup:group title:title good:good ok:ok bad:bad];
+    [self refreshTimeValues];
+    return group;
+}
+
+#pragma mark - Rate threshold group
+
+- (UIView *)buildRateGroup
+{
+    UIView *group = [[UIView alloc] init];
+
+    UILabel *title = [[UILabel alloc] init];
+    title.text = @"Hit rate thresholds";
+    title.font = [UIFont preferredFontForTextStyle:UIFontTextStyleHeadline];
+    title.translatesAutoresizingMaskIntoConstraints = NO;
+    [group addSubview:title];
+
+    self.rateGreenBadge  = [self badge];
+    self.rateOrangeBadge = [self badge];
+    self.rateRedBadge    = [self badge];
+
+    self.rateGreenStepper = [self stepperWithMin:2 max:100
+                                           value:(double)[BGGTimeColor rateGreenMin]
+                                          action:@selector(rateGreenChanged)];
+    self.rateOrangeStepper = [self stepperWithMin:1 max:99
+                                            value:(double)[BGGTimeColor rateOrangeMin]
+                                           action:@selector(rateOrangeChanged)];
+
+    UIView *good = [self rowWithTitle:[self rowTitle:@"Good"] badge:self.rateGreenBadge
+                              stepper:self.rateGreenStepper];
+    UIView *ok   = [self rowWithTitle:[self rowTitle:@"OK"]   badge:self.rateOrangeBadge
+                              stepper:self.rateOrangeStepper];
+    UIView *bad  = [self rowWithTitle:[self rowTitle:@"Bad"]  badge:self.rateRedBadge
+                              stepper:nil];
+
+    [self stackGroup:group title:title good:good ok:ok bad:bad];
+    [self refreshRateValues];
+    return group;
+}
+
+// Lays out a group: header title, then three rows stacked below it.
+- (void)stackGroup:(UIView *)group
+             title:(UILabel *)title
+              good:(UIView *)good
+                ok:(UIView *)ok
+               bad:(UIView *)bad
+{
+    [group addSubview:good];
+    [group addSubview:ok];
+    [group addSubview:bad];
+
+    [NSLayoutConstraint activateConstraints:@[
+        [title.topAnchor      constraintEqualToAnchor:group.topAnchor],
+        [title.leadingAnchor  constraintEqualToAnchor:group.leadingAnchor],
+        [title.trailingAnchor constraintEqualToAnchor:group.trailingAnchor],
+
+        [good.topAnchor       constraintEqualToAnchor:title.bottomAnchor constant:10.0],
+        [good.leadingAnchor   constraintEqualToAnchor:group.leadingAnchor],
+        [good.trailingAnchor  constraintEqualToAnchor:group.trailingAnchor],
+        [good.heightAnchor    constraintEqualToConstant:38.0],
+
+        [ok.topAnchor         constraintEqualToAnchor:good.bottomAnchor constant:8.0],
+        [ok.leadingAnchor     constraintEqualToAnchor:group.leadingAnchor],
+        [ok.trailingAnchor    constraintEqualToAnchor:group.trailingAnchor],
+        [ok.heightAnchor      constraintEqualToConstant:38.0],
+
+        [bad.topAnchor        constraintEqualToAnchor:ok.bottomAnchor constant:8.0],
+        [bad.leadingAnchor    constraintEqualToAnchor:group.leadingAnchor],
+        [bad.trailingAnchor   constraintEqualToAnchor:group.trailingAnchor],
+        [bad.heightAnchor     constraintEqualToConstant:38.0],
+
+        [group.bottomAnchor   constraintEqualToAnchor:bad.bottomAnchor],
+    ]];
+}
+
+#pragma mark - Reusable builders
+
+- (UIStepper *)stepperWithMin:(double)min max:(double)max
+                        value:(double)value action:(SEL)action
+{
+    UIStepper *s = [[UIStepper alloc] init];
+    s.minimumValue = min;
+    s.maximumValue = max;
+    s.stepValue    = 1;
+    s.value        = value;
+    s.tintColor    = [UIColor colorNamed:@"AccentColor"];
+    [s addTarget:self action:action forControlEvents:UIControlEventValueChanged];
+    return s;
 }
 
 // One row: title on the left, coloured badge + optional stepper on the right.
@@ -260,9 +354,8 @@ static NSString * const kCellID = @"BGGBoardStyleCell";
     }
     else
     {
-        // No stepper: align the badge where the others' badges sit, by
-        // pinning its trailing edge to the row's trailing edge minus a
-        // typical stepper width so all three badges line up.
+        // No stepper: align the badge under the others by leaving a typical
+        // stepper width on the right.
         [cons addObject:
          [badge.trailingAnchor constraintEqualToAnchor:row.trailingAnchor constant:-106.0]];
     }
@@ -280,7 +373,7 @@ static NSString * const kCellID = @"BGGBoardStyleCell";
     return lbl;
 }
 
-// A coloured pill with white text, holding a time range.
+// A coloured pill with white text.
 - (UILabel *)badge
 {
     UILabel *lbl = [[UILabel alloc] init];
@@ -293,37 +386,66 @@ static NSString * const kCellID = @"BGGBoardStyleCell";
     return lbl;
 }
 
-// Reflects the current thresholds in the three badges.
-- (void)refreshTimingValues
+#pragma mark - Time values
+
+- (void)refreshTimeValues
 {
     NSInteger green  = [BGGTimeColor greenMax];
     NSInteger orange = [BGGTimeColor orangeMax];
 
-    // Leading/trailing spaces pad the pill (UILabel has no intrinsic inset).
-    self.greenBadge.text  = [NSString stringWithFormat:@"  ≤ %ld seconds  ", (long)green];
-    self.orangeBadge.text = [NSString stringWithFormat:@"  ≤ %ld seconds  ", (long)orange];
-    self.redBadge.text    = [NSString stringWithFormat:@"  > %ld seconds  ", (long)orange];
+    self.timeGreenBadge.text  = [NSString stringWithFormat:@"  ≤ %ld seconds  ", (long)green];
+    self.timeOrangeBadge.text = [NSString stringWithFormat:@"  ≤ %ld seconds  ", (long)orange];
+    self.timeRedBadge.text    = [NSString stringWithFormat:@"  > %ld seconds  ", (long)orange];
 
-    self.greenBadge.backgroundColor  = [UIColor systemGreenColor];
-    self.orangeBadge.backgroundColor = [UIColor systemOrangeColor];
-    self.redBadge.backgroundColor    = [UIColor systemRedColor];
+    self.timeGreenBadge.backgroundColor  = [UIColor systemGreenColor];
+    self.timeOrangeBadge.backgroundColor = [UIColor systemOrangeColor];
+    self.timeRedBadge.backgroundColor    = [UIColor systemRedColor];
 }
 
-- (void)greenStepperChanged
+- (void)timeGreenChanged
 {
-    [BGGTimeColor setGreenMax:(NSInteger)self.greenStepper.value];
-    // The setter may clamp; reflect the stored value back into the stepper.
-    self.greenStepper.value = (double)[BGGTimeColor greenMax];
-    [self refreshTimingValues];
+    [BGGTimeColor setGreenMax:(NSInteger)self.timeGreenStepper.value];
+    self.timeGreenStepper.value = (double)[BGGTimeColor greenMax];
+    [self refreshTimeValues];
 }
 
-- (void)orangeStepperChanged
+- (void)timeOrangeChanged
 {
-    [BGGTimeColor setOrangeMax:(NSInteger)self.orangeStepper.value];
-    self.orangeStepper.value  = (double)[BGGTimeColor orangeMax];
-    // Green may have been clamped relative to orange; keep its stepper in sync.
-    self.greenStepper.value   = (double)[BGGTimeColor greenMax];
-    [self refreshTimingValues];
+    [BGGTimeColor setOrangeMax:(NSInteger)self.timeOrangeStepper.value];
+    self.timeOrangeStepper.value = (double)[BGGTimeColor orangeMax];
+    self.timeGreenStepper.value  = (double)[BGGTimeColor greenMax];
+    [self refreshTimeValues];
+}
+
+#pragma mark - Rate values
+
+- (void)refreshRateValues
+{
+    NSInteger green  = [BGGTimeColor rateGreenMin];
+    NSInteger orange = [BGGTimeColor rateOrangeMin];
+
+    self.rateGreenBadge.text  = [NSString stringWithFormat:@"  ≥ %ld%%  ", (long)green];
+    self.rateOrangeBadge.text = [NSString stringWithFormat:@"  ≥ %ld%%  ", (long)orange];
+    self.rateRedBadge.text    = [NSString stringWithFormat:@"  < %ld%%  ", (long)orange];
+
+    self.rateGreenBadge.backgroundColor  = [UIColor systemGreenColor];
+    self.rateOrangeBadge.backgroundColor = [UIColor systemOrangeColor];
+    self.rateRedBadge.backgroundColor    = [UIColor systemRedColor];
+}
+
+- (void)rateGreenChanged
+{
+    [BGGTimeColor setRateGreenMin:(NSInteger)self.rateGreenStepper.value];
+    self.rateGreenStepper.value = (double)[BGGTimeColor rateGreenMin];
+    [self refreshRateValues];
+}
+
+- (void)rateOrangeChanged
+{
+    [BGGTimeColor setRateOrangeMin:(NSInteger)self.rateOrangeStepper.value];
+    self.rateOrangeStepper.value = (double)[BGGTimeColor rateOrangeMin];
+    self.rateGreenStepper.value  = (double)[BGGTimeColor rateGreenMin];
+    [self refreshRateValues];
 }
 
 #pragma mark - UITableViewDataSource
