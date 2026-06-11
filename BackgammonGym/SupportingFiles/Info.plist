@@ -2,8 +2,60 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-    <key>CFBundleVersion</key>
-    <string>1</string>
+	<!-- Core bundle keys, filled from build settings. Required once the
+	     Info.plist is no longer generated. -->
+	<key>CFBundleIdentifier</key>
+	<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
+	<key>CFBundleExecutable</key>
+	<string>$(EXECUTABLE_NAME)</string>
+	<key>CFBundleName</key>
+	<string>$(PRODUCT_NAME)</string>
+	<key>CFBundlePackageType</key>
+	<string>$(PRODUCT_BUNDLE_PACKAGE_TYPE)</string>
+	<key>CFBundleInfoDictionaryVersion</key>
+	<string>6.0</string>
+	<key>CFBundleDevelopmentRegion</key>
+	<string>$(DEVELOPMENT_LANGUAGE)</string>
+
+	<!-- Version. CFBundleVersion is overwritten by the build script with the
+	     git commit count; CFBundleShortVersionString is the marketing version. -->
+	<key>CFBundleVersion</key>
+	<string>1</string>
+	<key>CFBundleShortVersionString</key>
+	<string>1.0</string>
+
+	<!-- Display name (was INFOPLIST_KEY_CFBundleDisplayName) -->
+	<key>CFBundleDisplayName</key>
+	<string>Backgammon Gym</string>
+
+	<!-- Storyboards (were INFOPLIST_KEY_UIMainStoryboardFile / UILaunchStoryboardName) -->
+	<key>UIMainStoryboardFile</key>
+	<string>Main</string>
+	<key>UILaunchStoryboardName</key>
+	<string>LaunchScreen</string>
+
+	<!-- Indirect input events (was INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents) -->
+	<key>UIApplicationSupportsIndirectInputEvents</key>
+	<true/>
+
+	<!-- Supported orientations, iPhone (was INFOPLIST_KEY_..._iPhone) -->
+	<key>UISupportedInterfaceOrientations</key>
+	<array>
+		<string>UIInterfaceOrientationPortrait</string>
+		<string>UIInterfaceOrientationLandscapeLeft</string>
+		<string>UIInterfaceOrientationLandscapeRight</string>
+	</array>
+
+	<!-- Supported orientations, iPad (was INFOPLIST_KEY_..._iPad) -->
+	<key>UISupportedInterfaceOrientations~ipad</key>
+	<array>
+		<string>UIInterfaceOrientationPortrait</string>
+		<string>UIInterfaceOrientationPortraitUpsideDown</string>
+		<string>UIInterfaceOrientationLandscapeLeft</string>
+		<string>UIInterfaceOrientationLandscapeRight</string>
+	</array>
+
+	<!-- Scene manifest (existing) -->
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>
@@ -23,6 +75,8 @@
 			</array>
 		</dict>
 	</dict>
+
+	<!-- Background modes for CloudKit remote notifications (existing) -->
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>remote-notification</string>

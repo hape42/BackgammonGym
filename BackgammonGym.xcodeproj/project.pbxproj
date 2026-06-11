@@ -198,6 +198,7 @@
 			inputFileListPaths = (
 			);
 			inputPaths = (
+				"$(TARGET_BUILD_DIR)/$(INFOPLIST_PATH)",
 			);
 			outputFileListPaths = (
 			);
@@ -242,7 +243,6 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = VL8Y87Y9PB;
-				GENERATE_INFOPLIST_FILE = YES;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = de.hape42.BackgammonGymTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -260,7 +260,6 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = VL8Y87Y9PB;
-				GENERATE_INFOPLIST_FILE = YES;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = de.hape42.BackgammonGymTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -280,7 +279,6 @@
 				CODE_SIGN_ENTITLEMENTS = BackgammonGym/BackgammonGym.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = VL8Y87Y9PB;
-				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = BackgammonGym/SupportingFiles/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "Backgammon Gym";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -314,7 +312,6 @@
 				CODE_SIGN_ENTITLEMENTS = BackgammonGym/BackgammonGym.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = VL8Y87Y9PB;
-				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = BackgammonGym/SupportingFiles/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "Backgammon Gym";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
