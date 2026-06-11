@@ -146,17 +146,56 @@ titleForHeaderInSection:(NSInteger)section
     return @"Session history";
 }
 
-// Swipe to delete a session.
-- (void)tableView:(UITableView *)tableView
-commitEditingStyle:(UITableViewCellEditingStyle)editingStyle
-forRowAtIndexPath:(NSIndexPath *)indexPath
+// Swipe reveals a Delete action that asks for confirmation first.
+- (UISwipeActionsConfiguration *)tableView:(UITableView *)tableView
+    trailingSwipeActionsConfigurationForRowAtIndexPath:(NSIndexPath *)indexPath
 {
-    if (editingStyle == UITableViewCellEditingStyleDelete)
+    __weak typeof(self) weakSelf = self;
+    UIContextualAction *delete = [UIContextualAction
+        contextualActionWithStyle:UIContextualActionStyleDestructive
+                            title:@"Delete"
+                          handler:^(UIContextualAction *action,
+                                    UIView *sourceView,
+                                    void (^completion)(BOOL))
     {
-        BGGWorkout *workout = self.workouts[(NSUInteger)indexPath.row];
+        [weakSelf confirmDeleteAtIndexPath:indexPath completion:completion];
+    }];
+
+    UISwipeActionsConfiguration *config =
+        [UISwipeActionsConfiguration configurationWithActions:@[delete]];
+    // Don't delete on a full swipe – always go through the confirmation.
+    config.performsFirstActionWithFullSwipe = NO;
+    return config;
+}
+
+- (void)confirmDeleteAtIndexPath:(NSIndexPath *)indexPath
+                      completion:(void (^)(BOOL))completion
+{
+    BGGWorkout *workout = self.workouts[(NSUInteger)indexPath.row];
+
+    UIAlertController *alert = [UIAlertController
+        alertControllerWithTitle:@"Delete session?"
+                         message:@"This permanently removes the session and its attempts."
+                  preferredStyle:UIAlertControllerStyleAlert];
+
+    [alert addAction:[UIAlertAction actionWithTitle:@"Cancel"
+                                              style:UIAlertActionStyleCancel
+                                            handler:^(UIAlertAction *a)
+    {
+        // Dismiss the swipe without deleting.
+        if (completion) { completion(NO); }
+    }]];
+
+    [alert addAction:[UIAlertAction actionWithTitle:@"Delete"
+                                              style:UIAlertActionStyleDestructive
+                                            handler:^(UIAlertAction *a)
+    {
         [[CoreDataManager sharedManager] deleteWorkout:workout];
+        if (completion) { completion(YES); }
         [self reload];
-    }
+    }]];
+
+    [self presentViewController:alert animated:YES completion:nil];
 }
 
 @end
