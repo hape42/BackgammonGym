@@ -14,6 +14,7 @@
 #import "SettingsVC.h"
 #import "PositionBrowserVC.h"
 #import <MessageUI/MessageUI.h>
+#import "METVC.h"
 
 @interface StartVC () <UICollectionViewDataSource,
                        UICollectionViewDelegate,
@@ -204,9 +205,10 @@ didSelectItemAtIndexPath:(NSIndexPath *)indexPath
             break;
 
         case BGGStartTileKindMETQuiz:
-            [Tools showNotImplementedAlertFromViewController:self
-                                                     feature:@"Match Equity"
-                                                 description:nil];
+        {
+            METVC *vc = [[METVC alloc] init];
+            [self.navigationController pushViewController:vc animated:YES];
+        }
             break;
 
         case BGGStartTileKindCollection:
