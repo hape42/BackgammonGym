@@ -11,6 +11,7 @@
 #import "UIViewController+BGGHomeButton.h"
 #import "PipCountWarmupVC.h"
 #import "PipCountClusterVC.h"
+#import "PipCountExerciseVC.h"
 #import "PipCountTrainingVC.h"
 #import "PipCountWorkoutVC.h"
 #import "PipCountProgressVC.h"
@@ -51,11 +52,15 @@ static NSString * sectionSymbol(PipCountSection section)
     }
 }
 
-@interface PipCountVC ()
+@interface PipCountVC () <PipCountExerciseDelegate>
 
 @property (nonatomic, strong) UIView           *containerView;
 @property (nonatomic, strong) UIViewController *activeChild;
 @property (nonatomic, assign) PipCountSection   activeSection;
+
+// The section to return to when a Training/Workout session is cancelled.
+// Set whenever we switch INTO Training or Workout.
+@property (nonatomic, assign) PipCountSection   previousSection;
 
 // Child VCs – created lazily.
 @property (nonatomic, strong) PipCountWarmupVC *warmupVC;
@@ -143,6 +148,15 @@ static NSString * sectionSymbol(PipCountSection section)
     [self.navigationController pushViewController:vc animated:YES];
 }
 
+#pragma mark - PipCountExerciseDelegate
+
+- (void)exerciseDidCancel:(PipCountExerciseVC *)exercise
+{
+    // Return to the section the user came from (Warm-up or Cluster),
+    // rather than leaving the Pip Count module entirely.
+    [self showSection:self.previousSection];
+}
+
 // Rebuild the menu so the checkmark reflects the current section.
 - (UIMenu *)buildMenu
 {
@@ -179,6 +193,13 @@ static NSString * sectionSymbol(PipCountSection section)
 {
     UIViewController *newChild = [self childForSection:section];
     if (newChild == self.activeChild) { return; }
+
+    // When entering Training or Workout, remember where we came from so a
+    // later Cancel can return there instead of leaving the module.
+    if (section == PipCountSectionTraining || section == PipCountSectionWorkout)
+    {
+        self.previousSection = self.activeSection;
+    }
 
     // Remove current child.
     if (self.activeChild != nil)
@@ -232,10 +253,18 @@ static NSString * sectionSymbol(PipCountSection section)
             return self.clusterVC;
 
         case PipCountSectionTraining:
-            return [[PipCountTrainingVC alloc] init];
+        {
+            PipCountTrainingVC *vc = [[PipCountTrainingVC alloc] init];
+            vc.exerciseDelegate = self;
+            return vc;
+        }
 
         case PipCountSectionWorkout:
-            return [[PipCountWorkoutVC alloc] init];
+        {
+            PipCountWorkoutVC *vc = [[PipCountWorkoutVC alloc] init];
+            vc.exerciseDelegate = self;
+            return vc;
+        }
             
         case PipCountSectionProgress:
             return [[PipCountProgressVC alloc] init];

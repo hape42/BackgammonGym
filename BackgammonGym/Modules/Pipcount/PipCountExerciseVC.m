@@ -536,7 +536,7 @@ static const CGFloat kWideThreshold = 700.0;
                                               style:UIAlertActionStyleCancel
                                             handler:^(UIAlertAction *a)
     {
-        [self.navigationController popViewControllerAnimated:YES];
+        [self returnFromExercise];
     }]];
 
     [self presentViewController:alert animated:YES completion:nil];
@@ -666,10 +666,25 @@ static const CGFloat kWideThreshold = 700.0;
     [self showCurrentPosition];
 }
 
+// Leaving the exercise – Cancel, the count-picker's Cancel, and Done at the
+// end all funnel through here, so they behave the same: hand control back to
+// the container to return to the previous section, or pop if used stand-alone.
+- (void)returnFromExercise
+{
+    if (self.exerciseDelegate != nil)
+    {
+        [self.exerciseDelegate exerciseDidCancel:self];
+    }
+    else
+    {
+        [self.navigationController popToRootViewControllerAnimated:YES];
+    }
+}
+
 - (void)cancelTapped
 {
     [self stopTimer];
-    [self.navigationController popToRootViewControllerAnimated:YES];
+    [self returnFromExercise];
 }
 
 - (void)showFeedbackBlueOK:(BOOL)blueOK
@@ -830,7 +845,7 @@ static const CGFloat kWideThreshold = 700.0;
                                               style:UIAlertActionStyleCancel
                                             handler:^(UIAlertAction *a)
     {
-        [self.navigationController popViewControllerAnimated:YES];
+        [self returnFromExercise];
     }]];
     [self presentViewController:alert animated:YES completion:nil];
 }

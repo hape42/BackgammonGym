@@ -11,7 +11,19 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+@class PipCountExerciseVC;
+
+// Lets the container (PipCountVC) react when the user cancels a running
+// Training or Workout session, e.g. to return to the previously active
+// section instead of falling back to the start screen.
+@protocol PipCountExerciseDelegate <NSObject>
+- (void)exerciseDidCancel:(PipCountExerciseVC *)exercise;
+@end
+
 @interface PipCountExerciseVC : UIViewController
+
+// Notified when the user cancels the session.
+@property (nonatomic, weak) id<PipCountExerciseDelegate> exerciseDelegate;
 
 // Override in subclasses to control board display.
 // Training: YES  Workout: NO
