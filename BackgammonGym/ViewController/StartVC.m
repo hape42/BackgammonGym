@@ -15,6 +15,7 @@
 #import "PositionBrowserVC.h"
 #import <MessageUI/MessageUI.h>
 #import "METVC.h"
+#import "StatisticsVC.h"
 
 @interface StartVC () <UICollectionViewDataSource,
                        UICollectionViewDelegate,
@@ -219,9 +220,10 @@ didSelectItemAtIndexPath:(NSIndexPath *)indexPath
             break;
 
         case BGGStartTileKindStatistics:
-            [Tools showNotImplementedAlertFromViewController:self
-                                                     feature:@"Statistics"
-                                                 description:nil];
+        {
+            StatisticsVC *vc = [[StatisticsVC alloc] init];
+            [self.navigationController pushViewController:vc animated:YES];
+        }
             break;
 
         case BGGStartTileKindAchievements:

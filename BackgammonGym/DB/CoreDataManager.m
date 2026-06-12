@@ -56,6 +56,11 @@
                 self.persistentContainer.viewContext.automaticallyMergesChangesFromParent = YES;
                 self.persistentContainer.viewContext.mergePolicy =
                     NSMergeByPropertyObjectTrumpMergePolicy;
+
+                // The store is ready now, so it's safe to record that the app
+                // was opened today (activity level 1). Doing it here rather than
+                // in the AppDelegate guarantees the context is loaded first.
+                [self bumpTodayActivityToLevel:1];
             }
             else
             {
@@ -234,6 +239,105 @@
     NSArray *results = [self.persistentContainer.viewContext executeFetchRequest:request
                                                                           error:&error];
     return error ? @[] : results;
+}
+
+#pragma mark - Activity grid
+
+// A fixed formatter for day keys: POSIX locale and a stable pattern so the
+// string never drifts with the user's locale or 12/24h settings.
+- (NSDateFormatter *)dayKeyFormatter
+{
+    static NSDateFormatter *df = nil;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        df = [[NSDateFormatter alloc] init];
+        df.locale     = [NSLocale localeWithLocaleIdentifier:@"en_US_POSIX"];
+        df.dateFormat = @"yyyy-MM-dd";
+    });
+    return df;
+}
+
+- (void)bumpTodayActivityToLevel:(NSInteger)level
+{
+    if (level <= 0) { return; }
+
+    NSManagedObjectContext *context = self.persistentContainer.viewContext;
+    NSString *today = [[self dayKeyFormatter] stringFromDate:[NSDate date]];
+
+    // Find today's row(s). CloudKit may have created more than one, so fetch
+    // all matches and keep the one with the highest level; raise that.
+    NSFetchRequest *request = [BGGDayActivity fetchRequest];
+    request.predicate = [NSPredicate predicateWithFormat:@"day == %@", today];
+
+    NSError *error = nil;
+    NSArray<BGGDayActivity *> *rows = [context executeFetchRequest:request error:&error];
+    if (error) { rows = @[]; }
+
+    BGGDayActivity *row = nil;
+    int16_t best = 0;
+    for (BGGDayActivity *candidate in rows)
+    {
+        if (row == nil || candidate.level > best)
+        {
+            row  = candidate;
+            best = candidate.level;
+        }
+    }
+
+    if (row == nil)
+    {
+        row = [NSEntityDescription insertNewObjectForEntityForName:@"BGGDayActivity"
+                                           inManagedObjectContext:context];
+        row.day   = today;
+        row.level = (int16_t)level;
+    }
+    else if ((int16_t)level > row.level)
+    {
+        row.level = (int16_t)level;
+    }
+    else
+    {
+        return;   // nothing to raise, avoid a needless save
+    }
+
+    if (![context save:&error])
+    {
+        NSLog(@"[CoreData] bump activity error: %@", error.localizedDescription);
+    }
+}
+
+- (NSDictionary<NSString *, NSNumber *> *)activityLevelsForLastDays:(NSInteger)days
+{
+    if (days <= 0) { return @{}; }
+
+    // Lower bound: midnight `days-1` days ago, so today is included.
+    NSCalendar *cal = [NSCalendar currentCalendar];
+    NSDate *startOfToday = [cal startOfDayForDate:[NSDate date]];
+    NSDateComponents *comps = [[NSDateComponents alloc] init];
+    comps.day = -(days - 1);
+    NSDate *cutoff = [cal dateByAddingComponents:comps toDate:startOfToday options:0];
+    NSString *cutoffKey = [[self dayKeyFormatter] stringFromDate:cutoff];
+
+    NSFetchRequest *request = [BGGDayActivity fetchRequest];
+    request.predicate = [NSPredicate predicateWithFormat:@"day >= %@", cutoffKey];
+
+    NSError *error = nil;
+    NSArray<BGGDayActivity *> *rows = [self.persistentContainer.viewContext
+                                       executeFetchRequest:request error:&error];
+    if (error || rows.count == 0) { return @{}; }
+
+    // Deduplicate per day, keeping the highest level.
+    NSMutableDictionary<NSString *, NSNumber *> *map = [NSMutableDictionary dictionary];
+    for (BGGDayActivity *r in rows)
+    {
+        if (r.day == nil) { continue; }
+        NSNumber *existing = map[r.day];
+        if (existing == nil || r.level > existing.intValue)
+        {
+            map[r.day] = @(r.level);
+        }
+    }
+    return map;
 }
 
 #pragma mark - Aggregation for charts

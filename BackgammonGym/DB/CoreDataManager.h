@@ -15,6 +15,7 @@
 #import "BGGWorkout+CoreDataClass.h"
 #import "BGGAttempt+CoreDataClass.h"
 #import "BGGEarnedAchievement+CoreDataClass.h"
+#import "BGGDayActivity+CoreDataClass.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -74,6 +75,20 @@ NS_ASSUME_NONNULL_BEGIN
                                                    mode:(nullable NSString *)mode;
 
 - (NSArray<BGGEarnedAchievement *> *)getAllEarnedAchievements;
+
+// MARK: Activity grid
+
+// Raises today's activity level if the new level is higher than what is
+// already stored (open = 1, training = 2, workout = 3). Never lowers it,
+// so the day always reflects its highest activity. Saves immediately.
+- (void)bumpTodayActivityToLevel:(NSInteger)level;
+
+// Returns a map "YYYY-MM-DD" -> highest level (NSNumber) for the last
+// `days` days (including today). Days with no activity are simply absent
+// from the dictionary; the caller treats a missing day as level 0. If the
+// CloudKit sync produced more than one row for the same day, the highest
+// level wins.
+- (NSDictionary<NSString *, NSNumber *> *)activityLevelsForLastDays:(NSInteger)days;
 
 // MARK: Aggregation for charts
 

@@ -48,6 +48,11 @@ NS_ASSUME_NONNULL_BEGIN
 - (NSString *)moduleIdentifier;
 - (NSString *)modeIdentifier;
 
+// Override in subclasses – the activity level recorded for the contribution
+// grid when a session finishes (training = 2, workout = 3). The base
+// implementation returns 0, meaning the session is not counted.
+- (NSInteger)activityLevelForCompletedSession;
+
 @end
 
 NS_ASSUME_NONNULL_END

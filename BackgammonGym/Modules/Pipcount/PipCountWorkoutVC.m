@@ -11,6 +11,7 @@
 - (BOOL)measureTime       { return YES; }
 - (NSArray<NSString *> *)requiredTags { return @[@"pipcount", @"training"]; }
 - (NSString *)modeIdentifier { return @"workout"; }
+- (NSInteger)activityLevelForCompletedSession { return 3; }
 
 - (NSString *)infoText
 {

@@ -96,6 +96,12 @@ static const CGFloat kWideThreshold = 700.0;
 - (NSString *)moduleIdentifier { return @"pipcount"; }
 - (NSString *)modeIdentifier   { return @"";         }
 
+// Activity level recorded for the contribution grid when a session finishes.
+// 0 = don't count (the default). PipCountTrainingVC overrides this to 2,
+// PipCountWorkoutVC to 3. Kept as an override rather than a string check on
+// modeIdentifier so it doesn't break if the mode strings ever change.
+- (NSInteger)activityLevelForCompletedSession { return 0; }
+
 // Base implementation – no info line. Subclasses override.
 - (nullable NSString *)infoText { return nil; }
 
@@ -822,6 +828,16 @@ static const CGFloat kWideThreshold = 700.0;
     {
         self.currentWorkout.finishedAt = [NSDate date];
         [[CoreDataManager sharedManager] saveContext];
+    }
+
+    // Record the day's activity for the contribution grid. The level is
+    // defined by the subclass (training = 2, workout = 3); the base class
+    // returns 0, meaning "don't count". The bump only ever raises the day's
+    // level, so opening (1) earlier today is not lost.
+    NSInteger activityLevel = [self activityLevelForCompletedSession];
+    if (activityLevel > 0)
+    {
+        [[CoreDataManager sharedManager] bumpTodayActivityToLevel:activityLevel];
     }
 
     NSString *message = [NSString stringWithFormat:
