@@ -10,6 +10,11 @@
 #import "METVC.h"
 #import "UIViewController+BGGHomeButton.h"
 #import "METWarmupVC.h"
+#import "METExerciseVC.h"
+#import "METTrainingVC.h"
+#import "METWorkoutVC.h"
+#import "METProgressVC.h"
+#import "BackgammonGym-Swift.h"
 
 typedef NS_ENUM(NSInteger, METSection)
 {
@@ -43,11 +48,15 @@ static NSString * sectionSymbol(METSection section)
     }
 }
 
-@interface METVC ()
+@interface METVC () <METExerciseDelegate>
 
 @property (nonatomic, strong) UIView           *containerView;
 @property (nonatomic, strong) UIViewController *activeChild;
 @property (nonatomic, assign) METSection        activeSection;
+
+// The section to return to when a Training/Workout session is cancelled.
+// Set whenever we switch INTO Training or Workout.
+@property (nonatomic, assign) METSection        previousSection;
 
 // Warm-up is created lazily and kept alive (it builds the whole table).
 @property (nonatomic, strong) METWarmupVC      *warmupVC;
@@ -130,7 +139,16 @@ static NSString * sectionSymbol(METSection section)
 
 - (void)showChart
 {
-    // MET trend chart comes later, together with the Progress section.
+    METTrendHostController *vc = [[METTrendHostController alloc] init];
+    [self.navigationController pushViewController:vc animated:YES];
+}
+
+#pragma mark - METExerciseDelegate
+
+- (void)metExerciseDidCancel:(METExerciseVC *)exercise
+{
+    // Return to the section the user came from, rather than leaving the module.
+    [self showSection:self.previousSection];
 }
 
 // Rebuild the menu so the checkmark reflects the current section.
@@ -169,6 +187,13 @@ static NSString * sectionSymbol(METSection section)
 {
     UIViewController *newChild = [self childForSection:section];
     if (newChild == self.activeChild) { return; }
+
+    // When entering Training or Workout, remember where we came from so a
+    // later Cancel can return there instead of leaving the module.
+    if (section == METSectionTraining || section == METSectionWorkout)
+    {
+        self.previousSection = self.activeSection;
+    }
 
     // Remove current child.
     if (self.activeChild != nil)
@@ -215,16 +240,21 @@ static NSString * sectionSymbol(METSection section)
             return self.warmupVC;
 
         case METSectionTraining:
-            return [self placeholderForSection:section
-                                      subtitle:@"Guided practice with the table visible. Coming soon."];
+        {
+            METTrainingVC *vc = [[METTrainingVC alloc] init];
+            vc.exerciseDelegate = self;
+            return vc;
+        }
 
         case METSectionWorkout:
-            return [self placeholderForSection:section
-                                      subtitle:@"Recall the equities under real conditions. Coming soon."];
+        {
+            METWorkoutVC *vc = [[METWorkoutVC alloc] init];
+            vc.exerciseDelegate = self;
+            return vc;
+        }
 
         case METSectionProgress:
-            return [self placeholderForSection:section
-                                      subtitle:@"Your MET results and trends. Coming soon."];
+            return [[METProgressVC alloc] init];
     }
 }
 

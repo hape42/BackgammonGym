@@ -122,6 +122,11 @@ NS_ASSUME_NONNULL_BEGIN
 // Optionally filtered by mode (pass nil for all).
 - (NSArray<NSDictionary *> *)sessionChartDataForMode:(nullable NSString *)mode;
 
+// Same as sessionChartDataForMode: but aggregates the MET attempts
+// (metAttempts) of MET workouts instead of the pip-count attempts. Keeps the
+// same dictionary shape so the trend chart can render either module.
+- (NSArray<NSDictionary *> *)metSessionChartDataForMode:(nullable NSString *)mode;
+
 @end
 
 NS_ASSUME_NONNULL_END

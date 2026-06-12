@@ -434,6 +434,52 @@
     return out;
 }
 
+- (NSArray<NSDictionary *> *)metSessionChartDataForMode:(nullable NSString *)mode
+{
+    // Oldest first so the chart reads left-to-right over time. Restricted to
+    // MET workouts so a shared BGGWorkout table can't leak other modules in.
+    NSFetchRequest *request = [BGGWorkout fetchRequest];
+    request.predicate       = [self predicateForModule:@"met" mode:mode];
+    request.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:@"startedAt"
+                                                              ascending:YES]];
+    NSError *error = nil;
+    NSArray<BGGWorkout *> *workouts =
+        [self.persistentContainer.viewContext executeFetchRequest:request error:&error];
+    if (error || workouts.count == 0) { return @[]; }
+
+    NSDateFormatter *df = [[NSDateFormatter alloc] init];
+    df.dateFormat = @"d MMM";
+
+    NSMutableArray<NSDictionary *> *out = [NSMutableArray array];
+    for (BGGWorkout *w in workouts)
+    {
+        NSArray *attempts = w.metAttempts.allObjects;
+        NSInteger count   = (NSInteger)attempts.count;
+        if (count == 0) { continue; }   // skip empty sessions
+
+        NSInteger correct = 0;
+        NSInteger totalMs = 0;
+        for (BGGMETAttempt *a in attempts)
+        {
+            if (a.isCorrect) { correct++; }
+            totalMs += a.elapsedMs;
+        }
+
+        NSInteger percent    = (NSInteger)round((double)correct / count * 100.0);
+        NSInteger avgSeconds = (NSInteger)round((double)(totalMs / count) / 1000.0);
+        NSString *label      = w.startedAt ? [df stringFromDate:w.startedAt] : @"—";
+
+        [out addObject:@{
+            @"label":      label,
+            @"percent":    @(percent),
+            @"avgSeconds": @(avgSeconds),
+            @"mode":       w.mode ?: @"",
+            @"count":      @(count),
+        }];
+    }
+    return out;
+}
+
 #pragma mark - Helpers
 
 // Builds a predicate combining optional module and mode filters.
