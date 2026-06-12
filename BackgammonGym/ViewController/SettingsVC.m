@@ -6,6 +6,7 @@
 #import "SettingsVC.h"
 #import "BGGBoardStyleCell.h"
 #import "BGGTimeColor.h"
+#import "BGGMETSettings.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -31,6 +32,10 @@ static NSString * const kCellID = @"BGGBoardStyleCell";
 @property (nonatomic, strong) UIStepper  *rateGreenStepper;
 @property (nonatomic, strong) UIStepper  *rateOrangeStepper;
 
+// MET answer tolerance (percent).
+@property (nonatomic, strong) UILabel    *toleranceBadge;
+@property (nonatomic, strong) UIStepper  *toleranceStepper;
+
 @end
 
 @implementation SettingsVC
@@ -43,6 +48,7 @@ static NSString * const kCellID = @"BGGBoardStyleCell";
     self.view.backgroundColor = [UIColor colorNamed:@"ColorViewBackground"];
     self.title = @"Settings";
     [BGGTimeColor registerDefaults];
+    [BGGMETSettings registerDefaults];
     [self setupBoardArray];
     [self setupContent];
 }
@@ -179,6 +185,7 @@ static NSString * const kCellID = @"BGGBoardStyleCell";
 
     UIView *timeGroup = [self buildTimeGroup];
     UIView *rateGroup = [self buildRateGroup];
+    UIView *tolGroup  = [self buildToleranceGroup];
 
     UILabel *selectBoard = [[UILabel alloc] init];
     selectBoard.text = @"Select Board Style";
@@ -187,12 +194,22 @@ static NSString * const kCellID = @"BGGBoardStyleCell";
 
     timeGroup.translatesAutoresizingMaskIntoConstraints = NO;
     rateGroup.translatesAutoresizingMaskIntoConstraints = NO;
+    tolGroup.translatesAutoresizingMaskIntoConstraints  = NO;
+
+    // Full-width hairlines between the groups.
+    UIView *sep1 = [self separatorView];   // time   | rate
+    UIView *sep2 = [self separatorView];   // rate   | tolerance
+    UIView *sep3 = [self separatorView];   // tol    | board
 
     [header addSubview:timeGroup];
+    [header addSubview:sep1];
     [header addSubview:rateGroup];
+    [header addSubview:sep2];
+    [header addSubview:tolGroup];
+    [header addSubview:sep3];
     [header addSubview:selectBoard];
 
-    // The three trailing constraints are set just below required priority.
+    // The trailing constraints are set just below required priority.
     // When the table first lays out, UIKit briefly imposes a width==0 on the
     // header view (UIView-Encapsulated-Layout-Width) before viewDidLayoutSubviews
     // sets the real width. At that instant leading==4 and trailing==-4 can't both
@@ -203,25 +220,69 @@ static NSString * const kCellID = @"BGGBoardStyleCell";
         [timeGroup.trailingAnchor constraintEqualToAnchor:header.trailingAnchor constant:-4.0];
     NSLayoutConstraint *rateTrailing =
         [rateGroup.trailingAnchor constraintEqualToAnchor:header.trailingAnchor constant:-4.0];
+    NSLayoutConstraint *tolTrailing =
+        [tolGroup.trailingAnchor constraintEqualToAnchor:header.trailingAnchor constant:-4.0];
     NSLayoutConstraint *boardTrailing =
         [selectBoard.trailingAnchor constraintEqualToAnchor:header.trailingAnchor constant:-4.0];
+
     timeTrailing.priority  = 999;
     rateTrailing.priority  = 999;
+    tolTrailing.priority   = 999;
     boardTrailing.priority = 999;
+
+    // The separators span the same width as the groups; their trailing edges
+    // yield for the same brief width==0 layout pass.
+    NSLayoutConstraint *sep1Trailing =
+        [sep1.trailingAnchor constraintEqualToAnchor:header.trailingAnchor constant:-4.0];
+    NSLayoutConstraint *sep2Trailing =
+        [sep2.trailingAnchor constraintEqualToAnchor:header.trailingAnchor constant:-4.0];
+    NSLayoutConstraint *sep3Trailing =
+        [sep3.trailingAnchor constraintEqualToAnchor:header.trailingAnchor constant:-4.0];
+    sep1Trailing.priority = 999;
+    sep2Trailing.priority = 999;
+    sep3Trailing.priority = 999;
+
+    // The header is created with a placeholder height of 400; UIKit imposes
+    // that as UIView-Encapsulated-Layout-Height during the first layout pass,
+    // before viewDidLayoutSubviews computes the real height. The bottom pin
+    // below would conflict with that placeholder for one frame, so let it
+    // yield instead of logging. Once the real height is set it satisfies.
+    NSLayoutConstraint *boardBottom =
+        [selectBoard.bottomAnchor constraintEqualToAnchor:header.bottomAnchor constant:-10.0];
+    boardBottom.priority = 999;
 
     [NSLayoutConstraint activateConstraints:@[
         [timeGroup.topAnchor      constraintEqualToAnchor:header.topAnchor constant:6.0],
         [timeGroup.leadingAnchor  constraintEqualToAnchor:header.leadingAnchor constant:4.0],
         timeTrailing,
 
-        [rateGroup.topAnchor      constraintEqualToAnchor:timeGroup.bottomAnchor constant:22.0],
+        [sep1.topAnchor           constraintEqualToAnchor:timeGroup.bottomAnchor constant:16.0],
+        [sep1.leadingAnchor       constraintEqualToAnchor:header.leadingAnchor constant:4.0],
+        sep1Trailing,
+        [sep1.heightAnchor        constraintEqualToConstant:1.0],
+
+        [rateGroup.topAnchor      constraintEqualToAnchor:sep1.bottomAnchor constant:16.0],
         [rateGroup.leadingAnchor  constraintEqualToAnchor:header.leadingAnchor constant:4.0],
         rateTrailing,
 
-        [selectBoard.topAnchor       constraintEqualToAnchor:rateGroup.bottomAnchor constant:22.0],
+        [sep2.topAnchor           constraintEqualToAnchor:rateGroup.bottomAnchor constant:16.0],
+        [sep2.leadingAnchor       constraintEqualToAnchor:header.leadingAnchor constant:4.0],
+        sep2Trailing,
+        [sep2.heightAnchor        constraintEqualToConstant:1.0],
+
+        [tolGroup.topAnchor       constraintEqualToAnchor:sep2.bottomAnchor constant:16.0],
+        [tolGroup.leadingAnchor   constraintEqualToAnchor:header.leadingAnchor constant:4.0],
+        tolTrailing,
+
+        [sep3.topAnchor           constraintEqualToAnchor:tolGroup.bottomAnchor constant:16.0],
+        [sep3.leadingAnchor       constraintEqualToAnchor:header.leadingAnchor constant:4.0],
+        sep3Trailing,
+        [sep3.heightAnchor        constraintEqualToConstant:1.0],
+
+        [selectBoard.topAnchor       constraintEqualToAnchor:sep3.bottomAnchor constant:16.0],
         [selectBoard.leadingAnchor   constraintEqualToAnchor:header.leadingAnchor constant:4.0],
         boardTrailing,
-        [selectBoard.bottomAnchor    constraintEqualToAnchor:header.bottomAnchor constant:-10.0],
+        boardBottom,
     ]];
 
     return header;
@@ -294,6 +355,53 @@ static NSString * const kCellID = @"BGGBoardStyleCell";
 
     [self stackGroup:group title:title good:good ok:ok bad:bad];
     [self refreshRateValues];
+    return group;
+}
+
+#pragma mark - MET tolerance group
+
+- (UIView *)buildToleranceGroup
+{
+    UIView *group = [[UIView alloc] init];
+
+    UILabel *title = [[UILabel alloc] init];
+    title.text = @"MET answer tolerance";
+    title.font = [UIFont preferredFontForTextStyle:UIFontTextStyleHeadline];
+    title.translatesAutoresizingMaskIntoConstraints = NO;
+    [group addSubview:title];
+
+    self.toleranceBadge   = [self badge];
+    self.toleranceStepper = [self stepperWithMin:0 max:3
+                                           value:(double)[BGGMETSettings tolerancePercent]
+                                          action:@selector(toleranceChanged)];
+
+    UIView *row = [self rowWithTitle:[self rowTitle:@"Accepted deviation"]
+                               badge:self.toleranceBadge
+                             stepper:self.toleranceStepper];
+    [group addSubview:row];
+
+    // A single row under the title – no Good/OK/Bad triple here.
+    NSLayoutConstraint *titleTrailing =
+        [title.trailingAnchor constraintEqualToAnchor:group.trailingAnchor];
+    NSLayoutConstraint *rowTrailing =
+        [row.trailingAnchor constraintEqualToAnchor:group.trailingAnchor];
+    titleTrailing.priority = 999;
+    rowTrailing.priority   = 999;
+
+    [NSLayoutConstraint activateConstraints:@[
+        [title.topAnchor     constraintEqualToAnchor:group.topAnchor],
+        [title.leadingAnchor constraintEqualToAnchor:group.leadingAnchor],
+        titleTrailing,
+
+        [row.topAnchor       constraintEqualToAnchor:title.bottomAnchor constant:10.0],
+        [row.leadingAnchor   constraintEqualToAnchor:group.leadingAnchor],
+        rowTrailing,
+        [row.heightAnchor    constraintEqualToConstant:38.0],
+
+        [group.bottomAnchor  constraintEqualToAnchor:row.bottomAnchor],
+    ]];
+
+    [self refreshToleranceValue];
     return group;
 }
 
@@ -413,6 +521,15 @@ static NSString * const kCellID = @"BGGBoardStyleCell";
     return lbl;
 }
 
+// A 1px hairline used to separate the setting groups in the header view.
+- (UIView *)separatorView
+{
+    UIView *line = [[UIView alloc] init];
+    line.backgroundColor = [UIColor separatorColor];
+    line.translatesAutoresizingMaskIntoConstraints = NO;
+    return line;
+}
+
 // A coloured pill with white text.
 - (UILabel *)badge
 {
@@ -486,6 +603,30 @@ static NSString * const kCellID = @"BGGBoardStyleCell";
     self.rateOrangeStepper.value = (double)[BGGTimeColor rateOrangeMin];
     self.rateGreenStepper.value  = (double)[BGGTimeColor rateGreenMin];
     [self refreshRateValues];
+}
+
+#pragma mark - Tolerance value
+
+- (void)refreshToleranceValue
+{
+    NSInteger tol = [BGGMETSettings tolerancePercent];
+
+    if (tol == 0)
+    {
+        self.toleranceBadge.text = @"  exact  ";
+    }
+    else
+    {
+        self.toleranceBadge.text = [NSString stringWithFormat:@"  ± %ld%%  ", (long)tol];
+    }
+    self.toleranceBadge.backgroundColor = [UIColor colorNamed:@"AccentColor"];
+}
+
+- (void)toleranceChanged
+{
+    [BGGMETSettings setTolerancePercent:(NSInteger)self.toleranceStepper.value];
+    self.toleranceStepper.value = (double)[BGGMETSettings tolerancePercent];
+    [self refreshToleranceValue];
 }
 
 #pragma mark - UITableViewDataSource
