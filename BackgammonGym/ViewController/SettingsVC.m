@@ -7,6 +7,7 @@
 #import "BGGBoardStyleCell.h"
 #import "BGGTimeColor.h"
 #import "BGGMETSettings.h"
+#import "BGGLocalization.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -46,7 +47,7 @@ static NSString * const kCellID = @"BGGBoardStyleCell";
 {
     [super viewDidLoad];
     self.view.backgroundColor = [UIColor colorNamed:@"ColorViewBackground"];
-    self.title = @"Settings";
+    self.title = BGGLocalizedString(@"Settings");
     [BGGTimeColor registerDefaults];
     [BGGMETSettings registerDefaults];
     [self setupBoardArray];
@@ -188,7 +189,7 @@ static NSString * const kCellID = @"BGGBoardStyleCell";
     UIView *tolGroup  = [self buildToleranceGroup];
 
     UILabel *selectBoard = [[UILabel alloc] init];
-    selectBoard.text = @"Select Board Style";
+    selectBoard.text = BGGLocalizedString(@"Select Board Style");
     selectBoard.font = [UIFont preferredFontForTextStyle:UIFontTextStyleHeadline];
     selectBoard.translatesAutoresizingMaskIntoConstraints = NO;
 
@@ -295,7 +296,7 @@ static NSString * const kCellID = @"BGGBoardStyleCell";
     UIView *group = [[UIView alloc] init];
 
     UILabel *title = [[UILabel alloc] init];
-    title.text = @"Answer time thresholds";
+    title.text = BGGLocalizedString(@"Answer time thresholds");
     title.font = [UIFont preferredFontForTextStyle:UIFontTextStyleHeadline];
     title.translatesAutoresizingMaskIntoConstraints = NO;
     [group addSubview:title];
@@ -311,11 +312,11 @@ static NSString * const kCellID = @"BGGBoardStyleCell";
                                             value:(double)[BGGTimeColor orangeMax]
                                            action:@selector(timeOrangeChanged)];
 
-    UIView *good = [self rowWithTitle:[self rowTitle:@"Good"] badge:self.timeGreenBadge
+    UIView *good = [self rowWithTitle:[self rowTitle:BGGLocalizedString(@"Good")] badge:self.timeGreenBadge
                               stepper:self.timeGreenStepper];
-    UIView *ok   = [self rowWithTitle:[self rowTitle:@"OK"]   badge:self.timeOrangeBadge
+    UIView *ok   = [self rowWithTitle:[self rowTitle:BGGLocalizedString(@"OK")]   badge:self.timeOrangeBadge
                               stepper:self.timeOrangeStepper];
-    UIView *bad  = [self rowWithTitle:[self rowTitle:@"Bad"]  badge:self.timeRedBadge
+    UIView *bad  = [self rowWithTitle:[self rowTitle:BGGLocalizedString(@"Bad")]  badge:self.timeRedBadge
                               stepper:nil];
 
     [self stackGroup:group title:title good:good ok:ok bad:bad];
@@ -330,7 +331,7 @@ static NSString * const kCellID = @"BGGBoardStyleCell";
     UIView *group = [[UIView alloc] init];
 
     UILabel *title = [[UILabel alloc] init];
-    title.text = @"Hit rate thresholds";
+    title.text = BGGLocalizedString(@"Hit rate thresholds");
     title.font = [UIFont preferredFontForTextStyle:UIFontTextStyleHeadline];
     title.translatesAutoresizingMaskIntoConstraints = NO;
     [group addSubview:title];
@@ -346,11 +347,11 @@ static NSString * const kCellID = @"BGGBoardStyleCell";
                                             value:(double)[BGGTimeColor rateOrangeMin]
                                            action:@selector(rateOrangeChanged)];
 
-    UIView *good = [self rowWithTitle:[self rowTitle:@"Good"] badge:self.rateGreenBadge
+    UIView *good = [self rowWithTitle:[self rowTitle:BGGLocalizedString(@"Good")] badge:self.rateGreenBadge
                               stepper:self.rateGreenStepper];
-    UIView *ok   = [self rowWithTitle:[self rowTitle:@"OK"]   badge:self.rateOrangeBadge
+    UIView *ok   = [self rowWithTitle:[self rowTitle:BGGLocalizedString(@"OK")]   badge:self.rateOrangeBadge
                               stepper:self.rateOrangeStepper];
-    UIView *bad  = [self rowWithTitle:[self rowTitle:@"Bad"]  badge:self.rateRedBadge
+    UIView *bad  = [self rowWithTitle:[self rowTitle:BGGLocalizedString(@"Bad")]  badge:self.rateRedBadge
                               stepper:nil];
 
     [self stackGroup:group title:title good:good ok:ok bad:bad];
@@ -365,7 +366,7 @@ static NSString * const kCellID = @"BGGBoardStyleCell";
     UIView *group = [[UIView alloc] init];
 
     UILabel *title = [[UILabel alloc] init];
-    title.text = @"MET answer tolerance";
+    title.text = BGGLocalizedString(@"MET answer tolerance");
     title.font = [UIFont preferredFontForTextStyle:UIFontTextStyleHeadline];
     title.translatesAutoresizingMaskIntoConstraints = NO;
     [group addSubview:title];
@@ -375,7 +376,7 @@ static NSString * const kCellID = @"BGGBoardStyleCell";
                                            value:(double)[BGGMETSettings tolerancePercent]
                                           action:@selector(toleranceChanged)];
 
-    UIView *row = [self rowWithTitle:[self rowTitle:@"Accepted deviation"]
+    UIView *row = [self rowWithTitle:[self rowTitle:BGGLocalizedString(@"Accepted deviation")]
                                badge:self.toleranceBadge
                              stepper:self.toleranceStepper];
     [group addSubview:row];
@@ -613,7 +614,8 @@ static NSString * const kCellID = @"BGGBoardStyleCell";
 
     if (tol == 0)
     {
-        self.toleranceBadge.text = @"  exact  ";
+        self.toleranceBadge.text = [NSString stringWithFormat:@"  %@  ",
+                                    BGGLocalizedString(@"exact")];
     }
     else
     {
