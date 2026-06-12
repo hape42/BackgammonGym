@@ -199,6 +199,53 @@
     return error ? @[] : results;
 }
 
+#pragma mark - MET attempts
+
+- (BGGMETAttempt *)addMETAttemptToWorkout:(BGGWorkout *)workout
+                               playerAway:(NSInteger)playerAway
+                             opponentAway:(NSInteger)opponentAway
+                               userEquity:(NSInteger)userEquity
+                            correctEquity:(NSInteger)correctEquity
+                            toleranceUsed:(NSInteger)toleranceUsed
+                                isCorrect:(BOOL)isCorrect
+                                elapsedMs:(NSInteger)elapsedMs
+{
+    NSManagedObjectContext *context = self.persistentContainer.viewContext;
+    BGGMETAttempt *attempt =
+        [NSEntityDescription insertNewObjectForEntityForName:@"BGGMETAttempt"
+                                      inManagedObjectContext:context];
+    attempt.timestamp     = [NSDate date];
+    attempt.playerAway    = (int16_t)playerAway;
+    attempt.opponentAway  = (int16_t)opponentAway;
+    attempt.userEquity    = (int16_t)userEquity;
+    attempt.correctEquity = (int16_t)correctEquity;
+    attempt.toleranceUsed = (int16_t)toleranceUsed;
+    attempt.isCorrect     = isCorrect;
+    attempt.elapsedMs     = (int32_t)elapsedMs;
+
+    // Duplicate the mode from the workout so attempts can be filtered
+    // without a join, mirroring how BGGAttempt works.
+    attempt.mode    = workout.mode;
+    attempt.workout = workout;
+
+    return attempt;
+}
+
+- (NSArray<BGGMETAttempt *> *)getMETAttemptsForMode:(nullable NSString *)mode
+{
+    NSFetchRequest *request = [BGGMETAttempt fetchRequest];
+    if (mode != nil)
+    {
+        request.predicate = [NSPredicate predicateWithFormat:@"mode == %@", mode];
+    }
+    request.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:@"timestamp"
+                                                              ascending:NO]];
+    NSError *error = nil;
+    NSArray *results = [self.persistentContainer.viewContext executeFetchRequest:request
+                                                                          error:&error];
+    return error ? @[] : results;
+}
+
 #pragma mark - Achievements
 
 - (nullable BGGEarnedAchievement *)earnedAchievementWithIdentifier:(NSString *)identifier

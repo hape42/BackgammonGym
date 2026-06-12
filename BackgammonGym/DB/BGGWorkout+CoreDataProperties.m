@@ -20,5 +20,6 @@
 @dynamic startedAt;
 @dynamic totalCount;
 @dynamic attempts;
+@dynamic metAttempts;
 
 @end

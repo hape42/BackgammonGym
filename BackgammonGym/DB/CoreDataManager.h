@@ -14,6 +14,7 @@
 
 #import "BGGWorkout+CoreDataClass.h"
 #import "BGGAttempt+CoreDataClass.h"
+#import "BGGMETAttempt+CoreDataClass.h"
 #import "BGGEarnedAchievement+CoreDataClass.h"
 #import "BGGDayActivity+CoreDataClass.h"
 
@@ -46,10 +47,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)deleteWorkout:(BGGWorkout *)workout;
 
-// MARK: Attempts
+// MARK: Attempts (pip count)
 
-// Records one attempt inside a workout. Returns the new attempt (not saved;
-// call saveContext after the workout finishes, or save per attempt).
+// Records one pip-count attempt inside a workout. Returns the new attempt
+// (not saved; call saveContext after the workout finishes, or save per
+// attempt).
 - (BGGAttempt *)addAttemptToWorkout:(BGGWorkout *)workout
                          positionID:(NSString *)positionID
                           isCorrect:(BOOL)isCorrect
@@ -59,9 +61,27 @@ NS_ASSUME_NONNULL_BEGIN
                       correctPlayer:(NSInteger)correctPlayer
                     correctOpponent:(NSInteger)correctOpponent;
 
-// All attempts, newest first (optionally filtered by module/mode).
+// All pip-count attempts, newest first (optionally filtered by module/mode).
 - (NSArray<BGGAttempt *> *)getAttemptsForModule:(nullable NSString *)module
                                            mode:(nullable NSString *)mode;
+
+// MARK: MET attempts
+
+// Records one MET attempt inside a workout. The user answered with a single
+// percentage for the score playerAway vs opponentAway; correctEquity is the
+// rounded table value and toleranceUsed is the tolerance (percent) that was
+// in effect. Returns the new attempt (not saved).
+- (BGGMETAttempt *)addMETAttemptToWorkout:(BGGWorkout *)workout
+                               playerAway:(NSInteger)playerAway
+                             opponentAway:(NSInteger)opponentAway
+                               userEquity:(NSInteger)userEquity
+                            correctEquity:(NSInteger)correctEquity
+                            toleranceUsed:(NSInteger)toleranceUsed
+                                isCorrect:(BOOL)isCorrect
+                                elapsedMs:(NSInteger)elapsedMs;
+
+// All MET attempts, newest first (optionally filtered by mode).
+- (NSArray<BGGMETAttempt *> *)getMETAttemptsForMode:(nullable NSString *)mode;
 
 // MARK: Achievements
 
