@@ -11,6 +11,7 @@
 #import "BGGBoardCard.h"
 #import "BGGPosition.h"
 #import "PositionDatabase.h"
+#import "BGGLocalization.h"
 
 // The starting position is used as a placeholder for every board
 // that still needs a real position ID from BGBlitz.
@@ -71,88 +72,115 @@ static NSString * const kPlaceholderID = @"4HPwATDgc/ABMA";
     [self.contentView addSubview:intro];
 
     // ── Section header: Reference Positions ───────────────────────────────
-    UILabel *refHeader = [self sectionHeader:@"Reference Positions"];
+    UILabel *refHeader = [self sectionHeader:BGGLocalizedString(@"cluster.header.referencePositions")];
     refHeader.translatesAutoresizingMaskIntoConstraints = NO;
     [self.contentView addSubview:refHeader];
 
     // ── The seven reference positions ─────────────────────────────────────
     
-    BGGBoardCard *rp1 = [self cardForPositionID:@"AAAAsG0DAAAAAA:cAnkAAAAEAAE"];
-    BGGBoardCard *rp2 = [self cardForPositionID:@"AAAAtm0DAAAAAA:cIkoARAAAAAE"];
-    BGGBoardCard *rp3 = [self cardForPositionID:@"AAAAwOcDAAAAAA:cIkoARAAAAAE"];
-    BGGBoardCard *rp4 = [self cardForPositionID:@"AAAAgA0AAAAAAA:cIkoARAAAAAE"];
-    BGGBoardCard *rp5 = [self cardForPositionID:@"AAAAAB8AAAAAAA:cIkoARAAAAAE"];
-    BGGBoardCard *rp6 = [self cardForPositionID:@"AAAAAGAwAAAAAA:cImoAAAAAAAE"];
-    BGGBoardCard *rp7 = [self cardForPositionID:@"AAAAAGABAAAAAA:cAkgAXAAMAAE"];
+    BGGBoardCard *rp1 = [self cardForPositionID:@"AAAAsG0DAAAAAA:cAnkAAAAEAAE"
+                                     captionKey:@"cluster.rp1.caption"
+                                 explanationKey:@"cluster.rp1.explanation"];
+    BGGBoardCard *rp2 = [self cardForPositionID:@"AAAAtm0DAAAAAA:cIkoARAAAAAE"
+                                     captionKey:@"cluster.rp2.caption"
+                                 explanationKey:@"cluster.rp2.explanation"];
+    BGGBoardCard *rp3 = [self cardForPositionID:@"AAAAwOcDAAAAAA:cIkoARAAAAAE"
+                                     captionKey:@"cluster.rp3.caption"
+                                 explanationKey:@"cluster.rp3.explanation"];
+    BGGBoardCard *rp4 = [self cardForPositionID:@"AAAAgA0AAAAAAA:cIkoARAAAAAE"
+                                     captionKey:@"cluster.rp4.caption"
+                                 explanationKey:@"cluster.rp4.explanation"];
+    BGGBoardCard *rp5 = [self cardForPositionID:@"AAAAAB8AAAAAAA:cIkoARAAAAAE"
+                                     captionKey:@"cluster.rp5.caption"
+                                 explanationKey:@"cluster.rp5.explanation"];
+    BGGBoardCard *rp6 = [self cardForPositionID:@"AAAAAGAwAAAAAA:cImoAAAAAAAE"
+                                     captionKey:@"cluster.rp6.caption"
+                                 explanationKey:@"cluster.rp6.explanation"];
+    BGGBoardCard *rp7 = [self cardForPositionID:@"AAAAAGABAAAAAA:cAkgAXAAMAAE"
+                                     captionKey:@"cluster.rp7.caption"
+                                 explanationKey:@"cluster.rp7.explanation"];
 
 
     // ── Section header: Key Points ────────────────────────────────────────
-    UILabel *keyHeader = [self sectionHeader:@"Key Points"];
+    UILabel *keyHeader = [self sectionHeader:BGGLocalizedString(@"cluster.header.keyPoints")];
     keyHeader.translatesAutoresizingMaskIntoConstraints = NO;
     [self.contentView addSubview:keyHeader];
     
     UILabel *keypointIntro = [self bodyLabel:
-                              @"The two key points most often used are the 5-point and the 20-point (opponent's 5-point). \n"
-                              @"The 10-, 13- and 15-points are also quite valuable.  "];
+                              BGGLocalizedString(@"cluster.keyPoints.intro")];
     keypointIntro.translatesAutoresizingMaskIntoConstraints = NO;
     [self.contentView addSubview:keypointIntro];
 
-    BGGBoardCard *kp1 = [self cardForPositionID:@"eB4AALA3AAAAAA:cAkuAWAAOAAE"];
-    BGGBoardCard *kp2 = [self cardForPositionID:@"AAAYCgAAMwEAAA:cAkuAWAAOAAE"];
+    BGGBoardCard *kp1 = [self cardForPositionID:@"eB4AALA3AAAAAA:cAkuAWAAOAAE"
+                                     captionKey:@"cluster.kp1.caption"
+                                 explanationKey:@"cluster.kp1.explanation"];
+    BGGBoardCard *kp2 = [self cardForPositionID:@"AAAYCgAAMwEAAA:cAkuAWAAOAAE"
+                                     captionKey:@"cluster.kp2.caption"
+                                 explanationKey:@"cluster.kp2.explanation"];
 
     // ── Section header: Mirrors ───────────────────────────────────────────
-    UILabel *mirrorHeader = [self sectionHeader:@"Mirrors"];
+    UILabel *mirrorHeader = [self sectionHeader:BGGLocalizedString(@"cluster.header.mirrors")];
     mirrorHeader.translatesAutoresizingMaskIntoConstraints = NO;
     [self.contentView addSubview:mirrorHeader];
 
     UILabel *mirrorIntro = [self bodyLabel:
-        @"Mirrors are another important counting tool. Any point on the board plus its mirror-opposite point equals 25.\n"
-        @"For example, the 5-point + 20-point, the 1-point + 24-point, and the 12-point + 13-point all total 25 pips. It follows that any cluster of 4 checkers in mirror positions total 50. "];
+        BGGLocalizedString(@"cluster.mirrors.intro")];
     mirrorIntro.translatesAutoresizingMaskIntoConstraints = NO;
     [self.contentView addSubview:mirrorIntro];
 
-    BGGBoardCard *mirror1 = [self cardForPositionID:@"eB4AALA3AAAAAA:cAkuAWAAOAAE"];
-    BGGBoardCard *mirror2 = [self cardForPositionID:@"eB4AALA3AAAAAA:cAkuAWAAOAAE"];
+    // NOTE: these two still load the same position as kp1 (the 5-Point key
+    // point board) — a pre-existing bug to fix later by pointing them at the
+    // "Mirror - Example 1/2" positions. The keys/texts below match what is
+    // currently shown, not the intended mirror examples.
+    BGGBoardCard *mirror1 = [self cardForPositionID:@"eB4AALA3AAAAAA:cAkuAWAAOAAE"
+                                         captionKey:@"cluster.mirror1.caption"
+                                     explanationKey:@"cluster.mirror1.explanation"];
+    BGGBoardCard *mirror2 = [self cardForPositionID:@"eB4AALA3AAAAAA:cAkuAWAAOAAE"
+                                         captionKey:@"cluster.mirror2.caption"
+                                     explanationKey:@"cluster.mirror2.explanation"];
 
     // ── Section header: Mental Shifting ───────────────────────────────────
-    UILabel *shiftHeader = [self sectionHeader:@"Mental Shifting"];
+    UILabel *shiftHeader = [self sectionHeader:BGGLocalizedString(@"cluster.header.mentalShifting")];
     shiftHeader.translatesAutoresizingMaskIntoConstraints = NO;
     [self.contentView addSubview:shiftHeader];
 
     UILabel *shiftIntro = [self bodyLabel:
-        @"It would be nice if every time you needed a pip count, the board would consist of clusters as previously described. "
-        @"Unfortunately, that doesn't happen. Fortunately, these easy-to-count clusters are relatively simple to form by mentally moving the checkers where you want them. "];
+        BGGLocalizedString(@"cluster.mentalShifting.intro")];
     shiftIntro.translatesAutoresizingMaskIntoConstraints = NO;
     [self.contentView addSubview:shiftIntro];
 
-    UILabel *shiftOneWayHeader = [self sectionHeader:@"One-Way Mental Shift"];
+    UILabel *shiftOneWayHeader = [self sectionHeader:BGGLocalizedString(@"cluster.header.oneWayShift")];
     shiftOneWayHeader.translatesAutoresizingMaskIntoConstraints = NO;
     [self.contentView addSubview:shiftOneWayHeader];
 
     UILabel *shiftOneWayIntro = [self bodyLabel:
-        @"One-way mental shifting involves moving the checkers forward to key points or reference positions and then adding the forward movement to the value of the key points or reference positions. "];
+        BGGLocalizedString(@"cluster.oneWayShift.intro")];
     shiftOneWayIntro.translatesAutoresizingMaskIntoConstraints = NO;
     [self.contentView addSubview:shiftOneWayIntro];
 
-    BGGBoardCard *shift1 = [self cardForPositionID:@"ttkYAQy43RSAIQ:cAkgATAACAAE"];
+    BGGBoardCard *shift1 = [self cardForPositionID:@"ttkYAQy43RSAIQ:cAkgATAACAAE"
+                                        captionKey:@"cluster.shift1.caption"
+                                    explanationKey:@"cluster.shift1.explanation"];
     UILabel *shiftOneWayConclusion = [self bodyLabel:
-        @"Note that two of opponent's checkers were shifted to opponent's 5-point which is occupied by player's checkers. When shifting one player's checkers, the other player's checker position can be ignored. "];
+        BGGLocalizedString(@"cluster.oneWayShift.conclusion")];
     shiftOneWayConclusion.translatesAutoresizingMaskIntoConstraints = NO;
     [self.contentView addSubview:shiftOneWayConclusion];
 
-    UILabel *shiftTwoWayHeader = [self sectionHeader:@"Two-Way Mental Shift"];
+    UILabel *shiftTwoWayHeader = [self sectionHeader:BGGLocalizedString(@"cluster.header.twoWayShift")];
     shiftTwoWayHeader.translatesAutoresizingMaskIntoConstraints = NO;
     [self.contentView addSubview:shiftTwoWayHeader];
 
     UILabel *shiftTwoWayIntro = [self bodyLabel:
-        @"Two-way mental shifting differs from one-way mental shifting in that checkers are shifted either forward or backward to key points or reference positions and then compensating shifts are made in the opposite direction on the same side of the board, or in the same direction on opposite sides of the board. "];
+        BGGLocalizedString(@"cluster.twoWayShift.intro")];
     shiftTwoWayIntro.translatesAutoresizingMaskIntoConstraints = NO;
     [self.contentView addSubview:shiftTwoWayIntro];
 
-    BGGBoardCard *shift2 = [self cardForPositionID:@"2NbBAQawc8MHAA:cInlADAAEAAE"];
+    BGGBoardCard *shift2 = [self cardForPositionID:@"2NbBAQawc8MHAA:cInlADAAEAAE"
+                                        captionKey:@"cluster.shift2.caption"
+                                    explanationKey:@"cluster.shift2.explanation"];
 
     UILabel *shiftTwoWayConclusion = [self bodyLabel:
-        @"It should be noted that there are often several cluster counting choices available. \nFor instance, in player's position above, instead of forming a 5-prime, you could have shifted the two 9-point checkers to the 8-point and compensated by shifting the two 5-point checkers to the 6-point to form RP3. This cluster is also 70 pips."];
+        BGGLocalizedString(@"cluster.twoWayShift.conclusion")];
     shiftTwoWayConclusion.translatesAutoresizingMaskIntoConstraints = NO;
     [self.contentView addSubview:shiftTwoWayConclusion];
 
@@ -258,6 +286,41 @@ static NSString * const kPlaceholderID = @"4HPwATDgc/ABMA";
     return card;
 }
 
+// Like cardForPositionID:, but the caption and explanation come from the
+// string catalog (localized) instead of the JSON entry. The board position
+// still comes from positions.json via the ID. Used for the curated cluster
+// teaching boards, following the rule that didactic views show no JSON text.
+- (BGGBoardCard *)cardForPositionID:(NSString *)positionID
+                         captionKey:(NSString *)captionKey
+                     explanationKey:(NSString *)explanationKey
+{
+    BGGPositionEntry *entry = [[PositionDatabase sharedDatabase]
+                               entryForPositionID:positionID];
+
+    if (entry == nil)
+    {
+        BGGBoardCard *missing = [[BGGBoardCard alloc]
+            initWithCaption:@"⚠ Position not found"
+            explanationText:positionID
+                 boardState:[BGGPosition boardStateFromPositionID:kPlaceholderID]];
+        missing.isPlaceholder     = YES;
+        missing.showsPointNumbers = YES;
+        missing.showsCube         = NO;
+        missing.showsDice         = NO;
+        return missing;
+    }
+
+    BGGBoardCard *card = [[BGGBoardCard alloc]
+                          initWithCaption:BGGLocalizedString(captionKey)
+                          explanationText:BGGLocalizedString(explanationKey)
+                               boardState:[entry boardState]];
+    card.isPlaceholder     = NO;
+    card.showsPointNumbers = YES;
+    card.showsCube         = NO;
+    card.showsDice         = NO;
+    return card;
+}
+
 - (BGGBoardCard *)placeholderCard:(NSString *)caption
                       explanation:(NSString *)explanation
 {
@@ -280,21 +343,9 @@ static NSString * const kPlaceholderID = @"4HPwATDgc/ABMA";
     label.numberOfLines = 0;
     label.textColor     = [UIColor labelColor];
 
-    NSString *boldPart = @"What is Cluster Counting?\n\n";
-    NSString *bodyPart =
-        @"Cluster Counting is a technique developed by Jack Kissane that lets you estimate "
-        @"pip counts much faster than the traditional point-by-point method. Instead of "
-        @"multiplying every checker individually, you mentally rearrange the checkers into "
-        @"recognizable patterns – clusters – whose pip totals are easy to calculate. "
-        @"With practice, you can count most positions in a few seconds.\n\n"
-        @"The key insight is simple: any two points that mirror each other across the board "
-        @"add up to 25. Point 1 and point 24, point 6 and point 19, point 12 and point 13 – "
-        @"always 25. Four checkers in mirror positions therefore count 50, regardless of "
-        @"exactly where they sit.\n\n"
-        @"Rather than memorizing endless combinations, Kissane identified seven reference "
-        @"positions whose pip totals end in zero – making mental arithmetic easy. "
-        @"Combined with a few key points and mirror patterns, these cover the vast majority "
-        @"of positions you will encounter.";
+    NSString *titlePart = BGGLocalizedString(@"cluster.intro.title");
+    NSString *bodyPart  = BGGLocalizedString(@"cluster.intro.body");
+    NSString *boldPart  = [titlePart stringByAppendingString:@"\n\n"];
 
     NSMutableAttributedString *attr =
         [[NSMutableAttributedString alloc]
