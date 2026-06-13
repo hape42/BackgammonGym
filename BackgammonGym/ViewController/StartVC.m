@@ -16,6 +16,8 @@
 #import <MessageUI/MessageUI.h>
 #import "METVC.h"
 #import "StatisticsVC.h"
+#import "BGGLocalization.h"
+#import "BGGLanguage.h"
 
 @interface StartVC () <UICollectionViewDataSource,
                        UICollectionViewDelegate,
@@ -50,7 +52,26 @@
     
     [self setupTiles];
     [self setupCollectionView];
-    
+
+    // The Settings sheet (which holds the language picker) can sit over this
+    // screen on iPad, so re-localize live when the language changes.
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(languageDidChange)
+                                                 name:BGGLanguageDidChangeNotification
+                                               object:nil];
+}
+
+- (void)dealloc
+{
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
+}
+
+// Rebuild the tiles with localized text and reload the grid.
+- (void)languageDidChange
+{
+    self.title = @"Backgammon Gym";   // a proper noun, stays as-is
+    [self setupTiles];
+    [self.collectionView reloadData];
 }
 
 #pragma mark - Setup
@@ -62,38 +83,38 @@
 
     self.tiles = @[
         [BGGStartTile tileWithKind:BGGStartTileKindPipCount
-                             title:@"Pipcount"
+                             title:BGGLocalizedString(@"Pipcount")
                           subtitle:nil
                           iconName:@"sum"
                          iconColor:iconColor],
 
         [BGGStartTile tileWithKind:BGGStartTileKindMETQuiz
-                             title:@"Match Equity"
-                          subtitle:@"MET Quiz"
+                             title:BGGLocalizedString(@"Match Equity")
+                          subtitle:BGGLocalizedString(@"MET Quiz")
                           iconName:@"tablecells"
                          iconColor:iconColor],
 
         [BGGStartTile tileWithKind:BGGStartTileKindCollection
-                             title:@"Collections"
-                          subtitle:@"your positions"
+                             title:BGGLocalizedString(@"Collections")
+                          subtitle:BGGLocalizedString(@"your positions")
                           iconName:@"folder"
                          iconColor:iconColor],
 
         [BGGStartTile tileWithKind:BGGStartTileKindStatistics
-                             title:@"Statistics"
-                          subtitle:@"your progress"
+                             title:BGGLocalizedString(@"Statistics")
+                          subtitle:BGGLocalizedString(@"your progress")
                           iconName:@"chart.xyaxis.line"
                          iconColor:iconColor],
 
         [BGGStartTile tileWithKind:BGGStartTileKindAchievements
-                             title:@"Achievements"
+                             title:BGGLocalizedString(@"Achievements")
                           subtitle:nil
                           iconName:@"trophy"
                          iconColor:iconColor],
 
         [BGGStartTile tileWithKind:BGGStartTileKindFeedback
-                             title:@"More soon"
-                          subtitle:@"We welcome your requests"
+                             title:BGGLocalizedString(@"More soon")
+                          subtitle:BGGLocalizedString(@"We welcome your requests")
                           iconName:@"plus"
                          iconColor:disabledColor],
     ];
@@ -256,9 +277,9 @@ didSelectItemAtIndexPath:(NSIndexPath *)indexPath
     if (![MFMailComposeViewController canSendMail])
     {
         UIAlertController *alert = [UIAlertController
-            alertControllerWithTitle:@"No Mail Account"
-                             message:@"Please set up a mail account, or write to "
-                                     @"BackgammonGym@hape42.de from your device."
+            alertControllerWithTitle:BGGLocalizedString(@"No Mail Account")
+                             message:BGGLocalizedString(@"Please set up a mail account, or write to "
+                                     @"BackgammonGym@hape42.de from your device.")
                       preferredStyle:UIAlertControllerStyleAlert];
         [alert addAction:[UIAlertAction actionWithTitle:@"OK"
                                                   style:UIAlertActionStyleDefault

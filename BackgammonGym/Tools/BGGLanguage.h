@@ -34,13 +34,24 @@ extern NSString * const BGGLanguageDidChangeNotification;
 // the first device-preferred language that we support, otherwise English.
 - (NSString *)effectiveLanguageCode;
 
-// The languages the app ships translations for. English is the source
-// language (keys are English text), so it is always available as a fallback.
-+ (NSArray<NSString *> *)supportedLanguageCodes;
+// The languages actually selectable right now (fully translated). English
+// is the source language and always available. setLanguage: only accepts
+// codes from this list.
++ (NSArray<NSString *> *)availableLanguageCodes;
 
-// A short display name for a language code ("DE", "EN", …). Pass nil for the
-// "follow the device" option.
+// Languages shown in the picker as "coming soon": they are listed to invite
+// translators, but tapping one shows a message rather than switching. Not
+// accepted by setLanguage:.
++ (NSArray<NSString *> *)plannedLanguageCodes;
+
+// The display name of a language in its OWN language ("Deutsch", "Français").
+// Pass nil for the "follow the device" (System) option.
 + (NSString *)displayNameForLanguageCode:(nullable NSString *)code;
+
+// The "not translated yet, looking for volunteers" message for a planned
+// language, in that language where known, English otherwise. Used for the
+// coming-soon alert so it greets the reader in the language they tapped.
++ (NSString *)comingSoonMessageForLanguageCode:(NSString *)code;
 
 @end
 

@@ -8,6 +8,8 @@
 #import "BGGTimeColor.h"
 #import "BGGMETSettings.h"
 #import "BGGLocalization.h"
+#import "BGGLanguage.h"
+#import "BGGLanguagePickerVC.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -52,6 +54,27 @@ static NSString * const kCellID = @"BGGBoardStyleCell";
     [BGGMETSettings registerDefaults];
     [self setupBoardArray];
     [self setupContent];
+
+    // Re-localize live when the language changes (the picker lives here).
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(languageDidChange)
+                                                 name:BGGLanguageDidChangeNotification
+                                               object:nil];
+}
+
+- (void)dealloc
+{
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
+}
+
+// Rebuild the localized chrome after a language switch. The header view holds
+// the group titles; the table holds the section headers and the language row.
+- (void)languageDidChange
+{
+    self.title = BGGLocalizedString(@"Settings");
+    self.tableView.tableHeaderView = [self buildHeaderView];
+    [self.view setNeedsLayout];
+    [self.tableView reloadData];
 }
 
 // The table header view uses Auto Layout internally; translate that into a
@@ -143,7 +166,7 @@ static NSString * const kCellID = @"BGGBoardStyleCell";
     // Table view (board styles). The two threshold groups + the "Select Board
     // Style" header live in the table's header view, so everything scrolls
     // together without nesting scroll views.
-    self.tableView = [[UITableView alloc] initWithFrame:CGRectZero style:UITableViewStylePlain];
+    self.tableView = [[UITableView alloc] initWithFrame:CGRectZero style:UITableViewStyleInsetGrouped];
     self.tableView.translatesAutoresizingMaskIntoConstraints = NO;
     self.tableView.backgroundColor = [UIColor clearColor];
     self.tableView.delegate   = self;
@@ -188,48 +211,32 @@ static NSString * const kCellID = @"BGGBoardStyleCell";
     UIView *rateGroup = [self buildRateGroup];
     UIView *tolGroup  = [self buildToleranceGroup];
 
-    UILabel *selectBoard = [[UILabel alloc] init];
-    selectBoard.text = BGGLocalizedString(@"Select Board Style");
-    selectBoard.font = [UIFont preferredFontForTextStyle:UIFontTextStyleHeadline];
-    selectBoard.translatesAutoresizingMaskIntoConstraints = NO;
-
     timeGroup.translatesAutoresizingMaskIntoConstraints = NO;
     rateGroup.translatesAutoresizingMaskIntoConstraints = NO;
     tolGroup.translatesAutoresizingMaskIntoConstraints  = NO;
 
-    // Full-width hairlines between the groups.
-    UIView *sep1 = [self separatorView];   // time   | rate
-    UIView *sep2 = [self separatorView];   // rate   | tolerance
-    UIView *sep3 = [self separatorView];   // tol    | board
+    // Full-width hairlines between the groups. "Select Board Style" and
+    // "Language" are now table section headers, so the header view ends after
+    // the tolerance group.
+    UIView *sep1 = [self separatorView];   // time | rate
+    UIView *sep2 = [self separatorView];   // rate | tolerance
 
     [header addSubview:timeGroup];
     [header addSubview:sep1];
     [header addSubview:rateGroup];
     [header addSubview:sep2];
     [header addSubview:tolGroup];
-    [header addSubview:sep3];
-    [header addSubview:selectBoard];
 
-    // The trailing constraints are set just below required priority.
-    // When the table first lays out, UIKit briefly imposes a width==0 on the
-    // header view (UIView-Encapsulated-Layout-Width) before viewDidLayoutSubviews
-    // sets the real width. At that instant leading==4 and trailing==-4 can't both
-    // hold, which logs a constraint conflict. Priority 999 lets the trailing
-    // edge yield for that one frame instead of breaking noisily; once the real
-    // width is in place everything satisfies cleanly.
     NSLayoutConstraint *timeTrailing =
         [timeGroup.trailingAnchor constraintEqualToAnchor:header.trailingAnchor constant:-4.0];
     NSLayoutConstraint *rateTrailing =
         [rateGroup.trailingAnchor constraintEqualToAnchor:header.trailingAnchor constant:-4.0];
     NSLayoutConstraint *tolTrailing =
         [tolGroup.trailingAnchor constraintEqualToAnchor:header.trailingAnchor constant:-4.0];
-    NSLayoutConstraint *boardTrailing =
-        [selectBoard.trailingAnchor constraintEqualToAnchor:header.trailingAnchor constant:-4.0];
 
     timeTrailing.priority  = 999;
     rateTrailing.priority  = 999;
     tolTrailing.priority   = 999;
-    boardTrailing.priority = 999;
 
     // The separators span the same width as the groups; their trailing edges
     // yield for the same brief width==0 layout pass.
@@ -237,20 +244,17 @@ static NSString * const kCellID = @"BGGBoardStyleCell";
         [sep1.trailingAnchor constraintEqualToAnchor:header.trailingAnchor constant:-4.0];
     NSLayoutConstraint *sep2Trailing =
         [sep2.trailingAnchor constraintEqualToAnchor:header.trailingAnchor constant:-4.0];
-    NSLayoutConstraint *sep3Trailing =
-        [sep3.trailingAnchor constraintEqualToAnchor:header.trailingAnchor constant:-4.0];
     sep1Trailing.priority = 999;
     sep2Trailing.priority = 999;
-    sep3Trailing.priority = 999;
 
     // The header is created with a placeholder height of 400; UIKit imposes
     // that as UIView-Encapsulated-Layout-Height during the first layout pass,
     // before viewDidLayoutSubviews computes the real height. The bottom pin
     // below would conflict with that placeholder for one frame, so let it
     // yield instead of logging. Once the real height is set it satisfies.
-    NSLayoutConstraint *boardBottom =
-        [selectBoard.bottomAnchor constraintEqualToAnchor:header.bottomAnchor constant:-10.0];
-    boardBottom.priority = 999;
+    NSLayoutConstraint *tolBottom =
+        [tolGroup.bottomAnchor constraintEqualToAnchor:header.bottomAnchor constant:-10.0];
+    tolBottom.priority = 999;
 
     [NSLayoutConstraint activateConstraints:@[
         [timeGroup.topAnchor      constraintEqualToAnchor:header.topAnchor constant:6.0],
@@ -274,16 +278,7 @@ static NSString * const kCellID = @"BGGBoardStyleCell";
         [tolGroup.topAnchor       constraintEqualToAnchor:sep2.bottomAnchor constant:16.0],
         [tolGroup.leadingAnchor   constraintEqualToAnchor:header.leadingAnchor constant:4.0],
         tolTrailing,
-
-        [sep3.topAnchor           constraintEqualToAnchor:tolGroup.bottomAnchor constant:16.0],
-        [sep3.leadingAnchor       constraintEqualToAnchor:header.leadingAnchor constant:4.0],
-        sep3Trailing,
-        [sep3.heightAnchor        constraintEqualToConstant:1.0],
-
-        [selectBoard.topAnchor       constraintEqualToAnchor:sep3.bottomAnchor constant:16.0],
-        [selectBoard.leadingAnchor   constraintEqualToAnchor:header.leadingAnchor constant:4.0],
-        boardTrailing,
-        boardBottom,
+        tolBottom,
     ]];
 
     return header;
@@ -633,16 +628,78 @@ static NSString * const kCellID = @"BGGBoardStyleCell";
 
 #pragma mark - UITableViewDataSource
 
-- (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView { return 1; }
+// Section 0: language picker (one row). Section 1: board styles.
+- (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView { return 2; }
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
 {
-    return (NSInteger)self.boardsArray.count;
+    return (section == 0) ? 1 : (NSInteger)self.boardsArray.count;
+}
+
+// Custom section headers in the same bold Headline style as the threshold
+// group titles in the table header view, so "Language" and "Select Board
+// Style" match "MET answer tolerance" etc. rather than the small grey system
+// header style.
+- (nullable UIView *)tableView:(UITableView *)tableView
+        viewForHeaderInSection:(NSInteger)section
+{
+    NSString *text = (section == 0) ? BGGLocalizedString(@"Language")
+                                    : BGGLocalizedString(@"Select Board Style");
+
+    UIView *container = [[UIView alloc] init];
+
+    UILabel *label = [[UILabel alloc] init];
+    label.text = text;
+    label.font = [UIFont preferredFontForTextStyle:UIFontTextStyleHeadline];
+    label.textColor = [UIColor labelColor];
+    label.translatesAutoresizingMaskIntoConstraints = NO;
+    [container addSubview:label];
+
+    // Align with the inset-grouped card edge and give it breathing room.
+    [NSLayoutConstraint activateConstraints:@[
+        [label.leadingAnchor  constraintEqualToAnchor:container.layoutMarginsGuide.leadingAnchor],
+        [label.trailingAnchor constraintEqualToAnchor:container.layoutMarginsGuide.trailingAnchor],
+        [label.topAnchor      constraintEqualToAnchor:container.topAnchor constant:8.0],
+        [label.bottomAnchor   constraintEqualToAnchor:container.bottomAnchor constant:-6.0],
+    ]];
+
+    return container;
+}
+
+- (CGFloat)tableView:(UITableView *)tableView heightForHeaderInSection:(NSInteger)section
+{
+    return UITableViewAutomaticDimension;
+}
+
+- (CGFloat)tableView:(UITableView *)tableView estimatedHeightForHeaderInSection:(NSInteger)section
+{
+    return 44.0;
 }
 
 - (UITableViewCell *)tableView:(UITableView *)tableView
          cellForRowAtIndexPath:(NSIndexPath *)indexPath
 {
+    if (indexPath.section == 0)
+    {
+        static NSString * const kLangCellID = @"LanguageRow";
+        UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:kLangCellID];
+        if (cell == nil)
+        {
+            cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleValue1
+                                          reuseIdentifier:kLangCellID];
+            cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
+        }
+        cell.textLabel.text = BGGLocalizedString(@"Language");
+
+        // Show the current choice on the right: the chosen language's own
+        // name, or "System" when following the device.
+        NSString *chosen = [BGGLanguage sharedLanguage].language;
+        cell.detailTextLabel.text = (chosen == nil)
+            ? BGGLocalizedString(@"System")
+            : [BGGLanguage displayNameForLanguageCode:chosen];
+        return cell;
+    }
+
     BGGBoardStyleCell *cell = [tableView dequeueReusableCellWithIdentifier:kCellID
                                                               forIndexPath:indexPath];
     NSDictionary *dict   = self.boardsArray[(NSUInteger)indexPath.row];
@@ -661,6 +718,13 @@ static NSString * const kCellID = @"BGGBoardStyleCell";
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
 {
     [tableView deselectRowAtIndexPath:indexPath animated:YES];
+
+    if (indexPath.section == 0)
+    {
+        BGGLanguagePickerVC *picker = [[BGGLanguagePickerVC alloc] init];
+        [self.navigationController pushViewController:picker animated:YES];
+        return;
+    }
 
     NSDictionary *dict = self.boardsArray[(NSUInteger)indexPath.row];
     [[NSUserDefaults standardUserDefaults] setInteger:[dict[@"number"] integerValue]
