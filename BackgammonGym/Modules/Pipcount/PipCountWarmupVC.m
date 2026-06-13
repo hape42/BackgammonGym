@@ -74,29 +74,27 @@
 
     // ── Board 1: starting position ────────────────────────────────────────
     BGGBoardCard *card1 = [[BGGBoardCard alloc]
-                           initWithCaption:@"Starting position – pip count 167 : 167"
-                           explanationText:@"Count every checker: multiply its point number by the number of checkers on it, then add everything up. \nFor example: The two checkers on point 24 contribute 48 pips; the five on point 13 contribute 65. \nBoth players start at exactly 167."
-                            boardState:[BGGPosition boardStateFromPositionID:@"4HPwATDgc/ABMA"]];
+                           initWithCaption: BGGLocalizedString(@"pipcount.warmup.card1.caption")
+                           explanationText: BGGLocalizedString(@"pipcount.warmup.card1.explanation")
+                                boardState: [BGGPosition boardStateFromPositionID:@"4HPwATDgc/ABMA"]];
+    card1.isPlaceholder = NO;
     card1.translatesAutoresizingMaskIntoConstraints = NO;
     [self.contentView addSubview:card1];
 
     // ── Board 2:  ──────────────────────────────────────────────
     BGGBoardCard *card2 = [[BGGBoardCard alloc]
-                           initWithCaption:@"A typical bear off position"
-                           explanationText:@"Pipcount Player 1: 51 pips - Player 2 : 60 pips"
-                            boardState:[BGGPosition boardStateFromPositionID:@"u7sNAADbtg8AAA:MIEqAWAAEAAE"]];
+                           initWithCaption: BGGLocalizedString(@"pipcount.warmup.card2.caption")
+                           explanationText: BGGLocalizedString(@"pipcount.warmup.card2.explanation")
+                                boardState: [BGGPosition boardStateFromPositionID:@"u7sNAADbtg8AAA:MIEqAWAAEAAE"]];
     card2.isPlaceholder = NO;
     card2.translatesAutoresizingMaskIntoConstraints = NO;
     [self.contentView addSubview:card2];
 
     // ── Board 3:  ──────────────────────────────────────────────
-    BGGPositionEntry *entry = [[PositionDatabase sharedDatabase]
-                               entryForPositionID:@"22aICAbG3j0AAA:MAEAAAAAAAAA"];
-
     BGGBoardCard *card3 = [[BGGBoardCard alloc]
-                           initWithCaption:entry.caption
-                           explanationText:entry.text
-                                boardState:[entry boardState]];
+                           initWithCaption: BGGLocalizedString(@"pipcount.warmup.card3.caption")
+                           explanationText: BGGLocalizedString(@"pipcount.warmup.card3.explanation")
+                           boardState: [BGGPosition boardStateFromPositionID:@"22aICAbG3j0AAA:MAEAAAAAAAAA"]];
     card3.isPlaceholder = NO;
     card3.translatesAutoresizingMaskIntoConstraints = NO;
     [self.contentView addSubview:card3];
