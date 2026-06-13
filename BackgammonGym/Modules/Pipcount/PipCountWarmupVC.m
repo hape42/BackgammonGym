@@ -12,6 +12,7 @@
 #import "BGGBoardCard.h"
 #import "BGGPosition.h"
 #import "PositionDatabase.h"
+#import "BGGLocalization.h"
 
 @interface PipCountWarmupVC ()
 @property (nonatomic, strong) UIScrollView *scrollView;
@@ -134,25 +135,12 @@
     label.numberOfLines = 0;
     label.textColor     = [UIColor labelColor];
 
-    NSString *boldPart = @"What is a Pip Count?\n\n";
-    NSString *bodyPart =
-        @"Backgammon is essentially a race. To know who's winning that race, "
-        @"you need the pip count – the total number of points all your checkers "
-        @"still have to travel before they're off the board.\n\n"
-        @"Every checker sits on a numbered point, and contributes that number to "
-        @"your total. Two checkers on point 24 add 48 pips; five on point 6 add 30. "
-        @"Add it all up and you have your pip count. At the start of the game, both "
-        @"players stand at exactly 167.\n\n"
-        @"The lower your count, the closer you are to winning. A pip count advantage "
-        @"drives most of the big decisions in a game: do you race or play a holding "
-        @"game? Is this the right moment to double? Can you take that double? As a "
-        @"rough guide, being 10 pips ahead in a long race is enough to consider "
-        @"doubling.\n\n"
-        @"When you play on Heroes, Backgammon Galaxy, DailyGammon or any other online "
-        @"platform, the pip count is always right there on the screen – you never have "
-        @"to think about it. Sit down at a real board, and it's gone. That gap is "
-        @"exactly why training this skill matters."
-        @"\n\nThis app is designed to help you learn how to quickly and accurately calculate the PipCount for the positions below in just a few seconds. ";
+    // The title is bold; the body follows after a blank line. Keeping the
+    // line breaks here (not in the translated strings) means a translator
+    // only provides the plain title and body text.
+    NSString *titlePart = BGGLocalizedString(@"pipcount.warmup.intro.title");
+    NSString *bodyPart  = BGGLocalizedString(@"pipcount.warmup.intro.body");
+    NSString *boldPart  = [titlePart stringByAppendingString:@"\n\n"];
 
     NSMutableAttributedString *attr =
         [[NSMutableAttributedString alloc]

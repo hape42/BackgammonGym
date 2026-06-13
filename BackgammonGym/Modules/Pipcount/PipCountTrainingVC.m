@@ -4,6 +4,7 @@
 //
 
 #import "PipCountTrainingVC.h"
+#import "BGGLocalization.h"
 
 @implementation PipCountTrainingVC
 
@@ -15,14 +16,14 @@
 
 - (NSString *)infoText
 {
-    return @"Point numbers are shown on the board. Take as much time as you "
-           @"like — the timer is just for your information.";
+    return BGGLocalizedString(@"Point numbers are shown on the board. Take as much time as you "
+           @"like — the timer is just for your information.");
 }
 
 - (void)viewDidLoad
 {
     [super viewDidLoad];
-    self.title = @"Training";
+    self.title = @"Training";   // brand term, stays English
 }
 
 @end

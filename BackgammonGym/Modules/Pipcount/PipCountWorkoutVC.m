@@ -4,6 +4,7 @@
 //
 
 #import "PipCountWorkoutVC.h"
+#import "BGGLocalization.h"
 
 @implementation PipCountWorkoutVC
 
@@ -15,14 +16,14 @@
 
 - (NSString *)infoText
 {
-    return @"No numbers on the board, just like at a real table. The timer "
-           @"runs live so you train under tournament conditions.";
+    return BGGLocalizedString(@"No numbers on the board, just like at a real table. The timer "
+           @"runs live so you train under tournament conditions.");
 }
 
 - (void)viewDidLoad
 {
     [super viewDidLoad];
-    self.title = @"Workout";
+    self.title = @"Workout";   // brand term, stays English
 }
 
 @end

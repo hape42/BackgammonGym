@@ -23,6 +23,7 @@
 #import "Tools.h"
 #import "BGGTimeColor.h"
 #import "CoreDataManager.h"
+#import "BGGLocalization.h"
 
 static const CGFloat kWideThreshold = 700.0;
 
@@ -230,21 +231,21 @@ static const CGFloat kWideThreshold = 700.0;
     [self.controlsView addSubview:self.timerLabel];
 
     // Opponent label + field (top – opponent's checkers are at the top of the board)
-    self.yellowLabel = [self labelWithText:@"Opponent pip count"];
+    self.yellowLabel = [self labelWithText:BGGLocalizedString(@"Opponent pip count")];
     [self.controlsView addSubview:self.yellowLabel];
     self.yellowField = [self pipCountField];
     self.yellowField.returnKeyType = UIReturnKeyNext;
     [self.controlsView addSubview:self.yellowField];
 
     // My label + field (bottom – my checkers are at the bottom of the board)
-    self.blueLabel = [self labelWithText:@"My pip count"];
+    self.blueLabel = [self labelWithText:BGGLocalizedString(@"My pip count")];
     [self.controlsView addSubview:self.blueLabel];
     self.blueField = [self pipCountField];
     self.blueField.returnKeyType = UIReturnKeyDone;
     [self.controlsView addSubview:self.blueField];
 
     // Check button
-    self.submitButton = [self actionButtonWithTitle:@"Check"
+    self.submitButton = [self actionButtonWithTitle:BGGLocalizedString(@"Check")
                                              action:@selector(submitTapped)];
     [self.controlsView addSubview:self.submitButton];
 
@@ -275,7 +276,7 @@ static const CGFloat kWideThreshold = 700.0;
     [self.controlsView addSubview:self.timeBadge];
 
     // Next button – hidden until after Check
-    self.nextButton = [self actionButtonWithTitle:@"Next →"
+    self.nextButton = [self actionButtonWithTitle:BGGLocalizedString(@"Next →")
                                            action:@selector(nextTapped)];
     self.nextButton.backgroundColor = [UIColor systemGrayColor];
     self.nextButton.hidden = YES;
@@ -432,7 +433,7 @@ static const CGFloat kWideThreshold = 700.0;
 - (UIButton *)cancelButtonWithAction:(SEL)action
 {
     UIButton *btn = [UIButton buttonWithType:UIButtonTypeSystem];
-    [btn setTitle:@"Cancel" forState:UIControlStateNormal];
+    [btn setTitle:BGGLocalizedString(@"Cancel") forState:UIControlStateNormal];
     btn.titleLabel.font = [UIFont preferredFontForTextStyle:UIFontTextStyleBody];
     [btn setTitleColor:[UIColor redColor] forState:UIControlStateNormal];
     btn.backgroundColor = [UIColor systemGrayColor];
@@ -510,10 +511,10 @@ static const CGFloat kWideThreshold = 700.0;
     NSArray<BGGPositionEntry *> *all = [[PositionDatabase sharedDatabase]
                                         positionsForTags:[self requiredTags]];
     NSInteger available = (NSInteger)all.count;
-    NSString *message   = [NSString stringWithFormat:@"%ld positions available", (long)available];
+    NSString *message   = [NSString stringWithFormat:BGGLocalizedString(@"%ld positions available"), (long)available];
 
     UIAlertController *alert = [UIAlertController
-                                alertControllerWithTitle:@"How many positions?"
+                                alertControllerWithTitle:BGGLocalizedString(@"How many positions?")
                                                  message:message
                                           preferredStyle:UIAlertControllerStyleAlert];
 
@@ -522,7 +523,7 @@ static const CGFloat kWideThreshold = 700.0;
         NSInteger count = n.integerValue;
         if (count > available) { continue; }
         [alert addAction:[UIAlertAction
-                          actionWithTitle:[NSString stringWithFormat:@"%ld positions", (long)count]
+                          actionWithTitle:[NSString stringWithFormat:BGGLocalizedString(@"%ld positions"), (long)count]
                                     style:UIAlertActionStyleDefault
                                   handler:^(UIAlertAction *a)
         {
@@ -531,14 +532,14 @@ static const CGFloat kWideThreshold = 700.0;
     }
 
     [alert addAction:[UIAlertAction
-                      actionWithTitle:[NSString stringWithFormat:@"All (%ld)", (long)available]
+                      actionWithTitle:[NSString stringWithFormat:BGGLocalizedString(@"All (%ld)"), (long)available]
                                 style:UIAlertActionStyleDefault
                               handler:^(UIAlertAction *a)
     {
         [self startSessionWithCount:available positions:all];
     }]];
 
-    [alert addAction:[UIAlertAction actionWithTitle:@"Cancel"
+    [alert addAction:[UIAlertAction actionWithTitle:BGGLocalizedString(@"Cancel")
                                               style:UIAlertActionStyleCancel
                                             handler:^(UIAlertAction *a)
     {
@@ -702,7 +703,7 @@ static const CGFloat kWideThreshold = 700.0;
 
     if (blueOK && yellowOK)
     {
-        [msg appendFormat:@"✓  Correct!  %ld : %ld",
+        [msg appendFormat:BGGLocalizedString(@"✓  Correct!  %ld : %ld"),
          (long)correctBlue, (long)correctYellow];
         self.feedbackLabel.textColor = [UIColor systemGreenColor];
     }
@@ -710,12 +711,12 @@ static const CGFloat kWideThreshold = 700.0;
     {
         if (!blueOK)
         {
-            [msg appendFormat:@"✗  My count: you said %ld, correct: %ld\n",
+            [msg appendFormat:BGGLocalizedString(@"✗  My count: you said %ld, correct: %ld\n"),
              (long)self.blueField.text.integerValue, (long)correctBlue];
         }
         if (!yellowOK)
         {
-            [msg appendFormat:@"✗  Opponent: you said %ld, correct: %ld",
+            [msg appendFormat:BGGLocalizedString(@"✗  Opponent: you said %ld, correct: %ld"),
              (long)self.yellowField.text.integerValue, (long)correctYellow];
         }
         self.feedbackLabel.textColor = [UIColor systemRedColor];
@@ -841,23 +842,23 @@ static const CGFloat kWideThreshold = 700.0;
     }
 
     NSString *message = [NSString stringWithFormat:
-                         @"%ld of %ld correct (%.0f%%)",
+                         BGGLocalizedString(@"%ld of %ld correct (%.0f%%)"),
                          (long)self.correctCount, (long)self.totalCount,
                          self.totalCount > 0
                              ? (double)self.correctCount / self.totalCount * 100.0
                              : 0.0];
 
     UIAlertController *alert = [UIAlertController
-                                alertControllerWithTitle:@"Session complete"
+                                alertControllerWithTitle:BGGLocalizedString(@"Session complete")
                                                  message:message
                                           preferredStyle:UIAlertControllerStyleAlert];
-    [alert addAction:[UIAlertAction actionWithTitle:@"Again"
+    [alert addAction:[UIAlertAction actionWithTitle:BGGLocalizedString(@"Again")
                                               style:UIAlertActionStyleDefault
                                             handler:^(UIAlertAction *a)
     {
         [self showCountPicker];
     }]];
-    [alert addAction:[UIAlertAction actionWithTitle:@"Done"
+    [alert addAction:[UIAlertAction actionWithTitle:BGGLocalizedString(@"Done")
                                               style:UIAlertActionStyleCancel
                                             handler:^(UIAlertAction *a)
     {
