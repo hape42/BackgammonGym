@@ -6,6 +6,7 @@
 #import "StatisticsVC.h"
 #import "BGGActivityGridView.h"
 #import "UIViewController+BGGHomeButton.h"
+#import "BGGLocalization.h"
 
 @interface StatisticsVC ()
 
@@ -80,11 +81,11 @@
 
 - (void)buildContent
 {
-    UILabel *gridTitle = [self headlineLabel:@"Activity"];
+    UILabel *gridTitle = [self headlineLabel:BGGLocalizedString(@"Activity")];
 
     UILabel *gridHint = [self captionLabel:
-        @"Your last 12 months. Each square is a day, coloured by your highest "
-        @"activity that day."];
+        BGGLocalizedString(@"Your last 12 months. Each square is a day, coloured by your highest "
+        @"activity that day.")];
 
     self.activityGrid = [[BGGActivityGridView alloc] initWithFrame:CGRectZero];
     self.activityGrid.translatesAutoresizingMaskIntoConstraints = NO;

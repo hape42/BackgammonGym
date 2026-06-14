@@ -4,6 +4,7 @@
 //
 
 #import "METWarmupVC.h"
+#import "BGGLocalization.h"
 #import "BGGMatchEquityTable.h"
 
 @interface METWarmupVC ()
@@ -70,97 +71,54 @@
 
 - (void)buildContent
 {
-    UILabel *title = [self headlineLabel:@"What is a Match Equity Table?"];
+    UILabel *title = [self headlineLabel:BGGLocalizedString(@"met.warmup.what.title")];
 
     UILabel *intro = [self bodyLabel:
-        @"A match equity table (MET) tells you your chance of winning the "
-        @"whole match from any given score, assuming both players are "
-        @"equally strong. Each value is a match-winning percentage. The "
-        @"table is symmetric around its diagonal: when both players need "
-        @"the same number of points, each has exactly 50%."];
+        BGGLocalizedString(@"met.warmup.what.body")];
 
-    UILabel *whyTitle = [self headlineLabel:@"Why memorize it?"];
+    UILabel *whyTitle = [self headlineLabel:BGGLocalizedString(@"met.warmup.why.title")];
 
     UILabel *why = [self bodyLabel:
-        @"The clearest payoff is in cube decisions. Imagine you trail 3–5 "
-        @"in an 11-point match and your opponent doubles to 8. If you pass, "
-        @"the score becomes 3–7, where your match-winning chances are about "
-        @"36%. So taking only makes sense if you expect to win this game "
-        @"more than 36% of the time — far above the 25% you'd need in a "
-        @"money game. Without the table, you're guessing; with it, you have "
-        @"a concrete threshold to compare against.\n\n"
-        @"The same numbers feed into subtler checker and cube choices that "
-        @"depend on the score. Knowing your equity turns vague intuition "
-        @"into a number you can actually reason with — a big part of moving "
-        @"from intermediate to advanced match play."];
+        BGGLocalizedString(@"met.warmup.why.body")];
 
-    UILabel *startTitle = [self headlineLabel:@"Where to start"];
+    UILabel *startTitle = [self headlineLabel:BGGLocalizedString(@"met.warmup.start.title")];
 
     UILabel *start = [self bodyLabel:
-        @"You don't need all of it at once. The values that come up most "
-        @"and matter most are the Crawford scores (one player needs just "
-        @"one point) and any score where a player is 2-away. Memorize those "
-        @"exactly first, then widen out to 5-point, 7-point, and 9-point "
-        @"match scores as you go."];
+        BGGLocalizedString(@"met.warmup.start.body")];
 
-    UILabel *tableTitle = [self headlineLabel:@"The full table (1-away to 11-away)"];
+    UILabel *tableTitle = [self headlineLabel:BGGLocalizedString(@"met.warmup.table.title")];
 
     UILabel *tableHint = [self captionLabel:
-        @"Your away-score down the left, your opponent's across the top. "
-        @"Each cell is your match-winning chance in percent."];
+        BGGLocalizedString(@"met.warmup.table.body")];
 
     UIView *table = [self buildEquityGrid];
 
     // Two shortcuts for when you can't recall the exact cell. Both will be
     // selectable as optional hints on the Training page.
-    UILabel *shortcutsTitle = [self headlineLabel:@"Two shortcuts when you forget a cell"];
+    UILabel *shortcutsTitle = [self headlineLabel:BGGLocalizedString(@"met.warmup.shortcuts.title")];
 
     UILabel *shortcutsIntro = [self bodyLabel:
-        @"Almost nobody memorizes the whole table perfectly. Two well-known "
-        @"approximations get you very close in your head, and you'll be able "
-        @"to switch each one on as a hint while you train."];
+        BGGLocalizedString(@"met.warmup.shortcuts.body")];
 
     // --- Neil's Numbers (Neil Kazaross) ---
     UILabel *neilTitle = [self headlineLabel:@"Neil's Numbers"];
 
     UILabel *neil = [self bodyLabel:
-        @"Neil Kazaross's method estimates the leader's equity with a single "
-        @"multiplication. Look at how many points the trailer still needs, "
-        @"read off a per-point value, then multiply it by the size of the "
-        @"lead and add to 50%."];
+        BGGLocalizedString(@"met.warmup.neil.body")];
 
     UILabel *neilGridHint = [self captionLabel:
-        @"Top row: the trailer's points-to-go. Bottom row: what each point of "
-        @"lead is worth above 50%."];
+        BGGLocalizedString(@"met.warmup.neil.gridhint")];
 
     UIView *neilGrid = [self buildNeilGrid];
 
     UILabel *neil2 = [self bodyLabel:
-        @"For an in-between number, interpolate (7-away sits halfway between "
-        @"6 and 8, so it's worth 6\u00bd). Beyond the trivial 3/4/5/6 start, the "
-        @"only thing to remember is \u201c8 is 6, 11 is 5, 15 is 4.\u201d\n\n"
-        @"Example: you lead 3\u20130 in a 7-point match. The trailer needs 7, "
-        @"worth 6\u00bd per point. Your lead is 3 points, so 3 \u00d7 6\u00bd = 19\u00bd over "
-        @"50% \u2192 about 69\u00bd%. The table says 70% \u2014 close enough to act on.\n\n"
-        @"Neil's Numbers are remarkably accurate as long as the leader still "
-        @"needs 3 or more points. They drift when the leader is only 1 or 2 "
-        @"points away, so it's worth learning those few scores exactly."];
+        BGGLocalizedString(@"met.warmup.neil.example")];
 
     // --- Janowski formula (Rick Janowski) ---
     UILabel *janTitle = [self headlineLabel:@"Janowski's formula"];
 
     UILabel *jan = [self bodyLabel:
-        @"Rick Janowski's formula gives the leader's match equity directly:\n\n"
-        @"  E = 50 + (D \u00d7 85) \u00f7 (T + 6)\n\n"
-        @"where E is the leader's equity in percent, D is the difference in "
-        @"scores (points-to-go), and T is the trailer's away-score \u2014 the "
-        @"points the player who is behind still needs.\n\n"
-        @"Example: an 11-point match standing 5-away vs 9-away. The difference "
-        @"is D = 9 \u2212 5 = 4 and T = 9, so E = 50 + (4 \u00d7 85) \u00f7 (9 + 6) = "
-        @"50 + 340 \u00f7 15 \u2248 72.7%. Woolsey's table gives 73% here.\n\n"
-        @"It's usually within about 1%. The exception is when the leader needs "
-        @"only one or two points \u2014 there it can produce outliers, so trust the "
-        @"memorized values at those scores instead."];
+        BGGLocalizedString(@"met.warmup.janowski.body")];
 
     // Stack everything vertically.
     UIStackView *stack = [[UIStackView alloc] initWithArrangedSubviews:@[
@@ -210,7 +168,7 @@
 
     // Header row: empty corner + 1..n
     UIStackView *headerRow = [self gridRow];
-    [headerRow addArrangedSubview:[self cornerCell:@"↓ me / opp →"]];
+    [headerRow addArrangedSubview:[self cornerCell:BGGLocalizedString(@"↓ me / opp →")]];
     for (NSInteger c = 1; c <= n; c++)
     {
         [headerRow addArrangedSubview:[self headerCell:[NSString stringWithFormat:@"%ld", (long)c]]];

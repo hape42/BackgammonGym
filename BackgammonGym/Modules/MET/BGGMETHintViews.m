@@ -4,6 +4,7 @@
 //
 
 #import "BGGMETHintViews.h"
+#import "BGGLocalization.h"
 
 @implementation BGGMETHintViews
 
@@ -13,8 +14,8 @@
 {
     UILabel *title = [self titleLabel:@"Neil's Numbers"];
     UILabel *hint  = [self captionLabel:
-        @"Top: trailer's points-to-go. Bottom: value per point of lead, "
-        @"above 50%. Interpolate between anchors."];
+        BGGLocalizedString(@"Top: trailer's points-to-go. Bottom: value per point of lead, "
+        @"above 50%. Interpolate between anchors.")];
 
     UIView *grid = [self buildNeilGrid];
 
@@ -84,8 +85,8 @@
     formula.translatesAutoresizingMaskIntoConstraints = NO;
 
     UILabel *legend = [self captionLabel:
-        @"E = leader's equity (%).  D = score difference (points-to-go).  "
-        @"T = trailer's away-score."];
+        BGGLocalizedString(@"E = leader's equity (%).  D = score difference (points-to-go).  "
+        @"T = trailer's away-score.")];
 
     UIStackView *stack = [[UIStackView alloc] initWithArrangedSubviews:@[title, formula, legend]];
     stack.axis    = UILayoutConstraintAxisVertical;

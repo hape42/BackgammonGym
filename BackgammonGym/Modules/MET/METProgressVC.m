@@ -6,6 +6,7 @@
 #import "METProgressVC.h"
 #import "BGGSessionCell.h"
 #import "CoreDataManager.h"
+#import "BGGLocalization.h"
 
 static NSString * const kCellID = @"BGGSessionCell";
 
@@ -72,7 +73,7 @@ static NSString * const kCellID = @"BGGSessionCell";
 {
     self.emptyLabel = [[UILabel alloc] init];
     self.emptyLabel.translatesAutoresizingMaskIntoConstraints = NO;
-    self.emptyLabel.text          = @"No sessions yet.\nPlay a Training or Workout to see your history here.";
+    self.emptyLabel.text          = BGGLocalizedString(@"No sessions yet.\nPlay a Training or Workout to see your history here.");
     self.emptyLabel.numberOfLines = 0;
     self.emptyLabel.textAlignment = NSTextAlignmentCenter;
     self.emptyLabel.textColor     = [UIColor tertiaryLabelColor];
@@ -144,7 +145,7 @@ static NSString * const kCellID = @"BGGSessionCell";
 - (NSString *)tableView:(UITableView *)tableView
 titleForHeaderInSection:(NSInteger)section
 {
-    return @"Session history";
+    return BGGLocalizedString(@"Session history");
 }
 
 // Swipe reveals a Delete action that asks for confirmation first.
@@ -154,7 +155,7 @@ titleForHeaderInSection:(NSInteger)section
     __weak typeof(self) weakSelf = self;
     UIContextualAction *delete = [UIContextualAction
         contextualActionWithStyle:UIContextualActionStyleDestructive
-                            title:@"Delete"
+                            title:BGGLocalizedString(@"Delete")
                           handler:^(UIContextualAction *action,
                                     UIView *sourceView,
                                     void (^completion)(BOOL))
@@ -175,11 +176,11 @@ titleForHeaderInSection:(NSInteger)section
     BGGWorkout *workout = self.workouts[(NSUInteger)indexPath.row];
 
     UIAlertController *alert = [UIAlertController
-        alertControllerWithTitle:@"Delete session?"
-                         message:@"This permanently removes the session and its attempts."
+        alertControllerWithTitle:BGGLocalizedString(@"Delete session?")
+                         message:BGGLocalizedString(@"This permanently removes the session and its attempts.")
                   preferredStyle:UIAlertControllerStyleAlert];
 
-    [alert addAction:[UIAlertAction actionWithTitle:@"Cancel"
+    [alert addAction:[UIAlertAction actionWithTitle:BGGLocalizedString(@"Cancel")
                                               style:UIAlertActionStyleCancel
                                             handler:^(UIAlertAction *a)
     {
@@ -187,7 +188,7 @@ titleForHeaderInSection:(NSInteger)section
         if (completion) { completion(NO); }
     }]];
 
-    [alert addAction:[UIAlertAction actionWithTitle:@"Delete"
+    [alert addAction:[UIAlertAction actionWithTitle:BGGLocalizedString(@"Delete")
                                               style:UIAlertActionStyleDestructive
                                             handler:^(UIAlertAction *a)
     {

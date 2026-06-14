@@ -11,6 +11,7 @@
 //
 
 #import "METExerciseVC.h"
+#import "BGGLocalization.h"
 #import "UIViewController+BGGHomeButton.h"
 #import "BGGMatchEquityTable.h"
 #import "BGGMETSettings.h"
@@ -195,7 +196,7 @@
     self.promptLabel.font          = [UIFont preferredFontForTextStyle:UIFontTextStyleBody];
     self.promptLabel.textAlignment = NSTextAlignmentCenter;
     self.promptLabel.textColor     = [UIColor labelColor];
-    self.promptLabel.text          = @"Estimate the leader's match-winning chances.";
+    self.promptLabel.text          = BGGLocalizedString(@"Estimate the leader's match-winning chances.");
     [self.contentView addSubview:self.promptLabel];
 
     // Input.
@@ -203,20 +204,20 @@
     self.answerLabel.translatesAutoresizingMaskIntoConstraints = NO;
     self.answerLabel.font      = [UIFont preferredFontForTextStyle:UIFontTextStyleSubheadline];
     self.answerLabel.textColor = [UIColor secondaryLabelColor];
-    self.answerLabel.text      = @"Leader's match-winning chance (%)";
+    self.answerLabel.text      = BGGLocalizedString(@"Leader's match-winning chance (%)");
     [self.contentView addSubview:self.answerLabel];
 
     self.answerField = [self percentField];
     [self.contentView addSubview:self.answerField];
 
     // Buttons.
-    self.submitButton = [self filledButtonWithTitle:@"Check"
+    self.submitButton = [self filledButtonWithTitle:BGGLocalizedString(@"Check")
                                              action:@selector(submitTapped)];
-    self.cancelButton = [self plainButtonWithTitle:@"Cancel"
+    self.cancelButton = [self plainButtonWithTitle:BGGLocalizedString(@"Cancel")
                                             action:@selector(cancelTapped)];
-    self.nextButton = [self filledButtonWithTitle:@"Next →"
+    self.nextButton = [self filledButtonWithTitle:BGGLocalizedString(@"Next →")
                                            action:@selector(nextTapped)];
-    self.cancelAfterNextButton = [self plainButtonWithTitle:@"Cancel"
+    self.cancelAfterNextButton = [self plainButtonWithTitle:BGGLocalizedString(@"Cancel")
                                                      action:@selector(cancelTapped)];
     self.nextButton.hidden            = YES;
     self.cancelAfterNextButton.hidden = YES;
@@ -495,11 +496,11 @@
     NSInteger tol = [BGGMETSettings tolerancePercent];
     if (tol == 0)
     {
-        self.toleranceInfoLabel.text = @"Tolerance: exact";
+        self.toleranceInfoLabel.text = BGGLocalizedString(@"Tolerance: exact");
     }
     else
     {
-        self.toleranceInfoLabel.text = [NSString stringWithFormat:@"Tolerance: ± %ld%%", (long)tol];
+        self.toleranceInfoLabel.text = [NSString stringWithFormat:BGGLocalizedString(@"Tolerance: ± %ld%%"), (long)tol];
     }
 }
 
@@ -547,15 +548,15 @@
 - (void)showMatchLengthPicker
 {
     UIAlertController *alert = [UIAlertController
-                                alertControllerWithTitle:@"Match length?"
-                                                 message:@"Pick the match length to train."
+                                alertControllerWithTitle:BGGLocalizedString(@"Match length?")
+                                                 message:BGGLocalizedString(@"Pick the match length to train.")
                                           preferredStyle:UIAlertControllerStyleAlert];
 
     for (NSNumber *n in @[@5, @7, @9, @11])
     {
         NSInteger length = n.integerValue;
         [alert addAction:[UIAlertAction
-                          actionWithTitle:[NSString stringWithFormat:@"%ld-point match", (long)length]
+                          actionWithTitle:[NSString stringWithFormat:BGGLocalizedString(@"%ld-point match"), (long)length]
                                     style:UIAlertActionStyleDefault
                                   handler:^(UIAlertAction *a)
         {
@@ -563,7 +564,7 @@
         }]];
     }
 
-    [alert addAction:[UIAlertAction actionWithTitle:@"Cancel"
+    [alert addAction:[UIAlertAction actionWithTitle:BGGLocalizedString(@"Cancel")
                                               style:UIAlertActionStyleCancel
                                             handler:^(UIAlertAction *a)
     {
@@ -578,16 +579,16 @@
 - (void)showCountPickerForLength:(NSInteger)length
 {
     UIAlertController *alert = [UIAlertController
-                                alertControllerWithTitle:@"How many questions?"
+                                alertControllerWithTitle:BGGLocalizedString(@"How many questions?")
                                                  message:[NSString stringWithFormat:
-                                                          @"%ld-point match", (long)length]
+                                                          BGGLocalizedString(@"%ld-point match"), (long)length]
                                           preferredStyle:UIAlertControllerStyleAlert];
 
     for (NSNumber *n in @[@5, @10, @20])
     {
         NSInteger count = n.integerValue;
         [alert addAction:[UIAlertAction
-                          actionWithTitle:[NSString stringWithFormat:@"%ld questions", (long)count]
+                          actionWithTitle:[NSString stringWithFormat:BGGLocalizedString(@"%ld questions"), (long)count]
                                     style:UIAlertActionStyleDefault
                                   handler:^(UIAlertAction *a)
         {
@@ -595,7 +596,7 @@
         }]];
     }
 
-    [alert addAction:[UIAlertAction actionWithTitle:@"Cancel"
+    [alert addAction:[UIAlertAction actionWithTitle:BGGLocalizedString(@"Cancel")
                                               style:UIAlertActionStyleCancel
                                             handler:^(UIAlertAction *a)
     {
@@ -676,7 +677,7 @@
 
     self.scoreLabel.text = [NSString stringWithFormat:@"%ld – %ld",
                             (long)leaderScore, (long)trailerScore];
-    self.matchLabel.text = [NSString stringWithFormat:@"in a %ld-point match",
+    self.matchLabel.text = [NSString stringWithFormat:BGGLocalizedString(@"in a %ld-point match"),
                             (long)self.matchLength];
 
     self.progressLabel.text = [NSString stringWithFormat:@"%ld / %ld",
@@ -753,13 +754,13 @@
 {
     if (ok)
     {
-        self.feedbackLabel.text      = [NSString stringWithFormat:@"✓  Correct!  %ld%%", (long)correct];
+        self.feedbackLabel.text      = [NSString stringWithFormat:BGGLocalizedString(@"✓  Correct!  %ld%%"), (long)correct];
         self.feedbackLabel.textColor = [UIColor systemGreenColor];
     }
     else
     {
         self.feedbackLabel.text      = [NSString stringWithFormat:
-                                        @"✗  You said %ld%%, correct: %ld%%",
+                                        BGGLocalizedString(@"✗  You said %ld%%, correct: %ld%%"),
                                         (long)userValue, (long)correct];
         self.feedbackLabel.textColor = [UIColor systemRedColor];
     }
@@ -879,23 +880,23 @@
     }
 
     NSString *message = [NSString stringWithFormat:
-                         @"%ld of %ld correct (%.0f%%)",
+                         BGGLocalizedString(@"%ld of %ld correct (%.0f%%)"),
                          (long)self.correctCount, (long)self.totalCount,
                          self.totalCount > 0
                              ? (double)self.correctCount / self.totalCount * 100.0
                              : 0.0];
 
     UIAlertController *alert = [UIAlertController
-                                alertControllerWithTitle:@"Session complete"
+                                alertControllerWithTitle:BGGLocalizedString(@"Session complete")
                                                  message:message
                                           preferredStyle:UIAlertControllerStyleAlert];
-    [alert addAction:[UIAlertAction actionWithTitle:@"Again"
+    [alert addAction:[UIAlertAction actionWithTitle:BGGLocalizedString(@"Again")
                                               style:UIAlertActionStyleDefault
                                             handler:^(UIAlertAction *a)
     {
         [self showMatchLengthPicker];
     }]];
-    [alert addAction:[UIAlertAction actionWithTitle:@"Done"
+    [alert addAction:[UIAlertAction actionWithTitle:BGGLocalizedString(@"Done")
                                               style:UIAlertActionStyleCancel
                                             handler:^(UIAlertAction *a)
     {

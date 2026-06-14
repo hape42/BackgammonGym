@@ -4,6 +4,7 @@
 //
 
 #import "METWorkoutVC.h"
+#import "BGGLocalization.h"
 
 @implementation METWorkoutVC
 
@@ -14,8 +15,8 @@
 
 - (NSString *)infoText
 {
-    return @"No hints, just like at a real table. The timer runs live so you "
-           @"train under tournament conditions.";
+    return BGGLocalizedString(@"No hints, just like at a real table. The timer runs live so you "
+           @"train under tournament conditions.");
 }
 
 - (void)viewDidLoad

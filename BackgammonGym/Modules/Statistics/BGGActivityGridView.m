@@ -5,6 +5,7 @@
 
 #import "BGGActivityGridView.h"
 #import "CoreDataManager.h"
+#import "BGGLocalization.h"
 
 // Grid geometry.
 static const NSInteger kBGGWeeks      = 53;   // columns
@@ -200,8 +201,17 @@ static const CGFloat   kBGGLegendH    = 26.0; // space for the legend row
         }
     }
 
-    // Weekday labels on the left: Mon, Wed, Fri (rows 1, 3, 5).
-    NSArray<NSString *> *weekdayLabels = @[@"", @"Mon", @"", @"Wed", @"", @"Fri", @""];
+    // Weekday labels on the left: Mon, Wed, Fri (rows 1, 3, 5), system-
+    // localized and following the device language. veryShortWeekdaySymbols is
+    // index 0 = Sunday … 6 = Saturday, matching the grid's Sunday-on-top rows.
+    static NSArray<NSString *> *weekdayLabels = nil;
+    static dispatch_once_t wdOnce;
+    dispatch_once(&wdOnce, ^{
+        NSDateFormatter *df = [[NSDateFormatter alloc] init];
+        NSArray<NSString *> *sys = df.shortStandaloneWeekdaySymbols;  // Sun..Sat
+        // Show only Mon (1), Wed (3), Fri (5); blanks elsewhere.
+        weekdayLabels = @[@"", sys[1], @"", sys[3], @"", sys[5], @""];
+    });
     for (NSInteger row = 0; row < kBGGDays; row++)
     {
         NSString *wl = weekdayLabels[row];
@@ -223,7 +233,12 @@ static const CGFloat   kBGGLegendH    = 26.0; // space for the legend row
     CGFloat sw    = 12.0;   // legend swatch size
     CGFloat gap   = 5.0;
 
-    NSArray<NSString *> *titles = @[@"Not used", @"Opened", @"Training", @"Workout"];
+    // "Training" and "Workout" stay English (brand terms); only the first two
+    // are localized.
+    NSArray<NSString *> *titles = @[BGGLocalizedString(@"Not used"),
+                                    BGGLocalizedString(@"Opened"),
+                                    @"Training",
+                                    @"Workout"];
 
     // Measure total width to right-align the legend (like GitHub).
     CGFloat totalW = 0;
@@ -257,13 +272,17 @@ static const CGFloat   kBGGLegendH    = 26.0; // space for the legend row
 
 - (NSString *)shortMonthName:(NSInteger)month
 {
+    if (month < 1 || month > 12) { return @""; }
+
+    // System-localized short month names, following the device language.
+    // shortStandaloneMonthSymbols gives the standalone form ("Jan", "Mär"…).
     static NSArray<NSString *> *names = nil;
     static dispatch_once_t once;
     dispatch_once(&once, ^{
-        names = @[@"Jan", @"Feb", @"Mar", @"Apr", @"May", @"Jun",
-                  @"Jul", @"Aug", @"Sep", @"Oct", @"Nov", @"Dec"];
+        NSDateFormatter *df = [[NSDateFormatter alloc] init];
+        names = df.shortStandaloneMonthSymbols;
     });
-    if (month < 1 || month > 12) { return @""; }
+    if (month > (NSInteger)names.count) { return @""; }
     return names[month - 1];
 }
 
