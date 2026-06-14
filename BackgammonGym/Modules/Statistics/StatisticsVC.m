@@ -5,6 +5,7 @@
 
 #import "StatisticsVC.h"
 #import "BGGActivityGridView.h"
+#import "BGGModuleStatsCard.h"
 #import "UIViewController+BGGHomeButton.h"
 #import "BGGLocalization.h"
 
@@ -13,6 +14,7 @@
 @property (nonatomic, strong) UIScrollView         *scrollView;
 @property (nonatomic, strong) UIView               *contentView;
 @property (nonatomic, strong) BGGActivityGridView  *activityGrid;
+@property (nonatomic, strong) NSArray<BGGModuleStatsCard *> *statCards;
 
 @end
 
@@ -47,6 +49,10 @@
 - (void)refresh
 {
     [self.activityGrid reload];
+    for (BGGModuleStatsCard *card in self.statCards)
+    {
+        [card reload];
+    }
 }
 
 #pragma mark - Scaffolding
@@ -90,13 +96,27 @@
     self.activityGrid = [[BGGActivityGridView alloc] initWithFrame:CGRectZero];
     self.activityGrid.translatesAutoresizingMaskIntoConstraints = NO;
 
+    // Per-module cumulative stats below the grid. "Pip Count" / "MET" are
+    // brand language; the module identifiers match the Core Data records.
+    UILabel *moduleTitle = [self headlineLabel:BGGLocalizedString(@"Per module")];
+
+    BGGModuleStatsCard *pipCard =
+        [[BGGModuleStatsCard alloc] initWithTitle:@"Pip Count" module:@"pipcount"];
+    BGGModuleStatsCard *metCard =
+        [[BGGModuleStatsCard alloc] initWithTitle:@"MET" module:@"met"];
+    self.statCards = @[pipCard, metCard];
+
     UIStackView *stack = [[UIStackView alloc] initWithArrangedSubviews:@[
-        gridTitle, gridHint, self.activityGrid
+        gridTitle, gridHint, self.activityGrid,
+        moduleTitle, pipCard, metCard
     ]];
     stack.axis    = UILayoutConstraintAxisVertical;
     stack.spacing = 8.0;
     stack.translatesAutoresizingMaskIntoConstraints = NO;
     [stack setCustomSpacing:14.0 afterView:gridHint];
+    [stack setCustomSpacing:28.0 afterView:self.activityGrid];
+    [stack setCustomSpacing:12.0 afterView:moduleTitle];
+    [stack setCustomSpacing:12.0 afterView:pipCard];
     [self.contentView addSubview:stack];
 
     [NSLayoutConstraint activateConstraints:@[

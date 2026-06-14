@@ -480,6 +480,98 @@
     return out;
 }
 
+#pragma mark - Aggregation for the statistics overview
+
+- (NSDictionary *)statsForModule:(NSString *)module
+                            mode:(NSString *)mode
+{
+    BOOL isMET = [module isEqualToString:@"met"];
+
+    // Fetch the matching workouts. MET attempts hang off metAttempts, pip
+    // count off attempts, but otherwise the aggregation is identical, so I
+    // branch only where the relationship differs.
+    NSFetchRequest *request = [BGGWorkout fetchRequest];
+    request.predicate       = [self predicateForModule:module mode:mode];
+    request.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:@"startedAt"
+                                                              ascending:YES]];
+    NSError *error = nil;
+    NSArray<BGGWorkout *> *workouts =
+        [self.persistentContainer.viewContext executeFetchRequest:request error:&error];
+
+    NSInteger sessions   = 0;
+    NSInteger exercises  = 0;
+    NSInteger correct    = 0;
+    NSInteger totalMs    = 0;
+    NSInteger bestStreak = 0;
+
+    if (!error)
+    {
+        // Sort each session's attempts chronologically so the streak counts
+        // answers in the order they were given.
+        NSSortDescriptor *byTime = [NSSortDescriptor sortDescriptorWithKey:@"timestamp"
+                                                                ascending:YES];
+
+        for (BGGWorkout *w in workouts)
+        {
+            NSArray *attempts = isMET ? w.metAttempts.allObjects
+                                      : w.attempts.allObjects;
+            if (attempts.count == 0) { continue; }   // skip empty sessions
+
+            attempts = [attempts sortedArrayUsingDescriptors:@[byTime]];
+
+            sessions++;
+            exercises += (NSInteger)attempts.count;
+
+            NSInteger run = 0;
+            for (id a in attempts)
+            {
+                BOOL ok;
+                int32_t ms;
+                if (isMET)
+                {
+                    BGGMETAttempt *m = (BGGMETAttempt *)a;
+                    ok = m.isCorrect;
+                    ms = m.elapsedMs;
+                }
+                else
+                {
+                    BGGAttempt *p = (BGGAttempt *)a;
+                    ok = p.isCorrect;
+                    ms = p.elapsedMs;
+                }
+
+                totalMs += ms;
+                if (ok)
+                {
+                    correct++;
+                    run++;
+                    if (run > bestStreak) { bestStreak = run; }
+                }
+                else
+                {
+                    run = 0;
+                }
+            }
+        }
+    }
+
+    NSInteger percent = exercises > 0
+        ? (NSInteger)round((double)correct / exercises * 100.0)
+        : 0;
+    NSInteger avgMs = exercises > 0
+        ? (NSInteger)round((double)totalMs / exercises)
+        : 0;
+
+    return @{
+        @"sessions":   @(sessions),
+        @"exercises":  @(exercises),
+        @"correct":    @(correct),
+        @"percent":    @(percent),
+        @"avgMs":      @(avgMs),
+        @"bestStreak": @(bestStreak),
+    };
+}
+
 #pragma mark - Helpers
 
 // Builds a predicate combining optional module and mode filters.

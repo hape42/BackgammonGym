@@ -127,6 +127,24 @@ NS_ASSUME_NONNULL_BEGIN
 // same dictionary shape so the trend chart can render either module.
 - (NSArray<NSDictionary *> *)metSessionChartDataForMode:(nullable NSString *)mode;
 
+// MARK: Aggregation for the statistics overview
+
+// Cumulative stats for one module ("pipcount" / "met") and one mode
+// ("training" / "workout"), summed over the whole history. Used by the
+// cross-module Statistics screen. Counts the right attempt relationship for
+// the module (attempts vs metAttempts). Keys:
+//   @"sessions"   NSNumber  – number of workouts with at least one attempt
+//   @"exercises"  NSNumber  – total attempts over all those sessions
+//   @"correct"    NSNumber  – correct attempts
+//   @"percent"    NSNumber  – hit rate 0–100 (0 when no attempts)
+//   @"avgMs"      NSNumber  – average answer time in ms (0 when no attempts)
+//   @"bestStreak" NSNumber  – longest run of correct answers within a single
+//                             session, taken as the max over all sessions
+// All values are present even when there is no data (zeros), so the caller
+// never has to nil-check.
+- (NSDictionary *)statsForModule:(NSString *)module
+                            mode:(NSString *)mode;
+
 @end
 
 NS_ASSUME_NONNULL_END
