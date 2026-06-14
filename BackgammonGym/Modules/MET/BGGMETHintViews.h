@@ -26,6 +26,27 @@ NS_ASSUME_NONNULL_BEGIN
 // what D and T mean. No worked example – just the tool.
 + (UIView *)janowskiFormulaView;
 
+#pragma mark - Worked examples for a concrete score
+
+// Neil's Numbers as a worked example for one match score: the general grid
+// plus the step-by-step calculation for this leaderAway/trailerAway, ending
+// in the estimated equity. Shown on the Training page after the check.
++ (UIView *)neilsNumbersViewForLeaderAway:(NSInteger)leaderAway
+                              trailerAway:(NSInteger)trailerAway;
+
+// Janowski as a worked example for one match score: the formula plus the
+// numbers plugged in for this score.
++ (UIView *)janowskiFormulaViewForLeaderAway:(NSInteger)leaderAway
+                                 trailerAway:(NSInteger)trailerAway;
+
+// The leader's estimated equity in percent for a score, used both for the
+// worked examples and to put the result into the pill titles. Neil's per-
+// point value is interpolated between the whole-number anchors.
++ (double)neilEquityForLeaderAway:(NSInteger)leaderAway
+                      trailerAway:(NSInteger)trailerAway;
++ (double)janowskiEquityForLeaderAway:(NSInteger)leaderAway
+                          trailerAway:(NSInteger)trailerAway;
+
 @end
 
 NS_ASSUME_NONNULL_END

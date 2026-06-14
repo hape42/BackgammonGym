@@ -1960,6 +1960,96 @@
           }
         }
       }
+    },
+    "Note: Neil's Numbers drift when either player is only 1 or 2 points away — trust memorized values there.": {
+      "extractionState": "manual",
+      "comment": "MET hints",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Note: Neil's Numbers drift when either player is only 1 or 2 points away — trust memorized values there."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hinweis: Neils Numbers weichen ab, wenn einer der Spieler nur noch 1 oder 2 Punkte entfernt ist — vertraue dort den auswendig gelernten Werten."
+          }
+        }
+      }
+    },
+    "Score difference": {
+      "extractionState": "manual",
+      "comment": "MET hints",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Punktedifferenz"
+          }
+        }
+      }
+    },
+    "Trailer's away-score": {
+      "extractionState": "manual",
+      "comment": "MET hints",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Away-Score des Verfolgers"
+          }
+        }
+      }
+    },
+    "Leader's equity E": {
+      "extractionState": "manual",
+      "comment": "MET hints",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Equity des Führenden"
+          }
+        }
+      }
+    },
+    "Trailer needs": {
+      "extractionState": "manual",
+      "comment": "MET hints",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Verfolger braucht"
+          }
+        }
+      }
+    },
+    "Value per point": {
+      "extractionState": "manual",
+      "comment": "MET hints",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Wert pro Punkt"
+          }
+        }
+      }
+    },
+    "Lead": {
+      "extractionState": "manual",
+      "comment": "MET hints",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vorsprung"
+          }
+        }
+      }
     }
   },
   "version": "1.2"

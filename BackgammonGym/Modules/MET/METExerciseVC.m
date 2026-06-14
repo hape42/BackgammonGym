@@ -68,6 +68,11 @@
 @property (nonatomic, assign) NSInteger matchLength;   // 5 / 7 / 9 / 11
 @property (nonatomic, assign) NSInteger currentIndex;
 @property (nonatomic, assign) NSInteger correctCount;
+
+// YES once the current question has been checked. Before the check the hint
+// pills show only the general method; after it they show the worked example
+// with the result, so they never give the answer away while guessing.
+@property (nonatomic, assign) BOOL currentChecked;
 @property (nonatomic, assign) NSInteger totalCount;
 
 // The generated tasks for the running session. Each task is a dictionary:
@@ -510,8 +515,19 @@
 {
     if (self.neilHintView == nil)
     {
-        // Switch on: build and insert the grid at the top of the stack.
-        self.neilHintView = [BGGMETHintViews neilsNumbersView];
+        // Before the check: show the general method only (no answer). After
+        // the check: show the worked example for the current score.
+        if (self.currentChecked)
+        {
+            NSDictionary *task = self.tasks[(NSUInteger)self.currentIndex];
+            self.neilHintView = [BGGMETHintViews
+                neilsNumbersViewForLeaderAway:[task[@"leaderAway"] integerValue]
+                                  trailerAway:[task[@"trailerAway"] integerValue]];
+        }
+        else
+        {
+            self.neilHintView = [BGGMETHintViews neilsNumbersView];
+        }
         [self.hintsStack insertArrangedSubview:self.neilHintView atIndex:0];
         [self setPill:self.neilButton on:YES];
     }
@@ -529,7 +545,17 @@
 {
     if (self.janowskiHintView == nil)
     {
-        self.janowskiHintView = [BGGMETHintViews janowskiFormulaView];
+        if (self.currentChecked)
+        {
+            NSDictionary *task = self.tasks[(NSUInteger)self.currentIndex];
+            self.janowskiHintView = [BGGMETHintViews
+                janowskiFormulaViewForLeaderAway:[task[@"leaderAway"] integerValue]
+                                     trailerAway:[task[@"trailerAway"] integerValue]];
+        }
+        else
+        {
+            self.janowskiHintView = [BGGMETHintViews janowskiFormulaView];
+        }
         // Append below Neil's grid if that is showing, else it is the only one.
         [self.hintsStack addArrangedSubview:self.janowskiHintView];
         [self setPill:self.janowskiButton on:YES];
@@ -692,8 +718,49 @@
     self.cancelAfterNextButton.hidden = YES;
     self.answerField.enabled = YES;
 
+    [self resetHints];
+
     [self.answerField becomeFirstResponder];
     [self startTimer];
+}
+
+// Collapse any open hint and reset the pill titles to plain (no result yet)
+// for a fresh question.
+- (void)resetHints
+{
+    if (!self.showsHelpButtons) { return; }
+
+    self.currentChecked = NO;
+
+    if (self.neilHintView)
+    {
+        [self.hintsStack removeArrangedSubview:self.neilHintView];
+        [self.neilHintView removeFromSuperview];
+        self.neilHintView = nil;
+        [self setPill:self.neilButton on:NO];
+    }
+    if (self.janowskiHintView)
+    {
+        [self.hintsStack removeArrangedSubview:self.janowskiHintView];
+        [self.janowskiHintView removeFromSuperview];
+        self.janowskiHintView = nil;
+        [self setPill:self.janowskiButton on:NO];
+    }
+
+    [self.neilButton     setTitle:@"Neil's Numbers" forState:UIControlStateNormal];
+    [self.janowskiButton setTitle:@"Janowski"       forState:UIControlStateNormal];
+}
+
+// One decimal, localized separator – mirrors BGGMETHintViews so the pill
+// title matches the worked example.
+- (NSString *)oneDecimalString:(double)value
+{
+    NSNumberFormatter *nf = [[NSNumberFormatter alloc] init];
+    nf.numberStyle = NSNumberFormatterDecimalStyle;
+    nf.minimumFractionDigits = 1;
+    nf.maximumFractionDigits = 1;
+    nf.usesGroupingSeparator = NO;
+    return [nf stringFromNumber:@(value)];
 }
 
 #pragma mark - Answer
@@ -740,6 +807,56 @@
     self.nextButton.hidden   = NO;
     self.cancelAfterNextButton.hidden = NO;
     self.answerField.enabled = NO;
+
+    self.currentChecked = YES;
+    [self updateHintResultsForTask:task];
+}
+
+// After a check, show each method's estimate in its pill title (e.g.
+// "Neil's Numbers 69,5%"), and if a hint is already open, rebuild it so the
+// worked example matches the score just checked.
+- (void)updateHintResultsForTask:(NSDictionary *)task
+{
+    if (!self.showsHelpButtons) { return; }
+
+    NSInteger leaderAway  = [task[@"leaderAway"] integerValue];
+    NSInteger trailerAway = [task[@"trailerAway"] integerValue];
+
+    double neil = [BGGMETHintViews neilEquityForLeaderAway:leaderAway
+                                               trailerAway:trailerAway];
+    double jan  = [BGGMETHintViews janowskiEquityForLeaderAway:leaderAway
+                                                   trailerAway:trailerAway];
+
+    [self.neilButton setTitle:[NSString stringWithFormat:@"Neil's Numbers  %@%%",
+                               [self oneDecimalString:neil]]
+                     forState:UIControlStateNormal];
+    [self.janowskiButton setTitle:[NSString stringWithFormat:@"Janowski  %@%%",
+                                   [self oneDecimalString:jan]]
+                         forState:UIControlStateNormal];
+
+    // If a hint is already expanded, rebuild it for the new score.
+    if (self.neilHintView)
+    {
+        UIView *fresh = [BGGMETHintViews neilsNumbersViewForLeaderAway:leaderAway
+                                                          trailerAway:trailerAway];
+        NSUInteger idx = [self.hintsStack.arrangedSubviews indexOfObject:self.neilHintView];
+        [self.hintsStack removeArrangedSubview:self.neilHintView];
+        [self.neilHintView removeFromSuperview];
+        if (idx == NSNotFound) { idx = 0; }
+        [self.hintsStack insertArrangedSubview:fresh atIndex:idx];
+        self.neilHintView = fresh;
+    }
+    if (self.janowskiHintView)
+    {
+        UIView *fresh = [BGGMETHintViews janowskiFormulaViewForLeaderAway:leaderAway
+                                                             trailerAway:trailerAway];
+        NSUInteger idx = [self.hintsStack.arrangedSubviews indexOfObject:self.janowskiHintView];
+        [self.hintsStack removeArrangedSubview:self.janowskiHintView];
+        [self.janowskiHintView removeFromSuperview];
+        if (idx == NSNotFound) { idx = self.hintsStack.arrangedSubviews.count; }
+        [self.hintsStack insertArrangedSubview:fresh atIndex:idx];
+        self.janowskiHintView = fresh;
+    }
 }
 
 - (void)nextTapped
