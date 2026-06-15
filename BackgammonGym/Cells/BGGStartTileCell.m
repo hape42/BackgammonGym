@@ -11,7 +11,6 @@
 
 @property (nonatomic, strong) UIImageView *iconView;
 @property (nonatomic, strong) UILabel *titleLabel;
-@property (nonatomic, strong) UILabel *subtitleLabel;
 
 @end
 
@@ -40,36 +39,27 @@
 
     _titleLabel = [[UILabel alloc] init];
     _titleLabel.translatesAutoresizingMaskIntoConstraints = NO;
-    _titleLabel.font = [UIFont boldSystemFontOfSize:28];
+    _titleLabel.font = [UIFont boldSystemFontOfSize:22];
     _titleLabel.textColor = [UIColor labelColor];
-    _titleLabel.textAlignment = NSTextAlignmentCenter;
+    _titleLabel.textAlignment = NSTextAlignmentLeft;
     _titleLabel.adjustsFontSizeToFitWidth = YES;
     _titleLabel.minimumScaleFactor = 0.6;
+    _titleLabel.numberOfLines = 1;
     [self.contentView addSubview:_titleLabel];
-
-    _subtitleLabel = [[UILabel alloc] init];
-    _subtitleLabel.translatesAutoresizingMaskIntoConstraints = NO;
-    _subtitleLabel.font = [UIFont systemFontOfSize:16];
-    _subtitleLabel.textColor = [UIColor secondaryLabelColor];
-    _subtitleLabel.textAlignment = NSTextAlignmentCenter;
-    [self.contentView addSubview:_subtitleLabel];
 
     UILayoutGuide *g = self.contentView.layoutMarginsGuide;
 
     [NSLayoutConstraint activateConstraints:@[
-        [_iconView.topAnchor      constraintEqualToAnchor:g.topAnchor constant:8],
+        // Icon: top-left.
+        [_iconView.topAnchor      constraintEqualToAnchor:g.topAnchor],
         [_iconView.leadingAnchor  constraintEqualToAnchor:g.leadingAnchor],
-        [_iconView.widthAnchor    constraintEqualToConstant:50],
-        [_iconView.heightAnchor   constraintEqualToConstant:50],
+        [_iconView.widthAnchor    constraintEqualToConstant:34],
+        [_iconView.heightAnchor   constraintEqualToConstant:34],
 
+        // Title: bottom-left, below the icon.
         [_titleLabel.leadingAnchor  constraintEqualToAnchor:g.leadingAnchor],
-        [_titleLabel.centerXAnchor constraintEqualToAnchor:g.centerXAnchor],
-        [_titleLabel.centerYAnchor constraintEqualToAnchor:g.centerYAnchor],
- //      [_titleLabel.bottomAnchor   constraintEqualToAnchor:_subtitleLabel.topAnchor constant:-2],
-
-        [_subtitleLabel.leadingAnchor  constraintEqualToAnchor:g.leadingAnchor],
-        [_subtitleLabel.trailingAnchor constraintEqualToAnchor:g.trailingAnchor],
-        [_subtitleLabel.bottomAnchor   constraintEqualToAnchor:g.bottomAnchor constant:-4],
+        [_titleLabel.trailingAnchor constraintEqualToAnchor:g.trailingAnchor],
+        [_titleLabel.bottomAnchor   constraintEqualToAnchor:g.bottomAnchor],
     ]];
 }
 
@@ -81,8 +71,7 @@
     self.iconView.image     = icon;
     self.iconView.tintColor = iconColor;
     self.titleLabel.text    = title;
-    self.subtitleLabel.text = subtitle ?: @"";
-    self.subtitleLabel.hidden = (subtitle.length == 0);
+    // subtitle is intentionally ignored now – tiles show icon + title only.
 }
 
 @end

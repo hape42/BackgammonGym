@@ -69,6 +69,21 @@
     [[NSNotificationCenter defaultCenter] removeObserver:self];
 }
 
+// On rotation (or any size change) the tile sizes depend on the new width,
+// so invalidate the flow layout once the new size is in effect. Without this
+// the layout keeps the column count from before the rotation.
+- (void)viewWillTransitionToSize:(CGSize)size
+       withTransitionCoordinator:(id<UIViewControllerTransitionCoordinator>)coordinator
+{
+    [super viewWillTransitionToSize:size withTransitionCoordinator:coordinator];
+
+    [coordinator animateAlongsideTransition:^(id<UIViewControllerTransitionCoordinatorContext> ctx)
+    {
+        [self.collectionView.collectionViewLayout invalidateLayout];
+    }
+                                 completion:nil];
+}
+
 // Rebuild the tiles with localized text and reload the grid.
 - (void)languageDidChange
 {
@@ -187,13 +202,15 @@
     CGFloat spacing = 20.0;
 
     NSInteger columns;
-    if (width >= 900)       columns = 3;   // iPad landscape
-    else if (width >= 600)  columns = 2;   // iPad portrait
-    else                    columns = 1;   // iPhone immer 1 Spalte
+    if (width >= 900)       columns = 4;   // iPad landscape
+    else if (width >= 600)  columns = 3;   // iPad portrait
+    else                    columns = 2;   // iPhone: 2 Spalten
 
     CGFloat available = width - (2 * inset) - (spacing * (columns - 1));
     CGFloat itemWidth = available / columns;
-    return CGSizeMake(itemWidth, itemWidth * 0.5);
+    // Icon over title needs a fixed, compact height rather than a width ratio,
+    // so tiles keep the same shape regardless of column width.
+    return CGSizeMake(itemWidth, 100.0);
 }
 
 - (CGFloat)collectionView:(UICollectionView *)collectionView
