@@ -12,6 +12,11 @@
 @property (nonatomic, strong) UIScrollView *scrollView;
 @property (nonatomic, strong) UIView       *contentView;
 
+// Maps a tappable name label to the URL it should open. A map table with weak
+// keys lets the labels be released normally; we only need the link while they
+// are on screen.
+@property (nonatomic, strong) NSMapTable<UILabel *, NSURL *> *linkURLs;
+
 @end
 
 @implementation CreditsVC
@@ -21,6 +26,8 @@
     [super viewDidLoad];
     self.view.backgroundColor = [UIColor systemBackgroundColor];
     self.title = @"Credits";   // brand language, stays English
+    self.linkURLs = [NSMapTable mapTableWithKeyOptions:NSPointerFunctionsWeakMemory
+                                          valueOptions:NSPointerFunctionsStrongMemory];
     [self installHomeButton];
     [self setupScrollView];
     [self buildContent];
@@ -58,12 +65,14 @@
 
 // The credits content. Each section is
 //   @{ @"title": ..., @"icon": SF-symbol, @"intro": (optional),
-//      @"entries": @[ @{ @"label": left text, @"name": right (accented) text }, ... ] }.
+//      @"entries": @[ @{ @"label": left text, @"name": right (accented) text,
+//                        @"url": (optional) https-link on the name }, ... ] }.
 // To add a credit, extend this array – the layout renders whatever it finds.
 // A name with an empty label spans naturally; a label with an empty name shows
-// only the description.
+// only the description. Add @"url" to make the name a tappable, underlined link.
 //
-// TODO(hape42): fill in the real names/sources where marked «…».
+// TODO(hape42): fill in the real names/sources where marked «…», and add
+// @"url" entries where a name should link out.
 - (NSArray<NSDictionary *> *)sections
 {
     return @[
@@ -74,27 +83,27 @@
                       @"available. This app stands on the shoulders of the "
                       @"community."),
             @"entries": @[
-                @{ @"label": BGGLocalizedString(@"Match Equity"), @"name": @"Rockwell–Kazaross" },
-                @{ @"label": BGGLocalizedString(@"General"),      @"name": @"bkgm.com" },
-                @{ @"label": BGGLocalizedString(@"Pip count"),    @"name": @"«Quelle»" },
-                @{ @"label": BGGLocalizedString(@"Cluster counting"), @"name": @"«Quelle»" },
+                @{ @"label": BGGLocalizedString(@"Match equity"), @"name": @"Rockwell–Kazaross", @"url":   @"https://bkgm.com/articles/Kazaross/RockwellKazarossMET/index.html" },
+                @{ @"label": BGGLocalizedString(@"General"),      @"name": @"bkgm.com", @"url":   @"https://www.bkgm.com" },
+                @{ @"label": BGGLocalizedString(@"Pip count"),    @"name": @"bkgm.com", @"url":   @"https://www.bkgm.com" },
+                @{ @"label": BGGLocalizedString(@"Cluster counting"), @"name": @"Jack Kissane", @"url":   @"https://bkgm.com/articles/McCool/cluster.html" },
             ],
         },
         @{
             @"title": BGGLocalizedString(@"Board designs"),
             @"icon":  @"paintpalette",
             @"entries": @[
-                @{ @"label": @"Red / Grey HD", @"name": @"hape42" },
+                @{ @"label": @"Red / Grey HD", @"name": @"hape42", @"url":   @"https://hape42.de/" },
                 @{ @"label": @"Wood, Metal, Mono, Steampunk, Sea, Traditional, Spring",
                    @"name":  @"darkhelmet" },
-                @{ @"label": @"Unicorn", @"name": @"Jutta Schneider" },
+                @{ @"label": @"Unicorn", @"name": @"Jutta Schneider", @"url":   @"https://juhesch.art" },
             ],
         },
         @{
             @"title": BGGLocalizedString(@"Graphics & app icon"),
             @"icon":  @"app.badge",
             @"entries": @[
-                @{ @"label": @"", @"name": @"Jutta Schneider" },
+                @{ @"label": @"", @"name": @"Jutta Schneider", @"url":   @"https://juhesch.art" },
             ],
         },
         @{
@@ -108,7 +117,9 @@
             @"title": BGGLocalizedString(@"Tools & libraries"),
             @"icon":  @"wrench.and.screwdriver",
             @"entries": @[
-                @{ @"label": @"", @"name": @"«z. B. GNU Backgammon, … »" },
+                @{ @"label": @"", @"name": @"GNU Backgammon" },
+                @{ @"label": @"", @"name": @"Bgblitz" },
+
             ],
         },
     ];
@@ -211,7 +222,9 @@
         [inner addArrangedSubview:divider];
         [inner setCustomSpacing:8.0 afterView:divider];
 
-        UIView *row = [self rowForLabel:entry[@"label"] name:entry[@"name"]];
+        UIView *row = [self rowForLabel:entry[@"label"]
+                                   name:entry[@"name"]
+                                    url:entry[@"url"]];
         [inner addArrangedSubview:row];
         [inner setCustomSpacing:8.0 afterView:row];
     }
@@ -227,8 +240,9 @@
 }
 
 // One two-column row. The name (right) is accented and never truncates; the
-// label (left) takes the remaining width and wraps if long.
-- (UIView *)rowForLabel:(NSString *)label name:(NSString *)name
+// label (left) takes the remaining width and wraps if long. If urlString is
+// non-empty, the name becomes a tappable, underlined link.
+- (UIView *)rowForLabel:(NSString *)label name:(NSString *)name url:(nullable NSString *)urlString
 {
     UILabel *left = [[UILabel alloc] init];
     left.text          = label ?: @"";
@@ -239,7 +253,6 @@
                                           forAxis:UILayoutConstraintAxisHorizontal];
 
     UILabel *right = [[UILabel alloc] init];
-    right.text          = name ?: @"";
     right.font          = [UIFont preferredFontForTextStyle:UIFontTextStyleSubheadline];
     right.textColor     = [UIColor colorNamed:@"AccentColor"];
     right.textAlignment = NSTextAlignmentRight;
@@ -249,12 +262,46 @@
     [right setContentCompressionResistancePriority:UILayoutPriorityRequired
                                            forAxis:UILayoutConstraintAxisHorizontal];
 
+    NSURL *url = (urlString.length > 0) ? [NSURL URLWithString:urlString] : nil;
+    if (url != nil)
+    {
+        // Underline to signal it is a link, and wire up a tap.
+        NSDictionary *attrs = @{
+            NSUnderlineStyleAttributeName: @(NSUnderlineStyleSingle),
+            NSForegroundColorAttributeName: [UIColor colorNamed:@"AccentColor"],
+        };
+        right.attributedText = [[NSAttributedString alloc] initWithString:(name ?: @"")
+                                                              attributes:attrs];
+        right.userInteractionEnabled = YES;
+        [self.linkURLs setObject:url forKey:right];
+
+        UITapGestureRecognizer *tap =
+            [[UITapGestureRecognizer alloc] initWithTarget:self
+                                                    action:@selector(linkTapped:)];
+        [right addGestureRecognizer:tap];
+    }
+    else
+    {
+        right.text = name ?: @"";
+    }
+
     UIStackView *row = [[UIStackView alloc] initWithArrangedSubviews:@[left, right]];
     row.axis         = UILayoutConstraintAxisHorizontal;
     row.spacing      = 16.0;
     row.alignment    = UIStackViewAlignmentFirstBaseline;
     row.distribution = UIStackViewDistributionFill;
     return row;
+}
+
+// Opens the URL associated with the tapped name label.
+- (void)linkTapped:(UITapGestureRecognizer *)gesture
+{
+    UILabel *label = (UILabel *)gesture.view;
+    NSURL *url = [self.linkURLs objectForKey:label];
+    if (url != nil)
+    {
+        [[UIApplication sharedApplication] openURL:url options:@{} completionHandler:nil];
+    }
 }
 
 #pragma mark - Label builders
