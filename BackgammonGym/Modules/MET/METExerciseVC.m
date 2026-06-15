@@ -662,6 +662,14 @@
     BGGMatchEquityTable *met = [BGGMatchEquityTable sharedTable];
     NSMutableArray<NSDictionary *> *out = [NSMutableArray arrayWithCapacity:(NSUInteger)count];
 
+    // Track which score pairs we have already used, so the same match score
+    // does not repeat while unused ones remain. The pool of distinct non-
+    // diagonal pairs for an L-point match is L*(L-1)/2 (order does not
+    // matter: leader is always the higher score). If `count` exceeds that
+    // pool, we allow repeats again once every distinct pair has been shown.
+    NSMutableSet<NSString *> *usedPairs = [NSMutableSet set];
+    NSInteger poolSize = length * (length - 1) / 2;
+
     NSInteger guard = 0;
     while ((NSInteger)out.count < count && guard < count * 200)
     {
@@ -673,6 +681,19 @@
 
         NSInteger leaderScore  = MAX(a, b);
         NSInteger trailerScore = MIN(a, b);
+
+        // Skip a score pair we have already used, but only while there are
+        // still unused pairs to draw from. Once the pool is exhausted (more
+        // questions requested than distinct pairs), stop filtering so the
+        // loop can fill the rest with repeats.
+        NSString *pairKey = [NSString stringWithFormat:@"%ld-%ld",
+                             (long)leaderScore, (long)trailerScore];
+        if ((NSInteger)usedPairs.count < poolSize && [usedPairs containsObject:pairKey])
+        {
+            continue;
+        }
+        [usedPairs addObject:pairKey];
+
         NSInteger leaderAway   = length - leaderScore;    // 1...length
         NSInteger trailerAway  = length - trailerScore;
 
