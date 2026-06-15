@@ -17,6 +17,8 @@ typedef NS_ENUM(NSInteger, BGGStartTileKind)
     BGGStartTileKindStatistics   = 40,
     BGGStartTileKindAchievements = 41,
     BGGStartTileKindFeedback     = 50,
+    BGGStartTileKindMoreModules  = 51,
+    BGGStartTileKindCredits      = 60,
 };
 
 /// Datenmodell für eine einzelne Kachel auf dem Startbildschirm.

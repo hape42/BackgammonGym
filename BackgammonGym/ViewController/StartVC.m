@@ -17,6 +17,8 @@
 #import "METVC.h"
 #import "StatisticsVC.h"
 #import "AchievementsVC.h"
+#import "MoreModulesVC.h"
+#import "CreditsVC.h"
 #import "BGGLocalization.h"
 #import "BGGLanguage.h"
 
@@ -113,11 +115,17 @@
                           iconName:@"trophy"
                          iconColor:iconColor],
 
-        [BGGStartTile tileWithKind:BGGStartTileKindFeedback
-                             title:BGGLocalizedString(@"More soon")
+        [BGGStartTile tileWithKind:BGGStartTileKindMoreModules
+                             title:BGGLocalizedString(@"More modules")
                           subtitle:BGGLocalizedString(@"We welcome your requests")
                           iconName:@"plus"
                          iconColor:disabledColor],
+
+        [BGGStartTile tileWithKind:BGGStartTileKindCredits
+                             title:@"Credits"
+                          subtitle:BGGLocalizedString(@"who helped")
+                          iconName:@"heart"
+                         iconColor:iconColor],
     ];
 }
 
@@ -251,6 +259,20 @@ didSelectItemAtIndexPath:(NSIndexPath *)indexPath
         case BGGStartTileKindAchievements:
         {
             AchievementsVC *vc = [[AchievementsVC alloc] init];
+            [self.navigationController pushViewController:vc animated:YES];
+        }
+            break;
+
+        case BGGStartTileKindMoreModules:
+        {
+            MoreModulesVC *vc = [[MoreModulesVC alloc] init];
+            [self.navigationController pushViewController:vc animated:YES];
+        }
+            break;
+
+        case BGGStartTileKindCredits:
+        {
+            CreditsVC *vc = [[CreditsVC alloc] init];
             [self.navigationController pushViewController:vc animated:YES];
         }
             break;
