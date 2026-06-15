@@ -97,6 +97,18 @@
         }
       }
     },
+    "Across modules": {
+      "comment": "Achievements",
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Modulübergreifend"
+          }
+        }
+      }
+    },
     "Activity": {
       "comment": "Statistics",
       "extractionState": "manual",
@@ -249,6 +261,18 @@
           "stringUnit": {
             "state": "translated",
             "value": "E = Equity des Führenden (%).  D = Punktedifferenz (noch benötigte Punkte).  T = Away-Score des Verfolgers."
+          }
+        }
+      }
+    },
+    "Earned": {
+      "comment": "Achievements",
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Erreicht"
           }
         }
       }
@@ -441,6 +465,18 @@
           "stringUnit": {
             "state": "translated",
             "value": "Mein Pip Count"
+          }
+        }
+      }
+    },
+    "New achievement!": {
+      "comment": "Achievements",
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Neuer Erfolg!"
           }
         }
       }
@@ -829,6 +865,222 @@
           "stringUnit": {
             "state": "translated",
             "value": "Deine letzten 12 Monate. Jedes Feld ist ein Tag, eingefärbt nach deiner höchsten Aktivität an dem Tag."
+          }
+        }
+      }
+    },
+    "ach.activity.bronze": {
+      "comment": "Achievements",
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "3 Tage in Folge aktiv"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Active 3 days in a row"
+          }
+        }
+      }
+    },
+    "ach.activity.gold": {
+      "comment": "Achievements",
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "30 Tage in Folge aktiv"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Active 30 days in a row"
+          }
+        }
+      }
+    },
+    "ach.activity.silver": {
+      "comment": "Achievements",
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "7 Tage in Folge aktiv"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Active 7 days in a row"
+          }
+        }
+      }
+    },
+    "ach.count.bronze": {
+      "comment": "Achievements",
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "10 Workout-Aufgaben gelöst"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Solved 10 workout exercises"
+          }
+        }
+      }
+    },
+    "ach.count.gold": {
+      "comment": "Achievements",
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "200 Workout-Aufgaben gelöst"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Solved 200 workout exercises"
+          }
+        }
+      }
+    },
+    "ach.count.silver": {
+      "comment": "Achievements",
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "50 Workout-Aufgaben gelöst"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Solved 50 workout exercises"
+          }
+        }
+      }
+    },
+    "ach.speed.bronze": {
+      "comment": "Achievements",
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "10 schnelle richtige Antworten"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "10 fast correct answers"
+          }
+        }
+      }
+    },
+    "ach.speed.gold": {
+      "comment": "Achievements",
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "10 sehr schnelle richtige Antworten"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "10 very fast correct answers"
+          }
+        }
+      }
+    },
+    "ach.speed.silver": {
+      "comment": "Achievements",
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "10 schnellere richtige Antworten"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "10 faster correct answers"
+          }
+        }
+      }
+    },
+    "ach.streak.bronze": {
+      "comment": "Achievements",
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "5 richtige in Folge"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "5 correct in a row"
+          }
+        }
+      }
+    },
+    "ach.streak.gold": {
+      "comment": "Achievements",
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "20 richtige in Folge"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "20 correct in a row"
+          }
+        }
+      }
+    },
+    "ach.streak.silver": {
+      "comment": "Achievements",
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "10 richtige in Folge"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "10 correct in a row"
           }
         }
       }

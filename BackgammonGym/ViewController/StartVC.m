@@ -16,6 +16,7 @@
 #import <MessageUI/MessageUI.h>
 #import "METVC.h"
 #import "StatisticsVC.h"
+#import "AchievementsVC.h"
 #import "BGGLocalization.h"
 #import "BGGLanguage.h"
 
@@ -248,9 +249,10 @@ didSelectItemAtIndexPath:(NSIndexPath *)indexPath
             break;
 
         case BGGStartTileKindAchievements:
-            [Tools showNotImplementedAlertFromViewController:self
-                                                     feature:@"Achievements"
-                                                 description:nil];
+        {
+            AchievementsVC *vc = [[AchievementsVC alloc] init];
+            [self.navigationController pushViewController:vc animated:YES];
+        }
             break;
 
         case BGGStartTileKindFeedback:

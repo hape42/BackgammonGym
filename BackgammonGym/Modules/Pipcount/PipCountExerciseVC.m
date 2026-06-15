@@ -14,6 +14,7 @@
 
 #import "PipCountExerciseVC.h"
 #import "UIViewController+BGGHomeButton.h"
+#import "BGGAchievements.h"
 #import "BGGBoardView.h"
 #import "BGGBoardIDView.h"
 #import "BGGBoardGeometry.h"
@@ -841,12 +842,39 @@ static const CGFloat kWideThreshold = 700.0;
         [[CoreDataManager sharedManager] bumpTodayActivityToLevel:activityLevel];
     }
 
+    // Only a finished workout (level 3) feeds the achievements. The check is
+    // retroactive over the whole history and idempotent; it returns just the
+    // ones newly earned this run, so they can be celebrated once.
+    NSArray<BGGAchievementDefinition *> *newlyEarned = @[];
+    if (activityLevel >= 3)
+    {
+        newlyEarned = [[BGGAchievements sharedAchievements]
+                       checkAndAwardForModule:[self moduleIdentifier]];
+    }
+
     NSString *message = [NSString stringWithFormat:
                          BGGLocalizedString(@"%ld of %ld correct (%.0f%%)"),
                          (long)self.correctCount, (long)self.totalCount,
                          self.totalCount > 0
                              ? (double)self.correctCount / self.totalCount * 100.0
                              : 0.0];
+
+    // If this workout unlocked new achievements, name them under the result
+    // and give a success haptic. Brand/medal names are localized in the
+    // catalogue's title keys.
+    if (newlyEarned.count > 0)
+    {
+        NSMutableString *extra = [NSMutableString stringWithFormat:@"\n\n🏆 %@",
+                                  BGGLocalizedString(@"New achievement!")];
+        for (BGGAchievementDefinition *def in newlyEarned)
+        {
+            [extra appendFormat:@"\n%@", BGGLocalizedString(def.titleKey)];
+        }
+        message = [message stringByAppendingString:extra];
+
+        UINotificationFeedbackGenerator *gen = [[UINotificationFeedbackGenerator alloc] init];
+        [gen notificationOccurred:UINotificationFeedbackTypeSuccess];
+    }
 
     UIAlertController *alert = [UIAlertController
                                 alertControllerWithTitle:BGGLocalizedString(@"Session complete")
