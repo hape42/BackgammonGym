@@ -108,7 +108,6 @@
 {
     NSArray<BGGAchievementDefinition *> *newlyEarned =
         [[BGGAchievements sharedAchievements] checkAndAwardForModule:nil];
-    
     if (newlyEarned.count == 0) { return; }
 
     // Only celebrate while the start screen is actually on top – otherwise an
@@ -257,9 +256,11 @@
 
     CGFloat available = width - (2 * inset) - (spacing * (columns - 1));
     CGFloat itemWidth = available / columns;
-    // Icon over title needs a fixed, compact height rather than a width ratio,
-    // so tiles keep the same shape regardless of column width.
-    return CGSizeMake(itemWidth, 100.0);
+    // Height follows width at a constant ratio, so tiles keep the same shape
+    // on every device – they just scale up on iPad where the columns are
+    // wider. 0.6 matches the iPhone proportion (≈165 wide, ≈100 tall).
+    CGFloat itemHeight = itemWidth * 0.6;
+    return CGSizeMake(itemWidth, itemHeight);
 }
 
 - (CGFloat)collectionView:(UICollectionView *)collectionView
