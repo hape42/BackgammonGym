@@ -83,7 +83,7 @@
                       @"available. This app stands on the shoulders of the "
                       @"community."),
             @"entries": @[
-                @{ @"label": BGGLocalizedString(@"Match equity"), @"name": @"Rockwell–Kazaross", @"url":   @"https://bkgm.com/articles/Kazaross/RockwellKazarossMET/index.html" },
+                @{ @"label": BGGLocalizedString(@"Match Equity"), @"name": @"Rockwell–Kazaross", @"url":   @"https://bkgm.com/articles/Kazaross/RockwellKazarossMET/index.html" },
                 @{ @"label": BGGLocalizedString(@"General"),      @"name": @"bkgm.com", @"url":   @"https://www.bkgm.com" },
                 @{ @"label": BGGLocalizedString(@"Pip count"),    @"name": @"bkgm.com", @"url":   @"https://www.bkgm.com" },
                 @{ @"label": BGGLocalizedString(@"Cluster counting"), @"name": @"Jack Kissane", @"url":   @"https://bkgm.com/articles/McCool/cluster.html" },

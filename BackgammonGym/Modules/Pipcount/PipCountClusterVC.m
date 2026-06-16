@@ -132,10 +132,10 @@ static NSString * const kPlaceholderID = @"4HPwATDgc/ABMA";
     // point board) — a pre-existing bug to fix later by pointing them at the
     // "Mirror - Example 1/2" positions. The keys/texts below match what is
     // currently shown, not the intended mirror examples.
-    BGGBoardCard *mirror1 = [self cardForPositionID:@"eB4AALA3AAAAAA:cAkuAWAAOAAE"
+    BGGBoardCard *mirror1 = [self cardForPositionID:@"ANgAAAYADAAAAA:cAlqAAAAAAAE"
                                          captionKey:@"cluster.mirror1.caption"
                                      explanationKey:@"cluster.mirror1.explanation"];
-    BGGBoardCard *mirror2 = [self cardForPositionID:@"eB4AALA3AAAAAA:cAkuAWAAOAAE"
+    BGGBoardCard *mirror2 = [self cardForPositionID:@"wAAYoAAAoAAAAA:cAlqAAAAAAAE"
                                          captionKey:@"cluster.mirror2.caption"
                                      explanationKey:@"cluster.mirror2.explanation"];
 
