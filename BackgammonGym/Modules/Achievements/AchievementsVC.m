@@ -82,6 +82,12 @@
 
 - (void)reload
 {
+    // Award anything now due before reading state. Activity-streak
+    // achievements can become due just by opening the app on consecutive
+    // days, with no workout to trigger a check – so re-check here (idempotent)
+    // or they would show their progress as full (e.g. 3/3) yet stay grey.
+    [[BGGAchievements sharedAchievements] checkAndAwardForModule:nil];
+
     self.progress = [[BGGAchievements sharedAchievements] progressForAllDefinitions];
     [self.tableView reloadData];
 }

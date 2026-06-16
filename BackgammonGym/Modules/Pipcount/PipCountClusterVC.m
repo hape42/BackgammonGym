@@ -384,8 +384,7 @@ static NSString * const kPlaceholderID = @"4HPwATDgc/ABMA";
     label.font          = [UIFont preferredFontForTextStyle:UIFontTextStyleFootnote];
     label.textColor     = [UIColor tertiaryLabelColor];
     label.text          = @"Sources: Jack Kissane, \"Cluster Counting\", Chicago Point No. 52 (1992), "
-                          @"reprinted at bkgm.com · German translation and commentary by "
-                          @"Hardy Hübener, hardyhuebener.de";
+                          @"reprinted at bkgm.com ";
     return label;
 }
 

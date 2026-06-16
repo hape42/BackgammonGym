@@ -19,6 +19,7 @@
 #import "AchievementsVC.h"
 #import "MoreModulesVC.h"
 #import "CreditsVC.h"
+#import "BGGAchievements.h"
 #import "BGGLocalization.h"
 #import "BGGLanguage.h"
 
@@ -62,6 +63,15 @@
                                              selector:@selector(languageDidChange)
                                                  name:BGGLanguageDidChangeNotification
                                                object:nil];
+
+    // On every foreground activation (including first launch), award any
+    // achievements that became due – activity-streak ones can fall due just
+    // from opening the app on consecutive days, with no workout to trigger a
+    // check – and celebrate the newly earned ones while this screen is on top.
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(checkAchievementsOnActivate)
+                                                 name:UIApplicationDidBecomeActiveNotification
+                                               object:nil];
 }
 
 - (void)dealloc
@@ -90,6 +100,45 @@
     self.title = @"Backgammon Gym";   // a proper noun, stays as-is
     [self setupTiles];
     [self.collectionView reloadData];
+}
+
+#pragma mark - Achievement check on activation
+
+- (void)checkAchievementsOnActivate
+{
+    NSArray<BGGAchievementDefinition *> *newlyEarned =
+        [[BGGAchievements sharedAchievements] checkAndAwardForModule:nil];
+    
+    if (newlyEarned.count == 0) { return; }
+
+    // Only celebrate while the start screen is actually on top – otherwise an
+    // alert would barge in over a workout the user returned to. presentedVC
+    // being nil means nothing is shown over us; navigationController.topVC
+    // being self means no module is pushed.
+    if (self.presentedViewController != nil) { return; }
+    if (self.navigationController != nil &&
+        self.navigationController.topViewController != self) { return; }
+
+    UINotificationFeedbackGenerator *gen = [[UINotificationFeedbackGenerator alloc] init];
+    [gen notificationOccurred:UINotificationFeedbackTypeSuccess];
+
+    NSMutableString *message = [NSMutableString string];
+    for (BGGAchievementDefinition *def in newlyEarned)
+    {
+        if (message.length > 0) { [message appendString:@"\n"]; }
+        [message appendString:BGGLocalizedString(def.titleKey)];
+    }
+
+    NSString *title = [NSString stringWithFormat:@"🏆 %@",
+                       BGGLocalizedString(@"New achievement!")];
+    UIAlertController *alert =
+        [UIAlertController alertControllerWithTitle:title
+                                            message:message
+                                     preferredStyle:UIAlertControllerStyleAlert];
+    [alert addAction:[UIAlertAction actionWithTitle:@"OK"
+                                              style:UIAlertActionStyleDefault
+                                            handler:nil]];
+    [self presentViewController:alert animated:YES completion:nil];
 }
 
 #pragma mark - Setup
