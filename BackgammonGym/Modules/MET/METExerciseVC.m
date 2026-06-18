@@ -13,6 +13,7 @@
 #import "METExerciseVC.h"
 #import "BGGLocalization.h"
 #import "BGGAchievements.h"
+#import "BGGNumberPad.h"
 #import "UIViewController+BGGHomeButton.h"
 #import "BGGMatchEquityTable.h"
 #import "BGGMETSettings.h"
@@ -20,9 +21,10 @@
 #import "BGGTimeColor.h"
 #import "CoreDataManager.h"
 
-@interface METExerciseVC () <UITextFieldDelegate>
+@interface METExerciseVC () <BGGNumberPadDelegate>
 
-// Scroll container, so the field scrolls clear of the keyboard.
+// Scroll container for the question/answer block. No keyboard handling now –
+// the number pad is laid out inline, so nothing slides up over the score.
 @property (nonatomic, strong) UIScrollView *scrollView;
 @property (nonatomic, strong) UIView       *contentView;
 
@@ -38,9 +40,18 @@
 @property (nonatomic, strong) UILabel      *matchLabel;     // "in a 7-point match"
 @property (nonatomic, strong) UILabel      *promptLabel;    // "Estimate the leader's…"
 
-// Input.
-@property (nonatomic, strong) UILabel      *answerLabel;    // "Leader's match-winning chance (%)"
-@property (nonatomic, strong) UITextField  *answerField;
+// Input. The big display shows the digits typed on the number pad; the pad
+// itself replaces the system keyboard so the score above stays visible.
+@property (nonatomic, strong) UILabel       *answerLabel;    // "Leader's match-winning chance (%)"
+@property (nonatomic, strong) UILabel       *answerDisplay;  // big "73 %"
+@property (nonatomic, strong) BGGNumberPad  *numberPad;
+@property (nonatomic, copy)   NSString      *currentInput;   // digits typed so far
+
+// Two layout variants for the display + number pad: stacked (iPhone / narrow)
+// and side-by-side (iPad / wide). Switched in -applyInputLayoutForWidth:.
+@property (nonatomic, strong) NSArray<NSLayoutConstraint *> *stackedInputConstraints;
+@property (nonatomic, strong) NSArray<NSLayoutConstraint *> *sideBySideInputConstraints;
+@property (nonatomic, assign) BOOL inputLayoutIsSideBySide;
 
 // Buttons.
 @property (nonatomic, strong) UIButton     *submitButton;
@@ -108,16 +119,6 @@
     [BGGMETSettings registerDefaults];
     [self installHomeButton];
     [self buildUI];
-    [self registerForKeyboardNotifications];
-}
-
-- (void)registerForKeyboardNotifications
-{
-    NSNotificationCenter *nc = [NSNotificationCenter defaultCenter];
-    [nc addObserver:self selector:@selector(keyboardWillChangeFrame:)
-               name:UIKeyboardWillChangeFrameNotification object:nil];
-    [nc addObserver:self selector:@selector(keyboardWillHide:)
-               name:UIKeyboardWillHideNotification object:nil];
 }
 
 - (void)dealloc
@@ -213,8 +214,21 @@
     self.answerLabel.text      = BGGLocalizedString(@"Leader's match-winning chance (%)");
     [self.contentView addSubview:self.answerLabel];
 
-    self.answerField = [self percentField];
-    [self.contentView addSubview:self.answerField];
+    self.answerDisplay = [[UILabel alloc] init];
+    self.answerDisplay.translatesAutoresizingMaskIntoConstraints = NO;
+    self.answerDisplay.font          = [UIFont systemFontOfSize:40.0 weight:UIFontWeightMedium];
+    self.answerDisplay.textColor     = [UIColor colorNamed:@"AccentColor"];
+    self.answerDisplay.textAlignment = NSTextAlignmentCenter;
+    self.answerDisplay.adjustsFontSizeToFitWidth = YES;
+    self.answerDisplay.minimumScaleFactor = 0.6;
+    [self.contentView addSubview:self.answerDisplay];
+
+    self.currentInput = @"";
+
+    self.numberPad = [[BGGNumberPad alloc] initWithFrame:CGRectZero];
+    self.numberPad.translatesAutoresizingMaskIntoConstraints = NO;
+    self.numberPad.delegate = self;
+    [self.contentView addSubview:self.numberPad];
 
     // Buttons.
     self.submitButton = [self filledButtonWithTitle:BGGLocalizedString(@"Check")
@@ -227,6 +241,7 @@
                                                      action:@selector(cancelTapped)];
     self.nextButton.hidden            = YES;
     self.cancelAfterNextButton.hidden = YES;
+    self.submitButton.hidden          = YES;   // replaced by the number pad's OK key
     [self.contentView addSubview:self.submitButton];
     [self.contentView addSubview:self.cancelButton];
     [self.contentView addSubview:self.nextButton];
@@ -327,21 +342,23 @@
         [self.answerLabel.leadingAnchor  constraintEqualToAnchor:c.leadingAnchor constant:m],
         [self.answerLabel.trailingAnchor constraintEqualToAnchor:c.trailingAnchor constant:-m],
 
-        [self.answerField.topAnchor      constraintEqualToAnchor:self.answerLabel.bottomAnchor constant:6.0],
-        [self.answerField.leadingAnchor  constraintEqualToAnchor:c.leadingAnchor constant:m],
-        [self.answerField.trailingAnchor constraintEqualToAnchor:c.trailingAnchor constant:-m],
-        [self.answerField.heightAnchor   constraintEqualToConstant:48.0],
+        // answerDisplay + numberPad are positioned by a separate, width-
+        // dependent set (see -applyInputLayoutForWidth:), because they sit
+        // stacked on iPhone and side-by-side on iPad. Everything below still
+        // anchors to numberPad.bottomAnchor, which exists in both variants.
 
-        [self.submitButton.topAnchor      constraintEqualToAnchor:self.answerField.bottomAnchor constant:m],
+        // The Check button is replaced by the pad's OK key; keep it in the
+        // hierarchy (always hidden) so the existing show/hide code is untouched.
+        [self.submitButton.topAnchor      constraintEqualToAnchor:self.numberPad.bottomAnchor constant:m],
         [self.submitButton.leadingAnchor  constraintEqualToAnchor:c.leadingAnchor constant:m],
         [self.submitButton.trailingAnchor constraintEqualToAnchor:c.trailingAnchor constant:-m],
-        [self.submitButton.heightAnchor   constraintEqualToConstant:50.0],
+        [self.submitButton.heightAnchor   constraintEqualToConstant:0.5],
 
-        [self.cancelButton.topAnchor      constraintEqualToAnchor:self.submitButton.bottomAnchor constant:8.0],
+        [self.cancelButton.topAnchor      constraintEqualToAnchor:self.numberPad.bottomAnchor constant:8.0],
         [self.cancelButton.centerXAnchor  constraintEqualToAnchor:c.centerXAnchor],
 
-        // Next + its Cancel occupy the same slot as Check + Cancel.
-        [self.nextButton.topAnchor      constraintEqualToAnchor:self.answerField.bottomAnchor constant:m],
+        // Next + its Cancel occupy the slot below the pad.
+        [self.nextButton.topAnchor      constraintEqualToAnchor:self.numberPad.bottomAnchor constant:m],
         [self.nextButton.leadingAnchor  constraintEqualToAnchor:c.leadingAnchor constant:m],
         [self.nextButton.trailingAnchor constraintEqualToAnchor:c.trailingAnchor constant:-m],
         [self.nextButton.heightAnchor   constraintEqualToConstant:50.0],
@@ -349,7 +366,11 @@
         [self.cancelAfterNextButton.topAnchor     constraintEqualToAnchor:self.nextButton.bottomAnchor constant:8.0],
         [self.cancelAfterNextButton.centerXAnchor constraintEqualToAnchor:c.centerXAnchor],
 
-        [self.feedbackLabel.topAnchor      constraintEqualToAnchor:self.cancelButton.bottomAnchor constant:m],
+        // Feedback sits below the lowest button in the group. cancelAfterNext
+        // is the deepest element (it lives under nextButton), so anchoring
+        // here keeps the feedback clear of both the question-state Cancel and
+        // the answered-state Next + Cancel.
+        [self.feedbackLabel.topAnchor      constraintEqualToAnchor:self.cancelAfterNextButton.bottomAnchor constant:m],
         [self.feedbackLabel.leadingAnchor  constraintEqualToAnchor:c.leadingAnchor constant:m],
         [self.feedbackLabel.trailingAnchor constraintEqualToAnchor:c.trailingAnchor constant:-m],
 
@@ -357,6 +378,9 @@
         [self.timeBadge.centerXAnchor  constraintEqualToAnchor:c.centerXAnchor],
         [self.timeBadge.heightAnchor   constraintEqualToConstant:28.0],
     ]];
+
+    [self buildInputLayoutSetsWithGuide:c margin:m];
+    [self applyInputLayoutForWidth:self.view.bounds.size.width];
 
     if (self.showsHelpButtons)
     {
@@ -386,22 +410,87 @@
     }
 }
 
-#pragma mark - Reusable builders
+#pragma mark - Input layout (stacked vs side-by-side)
 
-- (UITextField *)percentField
+// Builds both constraint sets once. Stacked: display above, pad below, both
+// full width (iPhone). Side-by-side: display left (flexible), pad right at a
+// fixed iPhone-like width, equal height (iPad). Everything below the pad keeps
+// anchoring to numberPad.bottomAnchor in both variants.
+- (void)buildInputLayoutSetsWithGuide:(UIView *)c margin:(CGFloat)m
 {
-    UITextField *field = [[UITextField alloc] init];
-    field.translatesAutoresizingMaskIntoConstraints = NO;
-    field.borderStyle      = UITextBorderStyleRoundedRect;
-    field.keyboardType     = UIKeyboardTypeNumberPad;
-    field.textAlignment    = NSTextAlignmentCenter;
-    field.font             = [UIFont monospacedDigitSystemFontOfSize:22.0
-                                                              weight:UIFontWeightSemibold];
-    field.placeholder      = @"%";
-    field.delegate         = self;
-    field.returnKeyType    = UIReturnKeyDone;
-    return field;
+    // Pad sized to roughly 2/3 of the earlier footprint – the full-width pad
+    // felt too dominant on both devices.
+    CGFloat padHeight = 168.0;
+    CGFloat padWidth  = 228.0;
+
+    self.stackedInputConstraints = @[
+        [self.answerDisplay.topAnchor      constraintEqualToAnchor:self.answerLabel.bottomAnchor constant:6.0],
+        [self.answerDisplay.leadingAnchor  constraintEqualToAnchor:c.leadingAnchor constant:m],
+        [self.answerDisplay.trailingAnchor constraintEqualToAnchor:c.trailingAnchor constant:-m],
+        [self.answerDisplay.heightAnchor   constraintEqualToConstant:56.0],
+
+        // Centered, fixed width (not full width) so the keys aren't huge.
+        [self.numberPad.topAnchor       constraintEqualToAnchor:self.answerDisplay.bottomAnchor constant:m],
+        [self.numberPad.centerXAnchor   constraintEqualToAnchor:c.centerXAnchor],
+        [self.numberPad.widthAnchor     constraintEqualToConstant:padWidth],
+        [self.numberPad.heightAnchor    constraintEqualToConstant:padHeight],
+    ];
+
+    // Side-by-side: pad pinned to the trailing edge at the same fixed width;
+    // the display fills the space to its left and centres vertically.
+    self.sideBySideInputConstraints = @[
+        [self.numberPad.topAnchor       constraintEqualToAnchor:self.answerLabel.bottomAnchor constant:m],
+        [self.numberPad.trailingAnchor  constraintEqualToAnchor:c.trailingAnchor constant:-m],
+        [self.numberPad.widthAnchor     constraintEqualToConstant:padWidth],
+        [self.numberPad.heightAnchor    constraintEqualToConstant:padHeight],
+
+        [self.answerDisplay.leadingAnchor  constraintEqualToAnchor:c.leadingAnchor constant:m],
+        [self.answerDisplay.trailingAnchor constraintEqualToAnchor:self.numberPad.leadingAnchor constant:-m],
+        [self.answerDisplay.centerYAnchor  constraintEqualToAnchor:self.numberPad.centerYAnchor],
+        [self.answerDisplay.heightAnchor   constraintEqualToConstant:56.0],
+    ];
 }
+
+// Picks the side-by-side layout on wide screens (iPad), stacked otherwise.
+- (void)applyInputLayoutForWidth:(CGFloat)width
+{
+    BOOL sideBySide = (width >= 600.0);
+
+    BOOL anyActive = self.stackedInputConstraints.firstObject.isActive ||
+                     self.sideBySideInputConstraints.firstObject.isActive;
+    if (anyActive && sideBySide == self.inputLayoutIsSideBySide)
+    {
+        return;   // already in the right layout, nothing to do
+    }
+    self.inputLayoutIsSideBySide = sideBySide;
+
+    [NSLayoutConstraint deactivateConstraints:self.stackedInputConstraints];
+    [NSLayoutConstraint deactivateConstraints:self.sideBySideInputConstraints];
+    [NSLayoutConstraint activateConstraints:sideBySide
+        ? self.sideBySideInputConstraints
+        : self.stackedInputConstraints];
+}
+
+- (void)viewDidLayoutSubviews
+{
+    [super viewDidLayoutSubviews];
+    // The width is reliably final here; catch the case where viewDidLoad ran
+    // before the view had its real size.
+    [self applyInputLayoutForWidth:self.view.bounds.size.width];
+}
+
+- (void)viewWillTransitionToSize:(CGSize)size
+       withTransitionCoordinator:(id<UIViewControllerTransitionCoordinator>)coordinator
+{
+    [super viewWillTransitionToSize:size withTransitionCoordinator:coordinator];
+    [coordinator animateAlongsideTransition:^(id<UIViewControllerTransitionCoordinatorContext> ctx)
+    {
+        [self applyInputLayoutForWidth:size.width];
+    }
+                                 completion:nil];
+}
+
+#pragma mark - Reusable builders
 
 - (UIButton *)filledButtonWithTitle:(NSString *)title action:(SEL)action
 {
@@ -722,27 +811,49 @@
     NSDictionary *task = self.tasks[(NSUInteger)self.currentIndex];
     NSInteger leaderScore  = [task[@"leaderScore"] integerValue];
     NSInteger trailerScore = [task[@"trailerScore"] integerValue];
+    NSInteger leaderAway   = [task[@"leaderAway"] integerValue];
+    NSInteger trailerAway  = [task[@"trailerAway"] integerValue];
 
-    self.scoreLabel.text = [NSString stringWithFormat:@"%ld – %ld",
-                            (long)leaderScore, (long)trailerScore];
+    // Big score, then the away count smaller and muted right after it, e.g.
+    // "3 – 1  (2 away – 4 away)".
+    NSString *scoreText = [NSString stringWithFormat:@"%ld – %ld",
+                           (long)leaderScore, (long)trailerScore];
+    NSString *awayText  = [NSString stringWithFormat:@"  (%ld %@ – %ld %@)",
+                           (long)leaderAway,  BGGLocalizedString(@"away"),
+                           (long)trailerAway, BGGLocalizedString(@"away")];
+
+    NSMutableAttributedString *score =
+        [[NSMutableAttributedString alloc] initWithString:scoreText
+            attributes:@{ NSForegroundColorAttributeName: [UIColor labelColor] }];
+    [score appendAttributedString:
+        [[NSAttributedString alloc] initWithString:awayText
+            attributes:@{
+                NSForegroundColorAttributeName: [UIColor secondaryLabelColor],
+                NSFontAttributeName: [UIFont systemFontOfSize:18.0 weight:UIFontWeightRegular],
+                // Lift the smaller text so it sits roughly mid-height of the
+                // big score instead of clinging to its baseline.
+                NSBaselineOffsetAttributeName: @(8.0),
+            }]];
+    self.scoreLabel.attributedText = score;
+
     self.matchLabel.text = [NSString stringWithFormat:BGGLocalizedString(@"in a %ld-point match"),
                             (long)self.matchLength];
 
     self.progressLabel.text = [NSString stringWithFormat:@"%ld / %ld",
                                (long)(self.currentIndex + 1), (long)self.totalCount];
 
-    self.answerField.text    = @"";
+    self.currentInput = @"";
+    [self refreshAnswerDisplay];
     self.feedbackLabel.alpha = 0.0;
     self.timeBadge.alpha     = 0.0;
-    self.submitButton.hidden = NO;
+    self.submitButton.hidden = YES;   // replaced by the pad's OK key
     self.cancelButton.hidden = NO;
     self.nextButton.hidden   = YES;
     self.cancelAfterNextButton.hidden = YES;
-    self.answerField.enabled = YES;
+    self.numberPad.enabled   = YES;
 
     [self resetHints];
 
-    [self.answerField becomeFirstResponder];
     [self startTimer];
 }
 
@@ -789,12 +900,10 @@
 
 - (void)submitTapped
 {
-    NSString *text = [self.answerField.text stringByTrimmingCharactersInSet:
-                      [NSCharacterSet whitespaceCharacterSet]];
-    if (text.length == 0) { [self.answerField becomeFirstResponder]; return; }
+    NSString *text = self.currentInput;
+    if (text.length == 0) { return; }   // nothing typed yet
 
     [self stopTimer];
-    [self.view endEditing:YES];
 
     NSDictionary *task   = self.tasks[(NSUInteger)self.currentIndex];
     NSInteger correct    = [task[@"correct"] integerValue];
@@ -828,7 +937,7 @@
     self.cancelButton.hidden = YES;
     self.nextButton.hidden   = NO;
     self.cancelAfterNextButton.hidden = NO;
-    self.answerField.enabled = NO;
+    self.numberPad.enabled   = NO;
 
     self.currentChecked = YES;
     [self updateHintResultsForTask:task];
@@ -940,34 +1049,45 @@
     [self returnFromExercise];
 }
 
-#pragma mark - Keyboard
+#pragma mark - BGGNumberPadDelegate
 
-- (void)keyboardWillChangeFrame:(NSNotification *)note
+- (void)numberPad:(BGGNumberPad *)pad didTapDigit:(NSInteger)digit
 {
-    CGRect kbScreen = [note.userInfo[UIKeyboardFrameEndUserInfoKey] CGRectValue];
+    // Max two digits (the answer is 1–99; 0% and 100% can't occur). Leading
+    // zero is not useful, so ignore a 0 typed into an empty display.
+    if (self.currentInput.length >= 2) { return; }
+    if (self.currentInput.length == 0 && digit == 0) { return; }
 
-    UIView *refView = self.scrollView.superview;
-    CGRect kbInRef  = [refView convertRect:kbScreen fromView:nil];
-
-    CGFloat overlap = CGRectGetMaxY(self.scrollView.frame) - CGRectGetMinY(kbInRef);
-    if (overlap < 0.0) { overlap = 0.0; }
-
-    self.scrollView.contentInset =
-        UIEdgeInsetsMake(0.0, 0.0, overlap, 0.0);
-    self.scrollView.verticalScrollIndicatorInsets =
-        UIEdgeInsetsMake(0.0, 0.0, overlap, 0.0);
-
-    [self.view layoutIfNeeded];
-
-    CGRect r = [self.contentView convertRect:self.submitButton.frame
-                                    fromView:self.submitButton.superview];
-    [self.scrollView scrollRectToVisible:r animated:YES];
+    self.currentInput = [self.currentInput stringByAppendingFormat:@"%ld", (long)digit];
+    [self refreshAnswerDisplay];
 }
 
-- (void)keyboardWillHide:(NSNotification *)note
+- (void)numberPadDidTapDelete:(BGGNumberPad *)pad
 {
-    self.scrollView.contentInset = UIEdgeInsetsZero;
-    self.scrollView.verticalScrollIndicatorInsets = UIEdgeInsetsZero;
+    if (self.currentInput.length == 0) { return; }
+    self.currentInput = [self.currentInput substringToIndex:self.currentInput.length - 1];
+    [self refreshAnswerDisplay];
+}
+
+- (void)numberPadDidTapOK:(BGGNumberPad *)pad
+{
+    [self submitTapped];
+}
+
+// Shows the typed digits with a trailing "%", or a muted placeholder when
+// empty.
+- (void)refreshAnswerDisplay
+{
+    if (self.currentInput.length == 0)
+    {
+        self.answerDisplay.text      = @"–";
+        self.answerDisplay.textColor = [UIColor tertiaryLabelColor];
+    }
+    else
+    {
+        self.answerDisplay.text      = [self.currentInput stringByAppendingString:@" %"];
+        self.answerDisplay.textColor = [UIColor colorNamed:@"AccentColor"];
+    }
 }
 
 #pragma mark - Timer
@@ -1069,14 +1189,6 @@
         [self returnFromExercise];
     }]];
     [self presentViewController:alert animated:YES completion:nil];
-}
-
-#pragma mark - UITextFieldDelegate
-
-- (BOOL)textFieldShouldReturn:(UITextField *)textField
-{
-    [self submitTapped];
-    return NO;
 }
 
 @end
