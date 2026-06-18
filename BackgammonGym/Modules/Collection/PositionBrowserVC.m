@@ -171,7 +171,7 @@
 @property (nonatomic, strong) UIStackView                 *cardStack;
 @property (nonatomic, strong) NSArray<BGGPositionEntry *> *allPositions;
 @property (nonatomic, strong) NSArray<BGGPositionEntry *> *filteredPositions;
-@property (nonatomic, copy)   NSString                    *activeTag;
+@property (nonatomic, strong)  NSMutableSet<NSString *>      *activeTags;
 // Map from positionID to entry for edit/delete button callbacks
 @property (nonatomic, strong) NSMutableDictionary<NSString *, BGGPositionEntry *> *entryByPositionID;
 @end
@@ -204,6 +204,7 @@
 
     self.allPositions      = [[PositionDatabase sharedDatabase] allPositions];
     self.filteredPositions = self.allPositions;
+    self.activeTags        = [NSMutableSet set];
 
     [self buildTagBar];
     [self buildScrollView];
@@ -286,24 +287,59 @@
 - (void)tagChipTapped:(UIButton *)sender
 {
     NSString *tag = sender.accessibilityIdentifier;
-    self.activeTag = (tag.length > 0) ? tag : nil;
 
+    if (tag.length == 0)
+    {
+        // The "All" chip clears the selection.
+        [self.activeTags removeAllObjects];
+    }
+    else if ([self.activeTags containsObject:tag])
+    {
+        [self.activeTags removeObject:tag];   // tapping an active tag turns it off
+    }
+    else
+    {
+        [self.activeTags addObject:tag];
+    }
+
+    [self refreshChipStyles];
+    [self applyFilter];
+    [self rebuildCards];
+}
+
+// Highlights every chip whose tag is active; the "All" chip is highlighted
+// only when no tag is selected.
+- (void)refreshChipStyles
+{
     for (UIView *v in self.tagStack.arrangedSubviews)
     {
         if (![v isKindOfClass:[UIButton class]]) { continue; }
         UIButton *chip = (UIButton *)v;
         NSString *chipTag = chip.accessibilityIdentifier;
-        BOOL isActive = (self.activeTag == nil && chipTag.length == 0)
-                      || [chipTag isEqualToString:self.activeTag ?: @""];
+        BOOL isActive = (chipTag.length == 0)
+            ? (self.activeTags.count == 0)
+            : [self.activeTags containsObject:chipTag];
         [self applyChipStyle:chip active:isActive];
     }
+}
 
-    self.filteredPositions = self.activeTag == nil
-        ? self.allPositions
-        : [self.allPositions filteredArrayUsingPredicate:
-           [NSPredicate predicateWithFormat:@"tags CONTAINS %@", self.activeTag]];
+// Filters to positions that carry *all* selected tags (AND). No selection
+// shows everything.
+- (void)applyFilter
+{
+    if (self.activeTags.count == 0)
+    {
+        self.filteredPositions = self.allPositions;
+        return;
+    }
 
-    [self rebuildCards];
+    NSMutableArray<NSPredicate *> *subs = [NSMutableArray array];
+    for (NSString *tag in self.activeTags)
+    {
+        [subs addObject:[NSPredicate predicateWithFormat:@"tags CONTAINS %@", tag]];
+    }
+    NSPredicate *all = [NSCompoundPredicate andPredicateWithSubpredicates:subs];
+    self.filteredPositions = [self.allPositions filteredArrayUsingPredicate:all];
 }
 
 #pragma mark - Scroll view + cards
@@ -338,6 +374,11 @@
 
 - (void)rebuildCards
 {
+    // Keep the title in step with what is actually shown: "Positions (N)",
+    // where N is the count after the current tag filter.
+    self.title = [NSString stringWithFormat:@"Positions (%lu)",
+                  (unsigned long)self.filteredPositions.count];
+
     // Remove old cards. Copy the array first – removing while iterating over
     // arrangedSubviews skips elements and leaves stale cards behind.
     NSArray *oldCards = [self.cardStack.arrangedSubviews copy];
@@ -469,10 +510,14 @@
 - (void)reloadData
 {
     self.allPositions = [[PositionDatabase sharedDatabase] allPositions];
-    self.filteredPositions = self.activeTag
-        ? [self.allPositions filteredArrayUsingPredicate:
-           [NSPredicate predicateWithFormat:@"tags CONTAINS %@", self.activeTag]]
-        : self.allPositions;
+    // A tag may have disappeared if its last position was deleted; drop any
+    // active tags that no longer exist so the filter stays valid.
+    NSMutableSet<NSString *> *stillPresent = [NSMutableSet set];
+    for (BGGPositionEntry *e in self.allPositions) { [stillPresent addObjectsFromArray:e.tags]; }
+    [self.activeTags intersectSet:stillPresent];
+
+    [self applyFilter];
+    [self refreshChipStyles];
     [self rebuildCards];
 }
 
