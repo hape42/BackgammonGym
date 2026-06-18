@@ -164,7 +164,8 @@
       "id" : "ttkYAQy43RSAIQ:cAkgATAACAAE",
       "tags" : [
         "pipcount",
-        "cluster"
+        "cluster",
+        "training"
       ],
       "caption" : "One-Way Mental Shift",
       "note" : "",
@@ -186,11 +187,103 @@
       "id" : "2NbBAQawc8MHAA:cInlADAAEAAE",
       "tags" : [
         "pipcount",
-        "cluster"
+        "cluster",
+        "training"
       ],
       "caption" : "Two-Way Mental Shift",
       "note" : "",
       "text" : "Players's spare checkers on the 6- and 8- points are on the same side of the board. By shifting them one pip in opposite directions to the 7-point, a 5-prime is formed. Player's position can easily be counted in two clusters: 70 (5-prime) + 65 (five 13's) = 135.\n\nOpponent's spare checkers on the 8- and 13-points are on opposite sides of the board. By shifting them in the same direction, in this case left-to-right, a 5-prime is formed (RP1) and RP7 is also formed. Opponent's position can then be counted in three clusters: 60 + 40 + 42 (two 20's + 2) = 142.\n\nPlayer = 135. Opponent = 142."
+    },
+    {
+      "difficulty" : 1,
+      "id" : "u9kFwADWOQcHAA:cIk2AQAAEAAE",
+      "tags" : [
+        "training",
+        "pipcount",
+        "holding"
+      ],
+      "caption" : "",
+      "note" : "",
+      "text" : ""
+    },
+    {
+      "difficulty" : 1,
+      "id" : "7c4MBgC72QXAAA:MAEpAQAAEAAE",
+      "tags" : [
+        "holding",
+        "pipcount",
+        "training"
+      ],
+      "caption" : "",
+      "note" : "",
+      "text" : ""
+    },
+    {
+      "difficulty" : 1,
+      "id" : "d7tBAQBvmwkGAA:cAk2AQAAEAAE",
+      "tags" : [
+        "training",
+        "pipcount"
+      ],
+      "caption" : "",
+      "note" : "",
+      "text" : ""
+    },
+    {
+      "difficulty" : 1,
+      "id" : "d7tFAABvm1kAAA:cIksAQAAEAAE",
+      "tags" : [
+        "training",
+        "pipcount"
+      ],
+      "caption" : "",
+      "note" : "",
+      "text" : ""
+    },
+    {
+      "difficulty" : 1,
+      "id" : "ZgUAgLsDAAAAAA:cIk0AQAAEAAE",
+      "tags" : [
+        "training",
+        "pipcount"
+      ],
+      "caption" : "",
+      "note" : "",
+      "text" : ""
+    },
+    {
+      "difficulty" : 1,
+      "id" : "jGfwDQCMz4MBMA:cIk5ARAAEAAE",
+      "tags" : [
+        "training",
+        "pipcount"
+      ],
+      "caption" : "",
+      "note" : "",
+      "text" : ""
+    },
+    {
+      "difficulty" : 1,
+      "id" : "27aAwQDO7QEHAA:MIE2ARAAMAAE",
+      "tags" : [
+        "training",
+        "holding",
+        "pipcount"
+      ],
+      "caption" : "",
+      "note" : "",
+      "text" : ""
+    },
+    {
+      "difficulty" : 1,
+      "id" : "uP1OAABvswECMA:cIkxAYAAQAAE",
+      "tags" : [
+        "training",
+        "pipcount"
+      ],
+      "caption" : "",
+      "note" : "",
+      "text" : ""
     }
   ]
 }
