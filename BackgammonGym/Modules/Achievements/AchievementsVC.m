@@ -144,7 +144,9 @@ titleForHeaderInSection:(NSInteger)section
     if (earned)
     {
         trailing.text      = BGGLocalizedString(@"Earned");
-        trailing.textColor = [self colorForTier:def.tier];
+        trailing.textColor = [UIColor labelColor];
+        trailing.font      = [UIFont monospacedDigitSystemFontOfSize:15.0
+                                                              weight:UIFontWeightBold];
     }
     else
     {
