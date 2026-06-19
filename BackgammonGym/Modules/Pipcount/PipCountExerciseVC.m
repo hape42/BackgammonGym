@@ -21,6 +21,7 @@
 #import "BGGBoardState.h"
 #import "BGGPosition.h"
 #import "PositionDatabase.h"
+#import "BGGNumberPad.h"
 #import "Tools.h"
 #import "BGGTimeColor.h"
 #import "CoreDataManager.h"
@@ -28,10 +29,11 @@
 
 static const CGFloat kWideThreshold = 700.0;
 
-@interface PipCountExerciseVC () <UITextFieldDelegate>
+@interface PipCountExerciseVC () <BGGNumberPadDelegate>
 
-// Scroll container – lets the board scroll up out of the way when the
-// keyboard appears, keeping the input fields reachable.
+// Scroll container. The number pad is laid out inline, so the board no longer
+// needs to scroll clear of a system keyboard – but the scroll view stays for
+// small screens where board + controls exceed the height.
 @property (nonatomic, strong) UIScrollView  *scrollView;
 @property (nonatomic, strong) UIView        *contentView;
 
@@ -49,11 +51,18 @@ static const CGFloat kWideThreshold = 700.0;
 @property (nonatomic, strong) UILabel       *progressLabel;
 @property (nonatomic, strong) UILabel       *timerLabel;
 
-// Input
+// Input. Two tappable display fields side by side (yellow = opponent, blue =
+// me) feed a single shared number pad; whichever is active receives digits.
 @property (nonatomic, strong) UILabel       *blueLabel;
-@property (nonatomic, strong) UITextField   *blueField;
+@property (nonatomic, strong) UIControl     *blueField;     // tappable display
+@property (nonatomic, strong) UILabel       *blueValue;     // digits inside it
 @property (nonatomic, strong) UILabel       *yellowLabel;
-@property (nonatomic, strong) UITextField   *yellowField;
+@property (nonatomic, strong) UIControl     *yellowField;
+@property (nonatomic, strong) UILabel       *yellowValue;
+@property (nonatomic, strong) BGGNumberPad  *numberPad;
+@property (nonatomic, copy)   NSString      *blueInput;
+@property (nonatomic, copy)   NSString      *yellowInput;
+@property (nonatomic, assign) BOOL           activeIsBlue;  // NO = yellow active
 
 // Buttons
 @property (nonatomic, strong) UIButton      *submitButton;
@@ -115,16 +124,6 @@ static const CGFloat kWideThreshold = 700.0;
     self.view.backgroundColor = [UIColor systemBackgroundColor];
     [self installHomeButton];
     [self buildUI];
-    [self registerForKeyboardNotifications];
-}
-
-- (void)registerForKeyboardNotifications
-{
-    NSNotificationCenter *nc = [NSNotificationCenter defaultCenter];
-    [nc addObserver:self selector:@selector(keyboardWillChangeFrame:)
-               name:UIKeyboardWillChangeFrameNotification object:nil];
-    [nc addObserver:self selector:@selector(keyboardWillHide:)
-               name:UIKeyboardWillHideNotification object:nil];
 }
 
 - (void)dealloc
@@ -231,23 +230,37 @@ static const CGFloat kWideThreshold = 700.0;
     self.timerLabel.translatesAutoresizingMaskIntoConstraints = NO;
     [self.controlsView addSubview:self.timerLabel];
 
-    // Opponent label + field (top – opponent's checkers are at the top of the board)
+    // Opponent label + field (opponent's checkers are at the top of the board)
     self.yellowLabel = [self labelWithText:BGGLocalizedString(@"Opponent pip count")];
+    self.yellowLabel.textAlignment = NSTextAlignmentCenter;
     [self.controlsView addSubview:self.yellowLabel];
-    self.yellowField = [self pipCountField];
-    self.yellowField.returnKeyType = UIReturnKeyNext;
+    self.yellowField = [self displayFieldIntoValue:&_yellowValue];
+    [self.yellowField addTarget:self action:@selector(yellowFieldTapped)
+               forControlEvents:UIControlEventTouchUpInside];
     [self.controlsView addSubview:self.yellowField];
 
-    // My label + field (bottom – my checkers are at the bottom of the board)
+    // My label + field (my checkers are at the bottom of the board)
     self.blueLabel = [self labelWithText:BGGLocalizedString(@"My pip count")];
+    self.blueLabel.textAlignment = NSTextAlignmentCenter;
     [self.controlsView addSubview:self.blueLabel];
-    self.blueField = [self pipCountField];
-    self.blueField.returnKeyType = UIReturnKeyDone;
+    self.blueField = [self displayFieldIntoValue:&_blueValue];
+    [self.blueField addTarget:self action:@selector(blueFieldTapped)
+             forControlEvents:UIControlEventTouchUpInside];
     [self.controlsView addSubview:self.blueField];
+
+    // Shared number pad – writes into whichever field is active.
+    self.numberPad = [[BGGNumberPad alloc] initWithFrame:CGRectZero];
+    self.numberPad.translatesAutoresizingMaskIntoConstraints = NO;
+    self.numberPad.delegate = self;
+    [self.controlsView addSubview:self.numberPad];
+
+    self.blueInput   = @"";
+    self.yellowInput = @"";
 
     // Check button
     self.submitButton = [self actionButtonWithTitle:BGGLocalizedString(@"Check")
                                              action:@selector(submitTapped)];
+    self.submitButton.hidden = YES;   // replaced by the pad's OK key
     [self.controlsView addSubview:self.submitButton];
 
     // Cancel button (visible under Check)
@@ -302,45 +315,49 @@ static const CGFloat kWideThreshold = 700.0;
         [self.timerLabel.leadingAnchor    constraintEqualToAnchor:self.progressLabel.trailingAnchor
                                                          constant:8.0],
 
+        // Two fields side by side: yellow (opponent) left, blue (me) right.
         [self.yellowLabel.topAnchor      constraintEqualToAnchor:self.progressLabel.bottomAnchor
                                                         constant:m],
         [self.yellowLabel.leadingAnchor  constraintEqualToAnchor:self.controlsView.leadingAnchor
                                                         constant:m],
-        [self.yellowLabel.trailingAnchor constraintEqualToAnchor:self.controlsView.trailingAnchor
+        [self.yellowLabel.trailingAnchor constraintEqualToAnchor:self.controlsView.centerXAnchor
+                                                        constant:-6.0],
+
+        [self.blueLabel.topAnchor        constraintEqualToAnchor:self.yellowLabel.topAnchor],
+        [self.blueLabel.leadingAnchor    constraintEqualToAnchor:self.controlsView.centerXAnchor
+                                                        constant:6.0],
+        [self.blueLabel.trailingAnchor   constraintEqualToAnchor:self.controlsView.trailingAnchor
                                                         constant:-m],
 
         [self.yellowField.topAnchor      constraintEqualToAnchor:self.yellowLabel.bottomAnchor
                                                         constant:6.0],
-        [self.yellowField.leadingAnchor  constraintEqualToAnchor:self.controlsView.leadingAnchor
-                                                        constant:m],
-        [self.yellowField.trailingAnchor constraintEqualToAnchor:self.controlsView.trailingAnchor
-                                                        constant:-m],
-        [self.yellowField.heightAnchor   constraintEqualToConstant:48.0],
+        [self.yellowField.leadingAnchor  constraintEqualToAnchor:self.yellowLabel.leadingAnchor],
+        [self.yellowField.trailingAnchor constraintEqualToAnchor:self.yellowLabel.trailingAnchor],
+        [self.yellowField.heightAnchor   constraintEqualToConstant:52.0],
 
-        [self.blueLabel.topAnchor        constraintEqualToAnchor:self.yellowField.bottomAnchor
-                                                        constant:m],
-        [self.blueLabel.leadingAnchor    constraintEqualToAnchor:self.controlsView.leadingAnchor
-                                                        constant:m],
-        [self.blueLabel.trailingAnchor   constraintEqualToAnchor:self.controlsView.trailingAnchor
-                                                        constant:-m],
+        [self.blueField.topAnchor        constraintEqualToAnchor:self.yellowField.topAnchor],
+        [self.blueField.leadingAnchor    constraintEqualToAnchor:self.blueLabel.leadingAnchor],
+        [self.blueField.trailingAnchor   constraintEqualToAnchor:self.blueLabel.trailingAnchor],
+        [self.blueField.heightAnchor     constraintEqualToConstant:52.0],
 
-        [self.blueField.topAnchor        constraintEqualToAnchor:self.blueLabel.bottomAnchor
-                                                        constant:6.0],
-        [self.blueField.leadingAnchor    constraintEqualToAnchor:self.controlsView.leadingAnchor
+        // Number pad, centered below the fields (fixed ≈2/3 size like MET).
+        [self.numberPad.topAnchor        constraintEqualToAnchor:self.yellowField.bottomAnchor
                                                         constant:m],
-        [self.blueField.trailingAnchor   constraintEqualToAnchor:self.controlsView.trailingAnchor
-                                                        constant:-m],
-        [self.blueField.heightAnchor     constraintEqualToConstant:48.0],
+        [self.numberPad.centerXAnchor    constraintEqualToAnchor:self.controlsView.centerXAnchor],
+        [self.numberPad.widthAnchor      constraintEqualToConstant:228.0],
+        [self.numberPad.heightAnchor     constraintEqualToConstant:168.0],
 
-        [self.submitButton.topAnchor     constraintEqualToAnchor:self.blueField.bottomAnchor
+        // Check button replaced by the pad's OK key; kept hidden (0.5pt) so the
+        // existing show/hide logic stays untouched.
+        [self.submitButton.topAnchor     constraintEqualToAnchor:self.numberPad.bottomAnchor
                                                         constant:m],
         [self.submitButton.leadingAnchor constraintEqualToAnchor:self.controlsView.leadingAnchor
                                                         constant:m],
         [self.submitButton.trailingAnchor constraintEqualToAnchor:self.controlsView.trailingAnchor
                                                          constant:-m],
-        [self.submitButton.heightAnchor  constraintEqualToConstant:48.0],
+        [self.submitButton.heightAnchor  constraintEqualToConstant:0.5],
 
-        [self.cancelButton.topAnchor     constraintEqualToAnchor:self.submitButton.bottomAnchor
+        [self.cancelButton.topAnchor     constraintEqualToAnchor:self.numberPad.bottomAnchor
                                                         constant:8.0],
         [self.cancelButton.leadingAnchor constraintEqualToAnchor:self.controlsView.leadingAnchor
                                                         constant:m],
@@ -418,17 +435,34 @@ static const CGFloat kWideThreshold = 700.0;
     return lbl;
 }
 
-- (UITextField *)pipCountField
+// A tappable, non-editable display field: a bordered box with a centered
+// value label inside. The value label pointer is handed back so the caller
+// can keep a reference for updating the digits. Active state is shown by
+// -setActiveField: via the border.
+- (UIControl *)displayFieldIntoValue:(UILabel * __strong *)outValue
 {
-    UITextField *f  = [[UITextField alloc] init];
-    f.keyboardType  = UIKeyboardTypeNumberPad;
-    f.borderStyle   = UITextBorderStyleRoundedRect;
-    f.textAlignment = NSTextAlignmentCenter;
-    f.font          = [UIFont monospacedDigitSystemFontOfSize:26.0 weight:UIFontWeightRegular];
-    f.placeholder   = @"–";
-    f.delegate      = self;
-    f.translatesAutoresizingMaskIntoConstraints = NO;
-    return f;
+    UIControl *field = [[UIControl alloc] init];
+    field.translatesAutoresizingMaskIntoConstraints = NO;
+    field.layer.cornerRadius = 8.0;
+    field.layer.borderWidth  = 0.5;
+    field.layer.borderColor  = [UIColor separatorColor].CGColor;
+    field.backgroundColor    = [UIColor secondarySystemBackgroundColor];
+
+    UILabel *value = [[UILabel alloc] init];
+    value.translatesAutoresizingMaskIntoConstraints = NO;
+    value.textAlignment = NSTextAlignmentCenter;
+    value.font          = [UIFont monospacedDigitSystemFontOfSize:26.0 weight:UIFontWeightRegular];
+    value.textColor     = [UIColor tertiaryLabelColor];
+    value.text          = @"–";
+    value.userInteractionEnabled = NO;
+    [field addSubview:value];
+    [NSLayoutConstraint activateConstraints:@[
+        [value.centerXAnchor constraintEqualToAnchor:field.centerXAnchor],
+        [value.centerYAnchor constraintEqualToAnchor:field.centerYAnchor],
+    ]];
+
+    *outValue = value;
+    return field;
 }
 
 - (UIButton *)cancelButtonWithAction:(SEL)action
@@ -590,38 +624,99 @@ static const CGFloat kWideThreshold = 700.0;
 
     self.progressLabel.text   = [NSString stringWithFormat:@"%ld / %ld",
                                  (long)(self.currentIndex + 1), (long)self.totalCount];
-    self.blueField.text       = @"";
-    self.yellowField.text     = @"";
+    self.blueInput            = @"";
+    self.yellowInput          = @"";
+    [self refreshFieldDisplays];
     self.feedbackLabel.alpha  = 0.0;
     self.timeBadge.alpha      = 0.0;
-    self.submitButton.hidden  = NO;
+    self.submitButton.hidden  = YES;   // replaced by the pad's OK key
     self.cancelButton.hidden  = NO;
     self.nextButton.hidden    = YES;
     self.cancelAfterNextButton.hidden = YES;
-    self.blueField.enabled    = YES;
-    self.yellowField.enabled  = YES;
+    self.numberPad.enabled    = YES;
 
     // Yellow is the first field (opponent, top of board).
-    [self.yellowField becomeFirstResponder];
+    [self setActiveFieldBlue:NO];
 
     // Always measure time. Workout shows it live; Training shows it in the feedback.
     [self startTimer];
+}
+
+#pragma mark - Field selection + number pad
+
+- (void)yellowFieldTapped { [self setActiveFieldBlue:NO]; }
+- (void)blueFieldTapped   { [self setActiveFieldBlue:YES]; }
+
+// Switches which field receives digits and updates the border highlight.
+- (void)setActiveFieldBlue:(BOOL)blue
+{
+    self.activeIsBlue = blue;
+
+    UIColor *accent = [UIColor colorNamed:@"AccentColor"];
+    self.blueField.layer.borderColor   = blue ? accent.CGColor : [UIColor separatorColor].CGColor;
+    self.blueField.layer.borderWidth   = blue ? 2.0 : 0.5;
+    self.yellowField.layer.borderColor = blue ? [UIColor separatorColor].CGColor : accent.CGColor;
+    self.yellowField.layer.borderWidth = blue ? 0.5 : 2.0;
+}
+
+- (NSString *)activeInput { return self.activeIsBlue ? self.blueInput : self.yellowInput; }
+
+- (void)setActiveInput:(NSString *)value
+{
+    if (self.activeIsBlue) { self.blueInput = value; }
+    else                   { self.yellowInput = value; }
+    [self refreshFieldDisplays];
+}
+
+// Mirrors the two input strings into the value labels, with a muted dash when
+// a field is empty.
+- (void)refreshFieldDisplays
+{
+    self.yellowValue.text      = self.yellowInput.length ? self.yellowInput : @"–";
+    self.yellowValue.textColor = self.yellowInput.length
+        ? [UIColor labelColor] : [UIColor tertiaryLabelColor];
+    self.blueValue.text        = self.blueInput.length ? self.blueInput : @"–";
+    self.blueValue.textColor   = self.blueInput.length
+        ? [UIColor labelColor] : [UIColor tertiaryLabelColor];
+}
+
+#pragma mark - BGGNumberPadDelegate
+
+- (void)numberPad:(BGGNumberPad *)pad didTapDigit:(NSInteger)digit
+{
+    NSString *cur = [self activeInput];
+    if (cur.length == 0 && digit == 0) { return; }   // no leading zero
+    if (cur.length >= 3) { return; }                 // pip counts are <= 3 digits
+    [self setActiveInput:[cur stringByAppendingFormat:@"%ld", (long)digit]];
+}
+
+- (void)numberPadDidTapDelete:(BGGNumberPad *)pad
+{
+    NSString *cur = [self activeInput];
+    if (cur.length == 0) { return; }
+    [self setActiveInput:[cur substringToIndex:cur.length - 1]];
+}
+
+- (void)numberPadDidTapOK:(BGGNumberPad *)pad
+{
+    // Variant 1: check when both fields are filled; otherwise jump to the
+    // empty one.
+    if (self.yellowInput.length == 0) { [self setActiveFieldBlue:NO];  return; }
+    if (self.blueInput.length == 0)   { [self setActiveFieldBlue:YES]; return; }
+    [self submitTapped];
 }
 
 #pragma mark - Answer
 
 - (void)submitTapped
 {
-    NSString *blueText   = [self.blueField.text   stringByTrimmingCharactersInSet:
-                            [NSCharacterSet whitespaceCharacterSet]];
-    NSString *yellowText = [self.yellowField.text stringByTrimmingCharactersInSet:
-                            [NSCharacterSet whitespaceCharacterSet]];
+    NSString *blueText   = self.blueInput;
+    NSString *yellowText = self.yellowInput;
 
-    if (yellowText.length == 0) { [self.yellowField becomeFirstResponder]; return; }
-    if (blueText.length == 0)   { [self.blueField   becomeFirstResponder]; return; }
+    if (yellowText.length == 0) { [self setActiveFieldBlue:NO];  return; }
+    if (blueText.length == 0)   { [self setActiveFieldBlue:YES]; return; }
 
     [self stopTimer];
-    [self.view endEditing:YES];
 
     BGGBoardState *state    = [self.positions[(NSUInteger)self.currentIndex] boardState];
     NSInteger correctBlue   = [state pipCountForPlayer:BGGPlayerBlue];
@@ -664,8 +759,7 @@ static const CGFloat kWideThreshold = 700.0;
     self.cancelButton.hidden  = YES;
     self.nextButton.hidden    = NO;
     self.cancelAfterNextButton.hidden = NO;
-    self.blueField.enabled    = NO;
-    self.yellowField.enabled  = NO;
+    self.numberPad.enabled    = NO;
 }
 
 - (void)nextTapped
@@ -713,12 +807,12 @@ static const CGFloat kWideThreshold = 700.0;
         if (!blueOK)
         {
             [msg appendFormat:BGGLocalizedString(@"✗  My count: you said %ld, correct: %ld\n"),
-             (long)self.blueField.text.integerValue, (long)correctBlue];
+             (long)self.blueInput.integerValue, (long)correctBlue];
         }
         if (!yellowOK)
         {
             [msg appendFormat:BGGLocalizedString(@"✗  Opponent: you said %ld, correct: %ld"),
-             (long)self.yellowField.text.integerValue, (long)correctYellow];
+             (long)self.yellowInput.integerValue, (long)correctYellow];
         }
         self.feedbackLabel.textColor = [UIColor systemRedColor];
     }
@@ -742,45 +836,6 @@ static const CGFloat kWideThreshold = 700.0;
     // since UILabel has no intrinsic inset.
     self.timeBadge.text            = [NSString stringWithFormat:@"  ⏱ %lds  ", (long)s];
     self.timeBadge.backgroundColor = [BGGTimeColor colorForSeconds:s];
-}
-
-#pragma mark - Keyboard
-
-// When the keyboard appears, inset the scroll view by the part of the scroll
-// view that the keyboard actually covers, then scroll the active field into
-// view. The overlap is measured against the scroll view's frame in its own
-// superview, which correctly accounts for the safe-area pin at the bottom.
-- (void)keyboardWillChangeFrame:(NSNotification *)note
-{
-    CGRect kbScreen = [note.userInfo[UIKeyboardFrameEndUserInfoKey] CGRectValue];
-
-    // Keyboard frame in the scroll view's superview coordinate space.
-    UIView *refView = self.scrollView.superview;
-    CGRect kbInRef  = [refView convertRect:kbScreen fromView:nil];
-
-    // How far the keyboard reaches up into the scroll view's frame.
-    CGFloat overlap = CGRectGetMaxY(self.scrollView.frame) - CGRectGetMinY(kbInRef);
-    if (overlap < 0.0) { overlap = 0.0; }
-
-    self.scrollView.contentInset =
-        UIEdgeInsetsMake(0.0, 0.0, overlap, 0.0);
-    self.scrollView.verticalScrollIndicatorInsets =
-        UIEdgeInsetsMake(0.0, 0.0, overlap, 0.0);
-
-    // Scroll so the whole controls block (fields + buttons) is reachable.
-    // Using controlsView guarantees the buttons below the active field are
-    // included, not just the field itself.
-    [self.view layoutIfNeeded];
-
-    CGRect r = [self.contentView convertRect:self.controlsView.frame
-                                    fromView:self.controlsView.superview];
-    [self.scrollView scrollRectToVisible:r animated:YES];
-}
-
-- (void)keyboardWillHide:(NSNotification *)note
-{
-    self.scrollView.contentInset = UIEdgeInsetsZero;
-    self.scrollView.verticalScrollIndicatorInsets = UIEdgeInsetsZero;
 }
 
 #pragma mark - Timer
@@ -893,22 +948,6 @@ static const CGFloat kWideThreshold = 700.0;
         [self returnFromExercise];
     }]];
     [self presentViewController:alert animated:YES completion:nil];
-}
-
-#pragma mark - UITextFieldDelegate
-
-- (BOOL)textFieldShouldReturn:(UITextField *)textField
-{
-    if (textField == self.yellowField)
-    {
-        // Yellow is first – Return moves to blue (my count).
-        [self.blueField becomeFirstResponder];
-    }
-    else
-    {
-        [self submitTapped];
-    }
-    return NO;
 }
 
 @end
