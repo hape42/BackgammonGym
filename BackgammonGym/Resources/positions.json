@@ -223,7 +223,8 @@
       "id" : "d7tBAQBvmwkGAA:cAk2AQAAEAAE",
       "tags" : [
         "training",
-        "pipcount"
+        "pipcount",
+        "race"
       ],
       "caption" : "",
       "note" : "",
@@ -234,7 +235,8 @@
       "id" : "d7tFAABvm1kAAA:cIksAQAAEAAE",
       "tags" : [
         "training",
-        "pipcount"
+        "pipcount",
+        "race"
       ],
       "caption" : "",
       "note" : "",
@@ -245,7 +247,8 @@
       "id" : "ZgUAgLsDAAAAAA:cIk0AQAAEAAE",
       "tags" : [
         "training",
-        "pipcount"
+        "pipcount",
+        "bearoff"
       ],
       "caption" : "",
       "note" : "",
@@ -280,6 +283,210 @@
       "tags" : [
         "training",
         "pipcount"
+      ],
+      "caption" : "",
+      "note" : "",
+      "text" : ""
+    },
+    {
+      "difficulty" : 1,
+      "id" : "2L5nAAC6elUBAA:EQHuAEAACAAE",
+      "tags" : [
+        "training",
+        "pipcount",
+        "race"
+      ],
+      "caption" : "",
+      "note" : "",
+      "text" : ""
+    },
+    {
+      "difficulty" : 1,
+      "id" : "uu1JAQDYvmcAAA:UQn3AEAACAAE",
+      "tags" : [
+        "race",
+        "training",
+        "pipcount"
+      ],
+      "caption" : "",
+      "note" : "",
+      "text" : ""
+    },
+    {
+      "difficulty" : 1,
+      "id" : "dPseAAC67UkBAA:EYHuAEAACAAE",
+      "tags" : [
+        "race",
+        "pipcount",
+        "training"
+      ],
+      "caption" : "",
+      "note" : "",
+      "text" : ""
+    },
+    {
+      "difficulty" : 1,
+      "id" : "ut2HAAB0+x4AAA:UQnuAEAACAAE",
+      "tags" : [
+        "pipcount",
+        "training"
+      ],
+      "caption" : "",
+      "note" : "",
+      "text" : ""
+    },
+    {
+      "difficulty" : 1,
+      "id" : "7O0bAAC63YcAAA:EQHmAEAACAAE",
+      "tags" : [
+        "training",
+        "pipcount"
+      ],
+      "caption" : "",
+      "note" : "",
+      "text" : ""
+    },
+    {
+      "difficulty" : 1,
+      "id" : "ur0PAADs7RsAAA:UYnyAEAACAAE",
+      "tags" : [
+        "pipcount",
+        "training"
+      ],
+      "caption" : "",
+      "note" : "",
+      "text" : ""
+    },
+    {
+      "difficulty" : 1,
+      "id" : "urcPAAC6vQ8AAA:EYHmAEAACAAE",
+      "tags" : [
+        "pipcount",
+        "training"
+      ],
+      "caption" : "",
+      "note" : "",
+      "text" : ""
+    },
+    {
+      "difficulty" : 1,
+      "id" : "ur0HAADd2wcAAA:UYntAEAACAAE",
+      "tags" : [
+        "training",
+        "pipcount",
+        "bearoff"
+      ],
+      "caption" : "",
+      "note" : "",
+      "text" : ""
+    },
+    {
+      "difficulty" : 1,
+      "id" : "6u0BAEC39wAAAA:EQHnAEAACAAE",
+      "tags" : [
+        "training",
+        "pipcount"
+      ],
+      "caption" : "",
+      "note" : "",
+      "text" : ""
+    },
+    {
+      "difficulty" : 1,
+      "id" : "tr0DAIB6ewAAAA:UYnyAEAACAAE",
+      "tags" : [
+        "training",
+        "pipcount"
+      ],
+      "caption" : "",
+      "note" : "",
+      "text" : ""
+    },
+    {
+      "difficulty" : 1,
+      "id" : "6noAALDtHQAAAA:EQH7AEAACAAE",
+      "tags" : [
+        "training",
+        "pipcount"
+      ],
+      "caption" : "",
+      "note" : "",
+      "text" : ""
+    },
+    {
+      "difficulty" : 1,
+      "id" : "th0AAKjrAQAAAA:UYnlAEAACAAE",
+      "tags" : [
+        "training",
+        "pipcount",
+        "bearoff"
+      ],
+      "caption" : "",
+      "note" : "",
+      "text" : ""
+    },
+    {
+      "difficulty" : 1,
+      "id" : "aj0AANh2AAAAAA:EYHkAEAACAAE",
+      "tags" : [
+        "training",
+        "pipcount"
+      ],
+      "caption" : "",
+      "note" : "",
+      "text" : ""
+    },
+    {
+      "difficulty" : 1,
+      "id" : "bAcAAGo9AAAAAA:UYn2AEAACAAE",
+      "tags" : [
+        "pipcount",
+        "training"
+      ],
+      "caption" : "",
+      "note" : "",
+      "text" : ""
+    },
+    {
+      "difficulty" : 1,
+      "id" : "VxMAANgOAAAAAA:EYHmAEAACAAE",
+      "tags" : [
+        "training",
+        "pipcount"
+      ],
+      "caption" : "",
+      "note" : "",
+      "text" : ""
+    },
+    {
+      "difficulty" : 1,
+      "id" : "ywQAALUBAAAAAA:EQHzAEAACAAE",
+      "tags" : [
+        "pipcount",
+        "training"
+      ],
+      "caption" : "",
+      "note" : "",
+      "text" : ""
+    },
+    {
+      "difficulty" : 1,
+      "id" : "t20RAAyN3W0AAA:QYnmAEAAGAAE",
+      "tags" : [
+        "pipcount",
+        "training",
+        "holding"
+      ],
+      "caption" : "",
+      "note" : "",
+      "text" : ""
+    },
+    {
+      "difficulty" : 1,
+      "id" : "c7slBADc7TMAAA:QQn7AGAAIAAE",
+      "tags" : [
+        "pipcount",
+        "training"
       ],
       "caption" : "",
       "note" : "",
