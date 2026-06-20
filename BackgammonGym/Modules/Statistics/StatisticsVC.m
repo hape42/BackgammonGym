@@ -14,6 +14,7 @@
 @property (nonatomic, strong) UIScrollView         *scrollView;
 @property (nonatomic, strong) UIView               *contentView;
 @property (nonatomic, strong) BGGActivityGridView  *activityGrid;
+@property (nonatomic, strong) UISegmentedControl   *rangeControl;
 @property (nonatomic, strong) NSArray<BGGModuleStatsCard *> *statCards;
 
 @end
@@ -96,6 +97,21 @@
     self.activityGrid = [[BGGActivityGridView alloc] initWithFrame:CGRectZero];
     self.activityGrid.translatesAutoresizingMaskIntoConstraints = NO;
 
+    // Range switcher for the grid. More months = smaller cells; fewer months
+    // = larger, easier-to-read cells. Only useful on a narrow (iPhone) screen,
+    // so it is hidden on wide layouts (see -updateRangeControlVisibility).
+    // Order: 12 / 6 / 3, with 12 (the full range) selected by default.
+    self.rangeControl = [[UISegmentedControl alloc] initWithItems:@[
+        BGGLocalizedString(@"12 months"),
+        BGGLocalizedString(@"6 months"),
+        BGGLocalizedString(@"3 months"),
+    ]];
+    self.rangeControl.selectedSegmentIndex = 0;
+    self.rangeControl.translatesAutoresizingMaskIntoConstraints = NO;
+    [self.rangeControl addTarget:self
+                          action:@selector(rangeChanged:)
+                forControlEvents:UIControlEventValueChanged];
+
     // Per-module cumulative stats below the grid. "Pip Count" / "MET" are
     // brand language; the module identifiers match the Core Data records.
     UILabel *moduleTitle = [self headlineLabel:BGGLocalizedString(@"Per module")];
@@ -107,13 +123,14 @@
     self.statCards = @[pipCard, metCard];
 
     UIStackView *stack = [[UIStackView alloc] initWithArrangedSubviews:@[
-        gridTitle, gridHint, self.activityGrid,
+        gridTitle, gridHint, self.rangeControl, self.activityGrid,
         moduleTitle, pipCard, metCard
     ]];
     stack.axis    = UILayoutConstraintAxisVertical;
     stack.spacing = 8.0;
     stack.translatesAutoresizingMaskIntoConstraints = NO;
     [stack setCustomSpacing:14.0 afterView:gridHint];
+    [stack setCustomSpacing:14.0 afterView:self.rangeControl];
     [stack setCustomSpacing:28.0 afterView:self.activityGrid];
     [stack setCustomSpacing:12.0 afterView:moduleTitle];
     [stack setCustomSpacing:12.0 afterView:pipCard];
@@ -125,6 +142,41 @@
         [stack.trailingAnchor constraintEqualToAnchor:self.contentView.trailingAnchor constant:-20.0],
         [stack.bottomAnchor   constraintEqualToAnchor:self.contentView.bottomAnchor constant:-28.0],
     ]];
+}
+
+#pragma mark - Range control
+
+- (void)rangeChanged:(UISegmentedControl *)sender
+{
+    NSInteger months;
+    switch (sender.selectedSegmentIndex)
+    {
+        case 1:  months = 6;  break;
+        case 2:  months = 3;  break;
+        default: months = 12; break;
+    }
+    self.activityGrid.monthsToShow = months;
+}
+
+// The range switcher only helps on a narrow screen, where shrinking the range
+// enlarges the cells. On a wide (iPad) layout the cells are already big, so
+// hide the control and keep the grid at the full 12 months.
+- (void)updateRangeControlVisibility
+{
+    BOOL wide = (self.view.bounds.size.width >= 700.0);
+    self.rangeControl.hidden = wide;
+
+    if (wide && self.activityGrid.monthsToShow != 12)
+    {
+        self.rangeControl.selectedSegmentIndex = 0;
+        self.activityGrid.monthsToShow = 12;
+    }
+}
+
+- (void)viewDidLayoutSubviews
+{
+    [super viewDidLayoutSubviews];
+    [self updateRangeControlVisibility];
 }
 
 #pragma mark - Label helpers

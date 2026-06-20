@@ -8,7 +8,7 @@
 #import "BGGLocalization.h"
 
 // Grid geometry.
-static const NSInteger kBGGWeeks      = 53;   // columns
+static const NSInteger kBGGWeeksMax   = 53;   // columns for 12 months (default)
 static const NSInteger kBGGDays       = 7;    // rows (Sun..Sat)
 static const CGFloat   kBGGCellGap    = 3.0;  // gap between cells
 static const CGFloat   kBGGTopLabels  = 18.0; // space for month labels
@@ -22,6 +22,9 @@ static const CGFloat   kBGGLegendH    = 26.0; // space for the legend row
 
 // The date shown in the top-left cell (the Sunday of the leftmost column).
 @property (nonatomic, strong) NSDate *gridStartDate;
+
+// Number of week-columns currently drawn (derived from monthsToShow).
+@property (nonatomic, assign) NSInteger weeks;
 
 @property (nonatomic, strong) NSDateFormatter *dayKeyFormatter;
 @property (nonatomic, strong) NSCalendar       *calendar;
@@ -44,9 +47,33 @@ static const CGFloat   kBGGLegendH    = 26.0; // space for the legend row
         _dayKeyFormatter.dateFormat = @"yyyy-MM-dd";
 
         _levels = @{};
+        _monthsToShow = 12;
+        _weeks        = kBGGWeeksMax;
         [self computeGridStart];
     }
     return self;
+}
+
+#pragma mark - Range
+
+- (void)setMonthsToShow:(NSInteger)months
+{
+    // Clamp to the three supported ranges and map to week-columns. ~4.4 weeks
+    // per month, rounded up so the range is fully covered including the
+    // partial leftmost week.
+    NSInteger weeks;
+    switch (months)
+    {
+        case 3:  months = 3;  weeks = 14; break;
+        case 6:  months = 6;  weeks = 27; break;
+        default: months = 12; weeks = kBGGWeeksMax; break;
+    }
+    _monthsToShow = months;
+    self.weeks    = weeks;
+
+    [self computeGridStart];
+    [self invalidateIntrinsicContentSize];
+    [self setNeedsDisplay];
 }
 
 #pragma mark - Data
@@ -60,7 +87,7 @@ static const CGFloat   kBGGLegendH    = 26.0; // space for the legend row
 }
 
 // The grid ends with today in the last column. The top cell of each column is
-// a Sunday, so the start date is the Sunday (kBGGWeeks-1) weeks before the
+// a Sunday, so the start date is the Sunday (weeks-1) weeks before the
 // Sunday of the current week.
 - (void)computeGridStart
 {
@@ -77,7 +104,7 @@ static const CGFloat   kBGGLegendH    = 26.0; // space for the legend row
                                                            options:0];
 
     NSDateComponents *back = [[NSDateComponents alloc] init];
-    back.day = -(kBGGWeeks - 1) * 7;
+    back.day = -(self.weeks - 1) * 7;
     self.gridStartDate = [self.calendar dateByAddingComponents:back
                                                         toDate:thisWeekSunday
                                                        options:0];
@@ -112,7 +139,7 @@ static const CGFloat   kBGGLegendH    = 26.0; // space for the legend row
 - (CGFloat)cellSizeForWidth:(CGFloat)width
 {
     CGFloat usable = width - kBGGLeftLabels;
-    CGFloat cell = (usable - (kBGGWeeks - 1) * kBGGCellGap) / kBGGWeeks;
+    CGFloat cell = (usable - (self.weeks - 1) * kBGGCellGap) / self.weeks;
     if (cell < 1.0) { cell = 1.0; }
     return floor(cell);
 }
@@ -155,7 +182,7 @@ static const CGFloat   kBGGLegendH    = 26.0; // space for the legend row
 
     NSInteger previousMonth = -1;
 
-    for (NSInteger col = 0; col < kBGGWeeks; col++)
+    for (NSInteger col = 0; col < self.weeks; col++)
     {
         for (NSInteger row = 0; row < kBGGDays; row++)
         {

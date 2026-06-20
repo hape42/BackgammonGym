@@ -15,6 +15,12 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface BGGActivityGridView : UIView
 
+// The visible range, in months: 12 (default), 6, or 3. Fewer months means
+// fewer week-columns across the same width, so each day cell is larger and
+// easier to read on a narrow (iPhone) screen. Other values are clamped to
+// these three.
+@property (nonatomic, assign) NSInteger monthsToShow;
+
 // Reloads the activity data from Core Data and redraws. Safe to call from
 // viewWillAppear and on the RefreshAllViews notification.
 - (void)reload;
