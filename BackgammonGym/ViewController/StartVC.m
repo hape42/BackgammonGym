@@ -311,8 +311,19 @@ didSelectItemAtIndexPath:(NSIndexPath *)indexPath
 
         case BGGStartTileKindCollection:
         {
-            PositionBrowserVC *vc = [[PositionBrowserVC alloc] init];
-            [self.navigationController pushViewController:vc animated:YES];
+            // The position browser is a developer-only editor for
+            // positions.json; it must not ship to testers. Show a
+            // "coming soon" alert until the real user-facing collections
+            // feature exists. (Re-enable the browser locally by pushing
+            // PositionBrowserVC here during development.)
+            UIAlertController *alert = [UIAlertController
+                alertControllerWithTitle:BGGLocalizedString(@"Coming soon")
+                                 message:BGGLocalizedString(@"This feature isn't available yet.")
+                          preferredStyle:UIAlertControllerStyleAlert];
+            [alert addAction:[UIAlertAction actionWithTitle:@"OK"
+                                                      style:UIAlertActionStyleDefault
+                                                    handler:nil]];
+            [self presentViewController:alert animated:YES completion:nil];
         }
             break;
 
