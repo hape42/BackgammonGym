@@ -131,7 +131,8 @@ static NSString * const kCellID = @"BGGBoardStyleCell";
         @{ @"number": @13, @"name": @"Sea",             @"design": @"darkhelmet" },
         @{ @"number": @14, @"name": @"Traditional",     @"design": @"darkhelmet" },
         @{ @"number": @15, @"name": @"Spring",          @"design": @"darkhelmet" },
-    ];
+        @{ @"number": @16, @"name": @"Black & White",   @"design": @"hape42" },
+   ];
 }
 
 - (NSInteger)currentBoardSchema
