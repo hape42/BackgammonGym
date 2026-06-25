@@ -36,7 +36,7 @@
       ],
       "caption" : "Typical Holding game",
       "note" : "Test",
-      "text" : "My checker: I know there are 42 pips on the closed board. Two checker are missing on the 5th, so 32 pips. 1 checker on the 10th. That makes 42. 2 checker on the 21st = 42. That makes 84. 1 checker on the 16th, that makes 100, + 1 checker on the 13th = total 113\n\nThere are certainly several ways to count the opponent’s checker. For example, I mentally move the checker from 8 and 6 to 7, giving 11 × 7 = 77. \n2 checker on 5 = 87. \n2 checker on 2 = 91.\n\nWith a little practice, counting a position like this takes less than 5 seconds.\n"
+      "text" : "My checkers: I know there are 42 pips on the closed board. Two checkers are missing on the 5th, so 32 pips. 1 checker on the 10th. That makes 42. 2 checkers on the 21st = 42. That makes 84. 1 checker on the 16th, that makes 100, + 1 checker on the 13th = total 113\n\nThere are certainly several ways to count the opponent’s checkers. For example, I mentally move the checker from 8 and 6 to 7, giving 11 × 7 = 77. \n2 checker on 5 = 87. \n2 checker on 2 = 91.\n\nWith a little practice, counting a position like this takes less than 5 seconds.\n"
     },
     {
       "difficulty" : 1,

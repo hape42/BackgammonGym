@@ -316,6 +316,7 @@ didSelectItemAtIndexPath:(NSIndexPath *)indexPath
             // "coming soon" alert until the real user-facing collections
             // feature exists. (Re-enable the browser locally by pushing
             // PositionBrowserVC here during development.)
+            /**/
             UIAlertController *alert = [UIAlertController
                 alertControllerWithTitle:BGGLocalizedString(@"Coming soon")
                                  message:BGGLocalizedString(@"This feature isn't available yet.")
@@ -324,6 +325,10 @@ didSelectItemAtIndexPath:(NSIndexPath *)indexPath
                                                       style:UIAlertActionStyleDefault
                                                     handler:nil]];
             [self presentViewController:alert animated:YES completion:nil];
+             /**/
+            
+//            PositionBrowserVC *vc = [[PositionBrowserVC alloc] init];
+//            [self.navigationController pushViewController:vc animated:YES];
         }
             break;
 

@@ -95,7 +95,7 @@
             @"entries": @[
                 @{ @"label": @"Red / Grey HD", @"name": @"hape42", @"url":   @"https://hape42.de/" },
                 @{ @"label": @"Wood, Metal, Mono, Steampunk, Sea, Traditional, Spring",
-                   @"name":  @"darkhelmet" },
+                   @"name":  @"Karlheinz Agsteiner" },
                 @{ @"label": @"Unicorn", @"name": @"Jutta Schneider", @"url":   @"https://juhesch.art" },
             ],
         },
@@ -110,8 +110,13 @@
             @"title": BGGLocalizedString(@"Testers"),
             @"icon":  @"checkmark.seal",
             @"entries": @[
-                @{ @"label": @"", @"name": @"Karlheinz Agsteiner" },
-            ],
+                @{ @"label": @"🇩🇪", @"name": @"Karlheinz Agsteiner" },
+                @{ @"label": @"🇺🇸", @"name": @"Elizabeth Richardson" },
+                @{ @"label": @"🇺🇸", @"name": @"Mark Land" },
+                @{ @"label": @"🇸🇪", @"name": @"Johannes Holmertz" },
+                @{ @"label": @"🇳🇱", @"name": @"Otto Edelenbosch" },
+                @{ @"label": @"🇺🇸", @"name": @"Sheldon Richter" },
+           ],
         },
         @{
             @"title": BGGLocalizedString(@"Tools & libraries"),
