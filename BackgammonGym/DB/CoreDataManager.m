@@ -513,8 +513,12 @@
 
         for (BGGWorkout *w in workouts)
         {
-            NSArray *attempts = isMET ? w.metAttempts.allObjects
-                                      : w.attempts.allObjects;
+            // Cast both sides to the untyped NSArray base: the two relationships
+            // carry different element types (BGGMETAttempt vs BGGAttempt), which
+            // the ternary can't reconcile otherwise. We only read timestamp /
+            // isCorrect below, both present on either type.
+            NSArray *attempts = isMET ? (NSArray *)w.metAttempts.allObjects
+                                      : (NSArray *)w.attempts.allObjects;
             if (attempts.count == 0) { continue; }   // skip empty sessions
 
             attempts = [attempts sortedArrayUsingDescriptors:@[byTime]];

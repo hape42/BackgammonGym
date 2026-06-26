@@ -93,7 +93,7 @@
             @"title": BGGLocalizedString(@"Board designs"),
             @"icon":  @"paintpalette",
             @"entries": @[
-                @{ @"label": @"Red / Grey HD", @"name": @"hape42", @"url":   @"https://hape42.de/" },
+                @{ @"label": @"Red / Grey HD, Black & White", @"name": @"hape42", @"url":   @"https://hape42.de/" },
                 @{ @"label": @"Wood, Metal, Mono, Steampunk, Sea, Traditional, Spring",
                    @"name":  @"Karlheinz Agsteiner" },
                 @{ @"label": @"Unicorn", @"name": @"Jutta Schneider", @"url":   @"https://juhesch.art" },
