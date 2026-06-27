@@ -23,7 +23,7 @@ Two kinds of help are especially welcome:
 
 | | | |
 |:-:|:-:|:-:|
-| ![Start screen](https://hape42.de/hape42/gym/screenshots/1.png) | ![Training](https://hape42.de/hape42/gym/screenshots/9.png) | ![Statistics](https://hape42.de/hape42/gym/screenshots/18.png) |
+| ![Start screen](https://hape42.de/hape42/gym/screenshots/1.png?v=2) | ![Training](https://hape42.de/hape42/gym/screenshots/9.png?v=2) | ![Statistics](https://hape42.de/hape42/gym/screenshots/18.png?v=2) |
 
 → [See all screenshots on the website](https://hape42.de/hape42/gym/)
 
@@ -56,7 +56,7 @@ Contributions of code, positions, or translations are welcome too — open an is
 
 - **Platform:** iOS (iPhone + iPad, universal)
 - **Language:** Objective-C (a little SwiftUI for the trend charts)
-- **Minimum iOS:** 18
+- **Minimum iOS:** 16.4
 - **Storage:** Core Data + CloudKit (private container; your training data syncs across your own devices and is never shared)
 
 ## License
