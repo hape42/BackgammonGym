@@ -1554,7 +1554,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "The 20-point (opponent's 5-point) is the most useful key point. All checkers in your opponent's home board should be counted as 20 plus the pips required to get to the 20-point.\n\nPlayer's count is 108 which can be visualized as five 20's + 4 (two each from the 22-point to the 20-point) + 4 (one from 24-point to 20 point).\n\nOpponent's count is 89, visualized as four 20's + 4 + 5 (for the checker on the bar)."
+            "value": "The 20-point (opponent's 5-point) is the most useful key point. All checkers in your opponent's home board should be counted as 20 plus the pips required to get to the 20-point.\n\nPlayer's count is 108 which can be visualized as five 20's + 4 (two each from the 22-point to the 20-point) + 4 (one from 24-point to 20-point).\n\nOpponent's count is 89, visualized as four 20's + 4 + 5 (for the checker on the bar)."
           }
         }
       }
@@ -1734,7 +1734,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Multiply the midpoint of any 5-prime by 10 and you have just counted a cluster of ten checkers.\nThis position shows a 5-prime from the 4-point to the 8-point.\nThe 6-point is the midpoint and the count for these ten checkers = 60 pips (6 × 10.) This is so because 5's and 7's average out to 6's, and 4's and 8's also average out to 6's.\n\nPipCount = 60."
+            "value": "Multiply the midpoint of any 5-prime by 10 and you have just counted a cluster of ten checkers.\nThis position shows a 5-prime from the 4-point to the 8-point.\nThe 6-point is the midpoint and the count for these ten checkers = 60 pips (6 × 10). This is so because 5's and 7's average out to 6's, and 4's and 8's also average out to 6's.\n\nPipCount = 60."
           }
         }
       }
@@ -1986,7 +1986,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Player's checker can be easily counted in three clusters: 40 (eight 5's) + 33 (RP4 + 3 pips) + 64 (three 20's + 4) = 137.\n\nDivide Opponent's checkers into three clusters: 44 (5-prime + 4 pips forward, 2 each from the 7-point to the 5-point) + 33 (three 10's + 3 pips from 13 to 10) + 44 (two 20's + 4) = 121.\n\nPlayer = 137. Opponent = 121."
+            "value": "Player's checkers can be easily counted in three clusters: 40 (eight 5's) + 33 (RP4 + 3 pips) + 64 (three 20's + 4) = 137.\n\nDivide Opponent's checkers into three clusters: 44 (5-prime + 4 pips forward, 2 each from the 7-point to the 5-point) + 33 (three 10's + 3 pips from 13 to 10) + 44 (two 20's + 4) = 121.\n\nPlayer = 137. Opponent = 121."
           }
         }
       }
