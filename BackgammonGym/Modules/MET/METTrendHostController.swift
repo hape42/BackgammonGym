@@ -40,11 +40,15 @@ import SwiftUI
     // MARK: Nav bar
 
     private func setupNavBar() {
-        let homeButton = UIBarButtonItem(
-            image: UIImage(systemName: "house"),
+        // This screen is a detail view pushed from within the Progress
+        // section, not a module entry point, so a back arrow (not the usual
+        // Home button) is the right control: it returns to Progress, exactly
+        // where the user came from. Home is one more tap away from Progress.
+        let backButton = UIBarButtonItem(
+            image: UIImage(systemName: "chevron.backward"),
             style: .plain,
             target: self,
-            action: #selector(homeTapped))
+            action: #selector(backTapped))
 
         let metricButton = UIBarButtonItem(
             image: UIImage(systemName: "arrow.left.arrow.right"),
@@ -62,12 +66,12 @@ import SwiftUI
             image: UIImage(systemName: "line.3.horizontal.decrease.circle"),
             menu: buildFilterMenu())
 
-        homeButton.tintColor    = UIColor(named: "AccentColor")
+        backButton.tintColor    = UIColor(named: "AccentColor")
         metricButton.tintColor  = UIColor(named: "AccentColor")
         shareButton.tintColor   = UIColor(named: "AccentColor")
         filterButton.tintColor  = UIColor(named: "AccentColor")
 
-        self.navigationItem.leftBarButtonItem   = homeButton
+        self.navigationItem.leftBarButtonItem   = backButton
         self.navigationItem.rightBarButtonItems = [shareButton, filterButton, metricButton]
     }
 
@@ -135,8 +139,10 @@ import SwiftUI
         refresh()
     }
 
-    @objc private func homeTapped() {
-        self.navigationController?.popToRootViewController(animated: true)
+    @objc private func backTapped() {
+        // Pop back to the Progress section we were pushed from, rather than
+        // jumping all the way out to the start screen.
+        self.navigationController?.popViewController(animated: true)
     }
 
     @objc private func shareTapped() {
