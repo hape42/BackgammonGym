@@ -245,7 +245,11 @@
     UILabel *lbl = [self gridCellBase];
     lbl.text            = text;
     lbl.backgroundColor = background;
-    lbl.textColor       = [UIColor labelColor];
+    // The band is a fixed light yellow that does not adapt to dark mode, so
+    // the text colour must be fixed too. labelColor turns near-white in dark
+    // mode, which left the whole grid invisible on that fixed band. Use a
+    // fixed dark colour instead so it reads in both appearances.
+    lbl.textColor       = [UIColor blackColor];
     lbl.font            = [UIFont monospacedDigitSystemFontOfSize:13.0
                                                           weight:(bold ? UIFontWeightSemibold
                                                                        : UIFontWeightRegular)];
