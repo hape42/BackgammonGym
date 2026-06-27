@@ -82,6 +82,11 @@ static NSString * sectionSymbol(PipCountSection section)
     self.view.backgroundColor = [UIColor systemBackgroundColor];
     self.title = @"Pip Count";
 
+    // Safe default. showSection: below sets this to Warm-up on the first
+    // call anyway, but initializing explicitly keeps the intent clear and
+    // avoids relying on the enum's 0 value by coincidence.
+    self.previousSection = PipCountSectionWarmup;
+
     [self installHomeButton];
     [self setupContainerView];
     [self setupMenuButton];
@@ -194,11 +199,19 @@ static NSString * sectionSymbol(PipCountSection section)
     UIViewController *newChild = [self childForSection:section];
     if (newChild == self.activeChild) { return; }
 
-    // When entering Training or Workout, remember where we came from so a
-    // later Cancel can return there instead of leaving the module.
-    if (section == PipCountSectionTraining || section == PipCountSectionWorkout)
+    // Remember the last teaching section (Warm-up, Cluster, Progress) as the
+    // Cancel return target. Training and Workout both show the count picker on
+    // appear, whose own Cancel calls back here – so an exercise section must
+    // never become the return target, or Cancel would re-present the picker
+    // and trap the user in an endless "How many positions?" loop (e.g.
+    // Workout -> Training -> Cancel). By recording the target on every switch
+    // INTO a non-exercise section, previousSection always holds the most
+    // recent safe destination, even across several exercise-to-exercise hops.
+    BOOL isExerciseSection = (section == PipCountSectionTraining ||
+                              section == PipCountSectionWorkout);
+    if (!isExerciseSection)
     {
-        self.previousSection = self.activeSection;
+        self.previousSection = section;
     }
 
     // Remove current child.
