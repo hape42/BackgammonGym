@@ -2370,13 +2370,13 @@
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Am deutlichsten zahlt es sich bei Cube-Entscheidungen aus. Stell dir vor, du liegst in einem 11-Punkte-Match 3–5 zurück und dein Gegner doppelt auf 8. Gibst du auf, steht es 3–7, wo deine Match-Gewinnchance bei etwa 36 % liegt. Ein Take lohnt sich also nur, wenn du erwartest, dieses Spiel zu mehr als 36 % zu gewinnen — weit über den 25 %, die du im Geldspiel bräuchtest. Ohne die Tabelle rätst du; mit ihr hast du einen konkreten Schwellenwert zum Vergleichen.\n\nDieselben Zahlen fließen in feinere Zug- und Cube-Entscheidungen ein, die vom Spielstand abhängen. Deine Equity zu kennen verwandelt vage Intuition in eine Zahl, mit der du tatsächlich argumentieren kannst — ein großer Teil des Schritts vom fortgeschrittenen zum starken Match-Spiel."
+            "value": "Am deutlichsten zahlt es sich bei Cube-Entscheidungen aus. Stell dir vor, es steht in einem 11-Punkte-Match 5–5 und dein Gegner doppelt auf 4. Gibst du auf, steht es 5–7, wo deine Match-Gewinnchance bei etwa 36 % liegt. Ein Take lohnt sich also nur, wenn du erwartest, dieses Spiel zu mehr als 36 % zu gewinnen — weit über den 25 %, die du im Geldspiel bräuchtest. Ohne die Tabelle rätst du; mit ihr hast du einen konkreten Schwellenwert zum Vergleichen.\\n\\nDieselben Zahlen fließen in feinere Zug- und Cube-Entscheidungen ein, die vom Spielstand abhängen. Deine Equity zu kennen verwandelt vage Intuition in eine Zahl, mit der du tatsächlich argumentieren kannst — ein großer Teil des Schritts vom fortgeschrittenen zum starken Match-Spiel."
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "The clearest payoff is in cube decisions. Imagine you trail 3–5 in an 11-point match and your opponent doubles to 8. If you pass, the score becomes 3–7, where your match-winning chances are about 36%. So taking only makes sense if you expect to win this game more than 36% of the time — far above the 25% you'd need in a money game. Without the table, you're guessing; with it, you have a concrete threshold to compare against.\n\nThe same numbers feed into subtler checker and cube choices that depend on the score. Knowing your equity turns vague intuition into a number you can actually reason with — a big part of moving from intermediate to advanced match play."
+            "value": "The clearest payoff is in cube decisions. Imagine the score is 5–5 in an 11-point match and your opponent doubles to 4. If you pass, the score becomes 5–7, where your match-winning chances are about 36%. So taking only makes sense if you expect to win this game more than 36% of the time — far above the 25% you'd need in a money game. Without the table, you're guessing; with it, you have a concrete threshold to compare against.\\n\\nThe same numbers feed into subtler checker and cube choices that depend on the score. Knowing your equity turns vague intuition into a number you can actually reason with — a big part of moving from intermediate to advanced match play."
           }
         }
       }
