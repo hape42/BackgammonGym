@@ -23,13 +23,125 @@
 #import "BGGLocalization.h"
 #import "BGGLanguage.h"
 
+#pragma mark - Supplementary view kinds / reuse IDs
+
+static NSString * const kBGGSectionHeaderID = @"SectionHeader";
+static NSString * const kBGGStartTileID     = @"StartTile";
+
+#pragma mark - Section model
+
+// One labelled group of tiles on the start screen. Adding a new module is a
+// one-line change: append a tile to the right section in -setupSections.
+@interface BGGStartSection : NSObject
+@property (nonatomic, copy) NSString *title;                  // localized header, nil = no header
+@property (nonatomic, copy) NSArray<BGGStartTile *> *tiles;
+@end
+
+@implementation BGGStartSection
+@end
+
+#pragma mark - Section header (optional welcome intro + section label)
+
+// One header view used for both sections. The first section passes an intro
+// (big title + body) that renders above the section label; the second section
+// passes intro:nil and only the label shows. Using a single supplementary kind
+// keeps it inside what UICollectionViewFlowLayout actually lays out.
+@interface BGGSectionHeaderView : UICollectionReusableView
+@property (nonatomic, strong) UILabel *introTitleLabel;
+@property (nonatomic, strong) UILabel *introBodyLabel;
+@property (nonatomic, strong) UILabel *sectionLabel;
+@property (nonatomic, strong) NSLayoutConstraint *sectionLabelTopToBody;
+@property (nonatomic, strong) NSLayoutConstraint *sectionLabelTopToSelf;
+- (void)configureWithSectionTitle:(NSString *)sectionTitle
+                       introTitle:(nullable NSString *)introTitle
+                        introBody:(nullable NSString *)introBody;
+@end
+
+@implementation BGGSectionHeaderView
+
+- (instancetype)initWithFrame:(CGRect)frame
+{
+    self = [super initWithFrame:frame];
+    if (self)
+    {
+        _introTitleLabel = [[UILabel alloc] init];
+        _introTitleLabel.translatesAutoresizingMaskIntoConstraints = NO;
+        _introTitleLabel.font = [UIFont boldSystemFontOfSize:26];
+        _introTitleLabel.textColor = [UIColor labelColor];
+        _introTitleLabel.numberOfLines = 1;
+        _introTitleLabel.adjustsFontSizeToFitWidth = YES;
+        _introTitleLabel.minimumScaleFactor = 0.7;
+        _introTitleLabel.textAlignment = NSTextAlignmentCenter;   // hero block is centred
+        [self addSubview:_introTitleLabel];
+
+        _introBodyLabel = [[UILabel alloc] init];
+        _introBodyLabel.translatesAutoresizingMaskIntoConstraints = NO;
+        _introBodyLabel.font = [UIFont systemFontOfSize:15];
+        _introBodyLabel.textColor = [UIColor secondaryLabelColor];
+        _introBodyLabel.numberOfLines = 0;
+        _introBodyLabel.textAlignment = NSTextAlignmentCenter;    // hero block is centred
+        [self addSubview:_introBodyLabel];
+
+        _sectionLabel = [[UILabel alloc] init];
+        _sectionLabel.translatesAutoresizingMaskIntoConstraints = NO;
+        _sectionLabel.font = [UIFont systemFontOfSize:13 weight:UIFontWeightSemibold];
+        _sectionLabel.textColor = [UIColor secondaryLabelColor];
+        [self addSubview:_sectionLabel];
+
+        // 20pt side padding so header text lines up with the tile column
+        // (the flow layout's section inset applies to cells, not headers).
+        CGFloat pad = 20.0;
+
+        [NSLayoutConstraint activateConstraints:@[
+            [_introTitleLabel.topAnchor      constraintEqualToAnchor:self.topAnchor constant:8.0],
+            [_introTitleLabel.leadingAnchor  constraintEqualToAnchor:self.leadingAnchor constant:pad],
+            [_introTitleLabel.trailingAnchor constraintEqualToAnchor:self.trailingAnchor constant:-pad],
+
+            [_introBodyLabel.topAnchor       constraintEqualToAnchor:_introTitleLabel.bottomAnchor constant:6.0],
+            [_introBodyLabel.leadingAnchor   constraintEqualToAnchor:self.leadingAnchor constant:pad],
+            [_introBodyLabel.trailingAnchor  constraintEqualToAnchor:self.trailingAnchor constant:-pad],
+
+            [_sectionLabel.leadingAnchor     constraintEqualToAnchor:self.leadingAnchor constant:pad],
+            [_sectionLabel.trailingAnchor    constraintEqualToAnchor:self.trailingAnchor constant:-pad],
+            [_sectionLabel.bottomAnchor      constraintEqualToAnchor:self.bottomAnchor constant:-6.0],
+        ]];
+
+        // The section label sits either below the intro body (section 1) or
+        // straight against the top (section 2, no intro). We keep both
+        // constraints and toggle which one is active per configuration.
+        _sectionLabelTopToBody = [_sectionLabel.topAnchor constraintEqualToAnchor:_introBodyLabel.bottomAnchor constant:18.0];
+        _sectionLabelTopToSelf = [_sectionLabel.topAnchor constraintEqualToAnchor:self.topAnchor constant:8.0];
+    }
+    return self;
+}
+
+- (void)configureWithSectionTitle:(NSString *)sectionTitle
+                       introTitle:(NSString *)introTitle
+                        introBody:(NSString *)introBody
+{
+    self.sectionLabel.text = [sectionTitle uppercaseString];
+
+    BOOL hasIntro = (introTitle.length > 0 || introBody.length > 0);
+    self.introTitleLabel.text = introTitle;
+    self.introBodyLabel.text  = introBody;
+    self.introTitleLabel.hidden = !hasIntro;
+    self.introBodyLabel.hidden  = !hasIntro;
+
+    self.sectionLabelTopToBody.active = hasIntro;
+    self.sectionLabelTopToSelf.active = !hasIntro;
+}
+
+@end
+
+#pragma mark - StartVC
+
 @interface StartVC () <UICollectionViewDataSource,
                        UICollectionViewDelegate,
                        UICollectionViewDelegateFlowLayout,
                        MFMailComposeViewControllerDelegate>
 
 @property (nonatomic, strong) UICollectionView *collectionView;
-@property (nonatomic, strong) NSArray<BGGStartTile *> *tiles;
+@property (nonatomic, strong) NSArray<BGGStartSection *> *sections;
 
 @end
 
@@ -43,9 +155,9 @@
 
     self.view.backgroundColor = [UIColor colorNamed:@"ColorViewBackground"];
     self.title = @"Backgammon Gym";
-
+    self.title = nil;
     UIImage *setupImage = [UIImage systemImageNamed:@"gearshape"];
-        
+
     UIBarButtonItem *setupButton = [[UIBarButtonItem alloc] initWithImage:setupImage
                                                                     style:UIBarButtonItemStylePlain
                                                                    target:self
@@ -53,8 +165,8 @@
     setupButton.tintColor = [UIColor colorNamed:@"AccentColor"];
 
     self.navigationItem.rightBarButtonItem = setupButton;
-    
-    [self setupTiles];
+
+    [self setupSections];
     [self setupCollectionView];
 
     // The Settings sheet (which holds the language picker) can sit over this
@@ -94,11 +206,12 @@
                                  completion:nil];
 }
 
-// Rebuild the tiles with localized text and reload the grid.
+// Rebuild the sections with localized text and reload the grid.
 - (void)languageDidChange
 {
     self.title = @"Backgammon Gym";   // a proper noun, stays as-is
-    [self setupTiles];
+    self.title = nil;
+    [self setupSections];
     [self.collectionView reloadData];
 }
 
@@ -142,54 +255,75 @@
 
 #pragma mark - Setup
 
-- (void)setupTiles
+- (void)setupSections
 {
-    UIColor *iconColor     = [UIColor colorNamed:@"ColorImages"];
-    UIColor *disabledColor = [UIColor grayColor];
+    UIColor *accentColor = [UIColor colorNamed:@"AccentColor"];
 
-    self.tiles = @[
+    // Section 1 – the actual training areas. New training modules go here.
+    // Prominent styling: AccentColor fill, grey icon, light text – this is the
+    // strongest visual signal that these are the things you came to do.
+    BGGStartSection *training = [[BGGStartSection alloc] init];
+    training.title = BGGLocalizedString(@"Training");
+    training.tiles = @[
         [BGGStartTile tileWithKind:BGGStartTileKindPipCount
                              title:BGGLocalizedString(@"Pipcount")
-                          subtitle:nil
+                          subtitle:BGGLocalizedString(@"count the race")
                           iconName:@"sum"
-                         iconColor:iconColor],
+                         iconColor:accentColor
+                         prominent:YES],
 
         [BGGStartTile tileWithKind:BGGStartTileKindMETQuiz
                              title:BGGLocalizedString(@"Match Equity")
                           subtitle:BGGLocalizedString(@"MET Quiz")
                           iconName:@"tablecells"
-                         iconColor:iconColor],
+                         iconColor:accentColor
+                         prominent:YES],
+    ];
 
-        [BGGStartTile tileWithKind:BGGStartTileKindCollection
-                             title:BGGLocalizedString(@"Collections")
-                          subtitle:BGGLocalizedString(@"your positions")
-                          iconName:@"folder"
-                         iconColor:iconColor],
-
+    // Section 2 – everything that isn't a training area: progress, meta,
+    // and the channels for feedback/credits. Plain grey tiles, but with
+    // AccentColor icons so the section still feels part of the app.
+    BGGStartSection *more = [[BGGStartSection alloc] init];
+    more.title = BGGLocalizedString(@"More");
+    more.tiles = @[
         [BGGStartTile tileWithKind:BGGStartTileKindStatistics
                              title:BGGLocalizedString(@"Statistics")
                           subtitle:BGGLocalizedString(@"your progress")
                           iconName:@"chart.xyaxis.line"
-                         iconColor:iconColor],
+                         iconColor:accentColor],
 
         [BGGStartTile tileWithKind:BGGStartTileKindAchievements
                              title:BGGLocalizedString(@"Achievements")
-                          subtitle:nil
+                          subtitle:BGGLocalizedString(@"what you earned")
                           iconName:@"trophy"
-                         iconColor:iconColor],
+                         iconColor:accentColor],
 
         [BGGStartTile tileWithKind:BGGStartTileKindMoreModules
                              title:BGGLocalizedString(@"More modules")
                           subtitle:BGGLocalizedString(@"We welcome your requests")
                           iconName:@"plus"
-                         iconColor:disabledColor],
+                         iconColor:accentColor],
 
         [BGGStartTile tileWithKind:BGGStartTileKindCredits
                              title:@"Credits"
                           subtitle:BGGLocalizedString(@"who helped")
                           iconName:@"heart"
-                         iconColor:iconColor],
+                         iconColor:accentColor],
+        
+//        [BGGStartTile tileWithKind:BGGStartTileKindCollection
+//                             title:BGGLocalizedString(@"Collections")
+//                          subtitle:BGGLocalizedString(@"your positions")
+//                          iconName:@"folder"
+//                         iconColor:accentColor],
     ];
+
+    self.sections = @[ training, more ];
+}
+
+- (BGGStartTile *)tileForIndexPath:(NSIndexPath *)indexPath
+{
+    BGGStartSection *section = self.sections[indexPath.section];
+    return section.tiles[indexPath.item];
 }
 
 - (void)setupCollectionView
@@ -202,7 +336,13 @@
     self.collectionView.backgroundColor = [UIColor clearColor];
 
     [self.collectionView registerClass:[BGGStartTileCell class]
-            forCellWithReuseIdentifier:@"StartTile"];
+            forCellWithReuseIdentifier:kBGGStartTileID];
+
+    // One section header type. The first section's header also carries the
+    // welcome intro (big title + body); the second's shows only its label.
+    [self.collectionView registerClass:[BGGSectionHeaderView class]
+            forSupplementaryViewOfKind:UICollectionElementKindSectionHeader
+                   withReuseIdentifier:kBGGSectionHeaderID];
 
     self.collectionView.delegate   = self;
     self.collectionView.dataSource = self;
@@ -219,27 +359,67 @@
 
 #pragma mark - UICollectionViewDataSource
 
+- (NSInteger)numberOfSectionsInCollectionView:(UICollectionView *)collectionView
+{
+    return self.sections.count;
+}
+
 - (NSInteger)collectionView:(UICollectionView *)collectionView
      numberOfItemsInSection:(NSInteger)section
 {
-    return self.tiles.count;
+    return self.sections[section].tiles.count;
 }
 
 - (UICollectionViewCell *)collectionView:(UICollectionView *)collectionView
                   cellForItemAtIndexPath:(NSIndexPath *)indexPath
 {
-    BGGStartTileCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:@"StartTile"
+    BGGStartTileCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:kBGGStartTileID
                                                                        forIndexPath:indexPath];
 
-    BGGStartTile *tile = self.tiles[indexPath.row];
+    BGGStartTile *tile = [self tileForIndexPath:indexPath];
     [cell configureWithIcon:tile.icon
                   iconColor:tile.iconColor
                       title:tile.title
-                   subtitle:tile.subtitle];
+                   subtitle:tile.subtitle
+                  prominent:tile.prominent];
     return cell;
 }
 
+- (UICollectionReusableView *)collectionView:(UICollectionView *)collectionView
+           viewForSupplementaryElementOfKind:(NSString *)kind
+                                 atIndexPath:(NSIndexPath *)indexPath
+{
+    BGGSectionHeaderView *header =
+        [collectionView dequeueReusableSupplementaryViewOfKind:kind
+                                           withReuseIdentifier:kBGGSectionHeaderID
+                                                  forIndexPath:indexPath];
+
+    BGGStartSection *section = self.sections[indexPath.section];
+
+    // Only the first section carries the welcome intro above its label.
+    if (indexPath.section == 0)
+    {
+        [header configureWithSectionTitle:section.title
+                               introTitle:@"Backgammon Gym"   // proper noun, not localized
+                                introBody:BGGLocalizedString(@"start.intro.body")];
+    }
+    else
+    {
+        [header configureWithSectionTitle:section.title
+                               introTitle:nil
+                                introBody:nil];
+    }
+    return header;
+}
+
 #pragma mark - UICollectionViewDelegateFlowLayout
+
+- (NSInteger)columnsForWidth:(CGFloat)width
+{
+    if (width >= 900)       return 4;   // iPad landscape
+    else if (width >= 600)  return 3;   // iPad portrait
+    else                    return 2;   // iPhone: 2 columns
+}
 
 - (CGSize)collectionView:(UICollectionView *)collectionView
                   layout:(UICollectionViewLayout *)layout
@@ -249,17 +429,14 @@
     CGFloat inset = 20.0;
     CGFloat spacing = 20.0;
 
-    NSInteger columns;
-    if (width >= 900)       columns = 4;   // iPad landscape
-    else if (width >= 600)  columns = 3;   // iPad portrait
-    else                    columns = 2;   // iPhone: 2 Spalten
+    NSInteger columns = [self columnsForWidth:width];
 
     CGFloat available = width - (2 * inset) - (spacing * (columns - 1));
     CGFloat itemWidth = available / columns;
     // Height follows width at a constant ratio, so tiles keep the same shape
-    // on every device – they just scale up on iPad where the columns are
-    // wider. 0.6 matches the iPhone proportion (≈165 wide, ≈100 tall).
-    CGFloat itemHeight = itemWidth * 0.6;
+    // on every device. 0.68 (up from 0.6) gives the second text line – the
+    // subtitle – room to breathe under the title without crowding the icon.
+    CGFloat itemHeight = itemWidth * 0.68;
     return CGSizeMake(itemWidth, itemHeight);
 }
 
@@ -284,6 +461,37 @@ minimumLineSpacingForSectionAtIndex:(NSInteger)section
     return UIEdgeInsetsMake(10.0, 20.0, 10.0, 20.0);
 }
 
+// Section header height: section 0 includes the welcome intro (title + body,
+// whose height depends on how the body wraps at the current width), section 1
+// only its label.
+- (CGSize)collectionView:(UICollectionView *)collectionView
+                  layout:(UICollectionViewLayout *)collectionViewLayout
+referenceSizeForHeaderInSection:(NSInteger)section
+{
+    CGFloat width = collectionView.bounds.size.width;
+
+    if (section != 0)
+    {
+        return CGSizeMake(width, 34.0);
+    }
+
+    // Measure the intro body at the available text width (full width minus the
+    // 20pt section insets on each side) so the header is tall enough.
+    CGFloat textWidth = width - 40.0;
+    if (textWidth < 1.0) { textWidth = 1.0; }
+
+    NSString *body = BGGLocalizedString(@"start.intro.body");
+    UIFont *bodyFont = [UIFont systemFontOfSize:15];
+    CGRect bodyRect = [body boundingRectWithSize:CGSizeMake(textWidth, CGFLOAT_MAX)
+                                         options:NSStringDrawingUsesLineFragmentOrigin
+                                      attributes:@{ NSFontAttributeName: bodyFont }
+                                         context:nil];
+
+    // 8 (top) + ~31 (intro title) + 6 (gap) + body + 18 (gap) + ~16 (label) + 6.
+    CGFloat height = 8.0 + 31.0 + 6.0 + ceil(bodyRect.size.height) + 18.0 + 16.0 + 6.0;
+    return CGSizeMake(width, height);
+}
+
 #pragma mark - UICollectionViewDelegate
 
 - (void)collectionView:(UICollectionView *)collectionView
@@ -291,7 +499,7 @@ didSelectItemAtIndexPath:(NSIndexPath *)indexPath
 {
     self.navigationController.navigationBar.tintColor = [UIColor colorNamed:@"AccentColor"];
 
-    BGGStartTile *tile = self.tiles[indexPath.row];
+    BGGStartTile *tile = [self tileForIndexPath:indexPath];
 
     switch (tile.kind)
     {
@@ -326,7 +534,7 @@ didSelectItemAtIndexPath:(NSIndexPath *)indexPath
                                                     handler:nil]];
             [self presentViewController:alert animated:YES completion:nil];
              /**/
-            
+
 //            PositionBrowserVC *vc = [[PositionBrowserVC alloc] init];
 //            [self.navigationController pushViewController:vc animated:YES];
         }
@@ -417,7 +625,7 @@ didSelectItemAtIndexPath:(NSIndexPath *)indexPath
 
 - (void)setupButtonTapped:(UIBarButtonItem *)sender
 {
-    
+
     SettingsVC *settingsVC = [[SettingsVC alloc] init];
     UINavigationController *nav = [[UINavigationController alloc] initWithRootViewController:settingsVC];
     // Sheet-Größe konfigurieren

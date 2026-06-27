@@ -2728,6 +2728,72 @@
           }
         }
       }
+    },
+    "Training": {
+      "comment": "Start screen",
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Training"
+          }
+        }
+      }
+    },
+    "More": {
+      "comment": "Start screen",
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mehr"
+          }
+        }
+      }
+    },
+    "count the race": {
+      "comment": "Start screen",
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "zähle das Rennen"
+          }
+        }
+      }
+    },
+    "what you earned": {
+      "comment": "Start screen",
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "was du erreicht hast"
+          }
+        }
+      }
+    },
+    "start.intro.body": {
+      "comment": "Start screen",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Train the skills, not just the moves. Pick a training area below to practice, or check your progress."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Trainiere die Fähigkeiten, nicht nur die Züge. Wähle unten einen Trainingsbereich zum Üben, oder schau dir deinen Fortschritt an."
+          }
+        }
+      }
     }
   },
   "version": "1.2"
