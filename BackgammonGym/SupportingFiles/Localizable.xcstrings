@@ -2526,13 +2526,13 @@
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Mein Spielsteine: Ich weiß, dass auf dem geschlossenen Homeboard 42 Punkte sind. Auf der 5 fehlen zwei Steine, also 32 Punkte. 1 Stein auf der 10. Das ergibt 42. 2 Steine auf der 21 = 42. Das ergibt 84. 1 Stein auf der 16, das ergibt 100, + 1 Stein auf der 13 = insgesamt 113\n\nEs gibt sicherlich mehrere Möglichkeiten, die Steine des Gegners zu zählen. Ich versetze zum Beispiel gedanklich die Steine von 8 und 6 auf 7, was 11 × 7 = 77 ergibt. \n2 Steine auf 5 = 87. \n2 Steine auf 2 = 91.\n\nMit ein wenig Übung dauert das Zählen einer solchen Position weniger als 5 Sekunden."
+            "value": "Meine Spielsteine: Ich weiß, dass auf dem geschlossenen Homeboard 42 Punkte sind. Auf der 5 fehlen zwei Steine, also 32 Punkte. 1 Stein auf der 10. Das ergibt 42. 2 Steine auf der 21 = 42. Das ergibt 84. 1 Stein auf der 16, das ergibt 100, + 1 Stein auf der 13 = insgesamt 113\n\nEs gibt sicherlich mehrere Möglichkeiten, die Steine des Gegners zu zählen. Ich versetze zum Beispiel gedanklich die Steine von 8 und 6 auf 7, was 11 × 7 = 77 ergibt. \n2 Steine auf 5 = 87. \n2 Steine auf 2 = 91.\n\nMit ein wenig Übung dauert das Zählen einer solchen Position weniger als 5 Sekunden."
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "My checker: I know there are 42 pips on the closed board. Two checker are missing on the 5th, so 32 pips. 1 checker on the 10th. That makes 42. 2 checker on the 21st = 42. That makes 84. 1 checker on the 16th, that makes 100, + 1 checker on the 13th = total 113\n\nThere are certainly several ways to count the opponent’s checker. For example, I mentally move the checker from 8 and 6 to 7, giving 11 × 7 = 77. \n2 checker on 5 = 87. \n2 checker on 2 = 91.\n\nWith a little practice, counting a position like this takes less than 5 seconds.\n"
+            "value": "My checkers: I know there are 42 pips on the closed board. Two checkers are missing on the 5th, so 32 pips. One checker on the 10th. That makes 42. 2 checkers on the 21st = 42. That makes 84. One checker on the 16th, that makes 100, + 1 checker on the 13th = total 113\n\nThere are certainly several ways to count the opponent’s checker. For example, I mentally move the checkers from 8 and 6 to 7, giving 11 × 7 = 77. \n2 checkers on the 5 = 87. \n2 checkers on the 2 = 91.\n\nWith a little practice, counting a position like this takes less than 5 seconds.\n"
           }
         }
       }
