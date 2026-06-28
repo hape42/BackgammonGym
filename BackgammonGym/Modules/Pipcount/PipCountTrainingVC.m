@@ -17,7 +17,7 @@
 - (NSString *)infoText
 {
     return BGGLocalizedString(@"Point numbers are shown on the board. Take as much time as you "
-           @"like — the timer is just for your information.");
+           @"like — your time is shown afterwards, just for your information.");
 }
 
 - (void)viewDidLoad

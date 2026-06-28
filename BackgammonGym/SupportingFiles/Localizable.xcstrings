@@ -373,18 +373,6 @@
         }
       }
     },
-    "Estimate from the score. Take as much time as you like — the timer is just for your information. Optional hints are available.": {
-      "comment": "MET exercise",
-      "extractionState": "manual",
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Schätze anhand des Spielstands. Lass dir so viel Zeit, wie du möchtest — der Timer dient nur zu deiner Information. Optionale Hilfen sind verfügbar."
-          }
-        }
-      }
-    },
     "Estimate the leader's match-winning chances.": {
       "comment": "MET exercise",
       "extractionState": "manual",
@@ -805,18 +793,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Bitte richten Sie ein E-Mail-Konto ein oder schreiben Sie von Ihrem Gerät aus an BackgammonGym@hape42.de."
-          }
-        }
-      }
-    },
-    "Point numbers are shown on the board. Take as much time as you like — the timer is just for your information.": {
-      "comment": "Pip Count exercise",
-      "extractionState": "manual",
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Die Punktnummern werden auf dem Brett angezeigt. Lass dir so viel Zeit, wie du möchtest — der Timer dient nur zu deiner Information."
           }
         }
       }
@@ -3127,6 +3103,30 @@
           "stringUnit": {
             "state": "translated",
             "value": "Innerhalb eines Moduls wechselst du die Stufen über das Menü oben rechts ([list.bullet]). Dort springst du zwischen Warm-up, Training, Workout und Progress hin und her.\n\nDas Haus-Symbol oben links ([house]) bringt dich jederzeit zurück zum Startbildschirm. Über das Zahnrad dort ([gearshape]) erreichst du die Einstellungen — Brett-Design, Sprache, und die Schwellen, ab denen Zeiten und Trefferquoten grün, orange oder rot eingefärbt werden."
+          }
+        }
+      }
+    },
+    "Point numbers are shown on the board. Take as much time as you like — your time is shown afterwards, just for your information.": {
+      "comment": "Pip Count exercise",
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Die Punktnummern werden auf dem Brett angezeigt. Lass dir so viel Zeit, wie du möchtest — deine Zeit wird dir hinterher angezeigt, nur zur Information."
+          }
+        }
+      }
+    },
+    "Estimate from the score. Take as much time as you like — your time is shown afterwards, just for your information. Optional hints are available.": {
+      "comment": "MET exercise",
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Schätze anhand des Spielstands. Lass dir so viel Zeit, wie du möchtest — deine Zeit wird dir hinterher angezeigt, nur zur Information. Optionale Hilfen sind verfügbar."
           }
         }
       }

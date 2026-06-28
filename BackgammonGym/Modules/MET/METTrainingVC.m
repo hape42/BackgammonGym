@@ -15,8 +15,8 @@
 
 - (NSString *)infoText
 {
-    return BGGLocalizedString(@"Estimate from the score. Take as much time as you like — the "
-           @"timer is just for your information. Optional hints are available.");
+    return BGGLocalizedString(@"Estimate from the score. Take as much time as you like — your "
+           @"time is shown afterwards, just for your information. Optional hints are available.");
 }
 
 - (void)viewDidLoad
