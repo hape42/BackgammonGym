@@ -767,11 +767,14 @@ static const CGFloat kWideThreshold = 700.0;
     [self showFeedbackBlueOK:blueOK yellowOK:yellowOK
                  correctBlue:correctBlue correctYellow:correctYellow];
 
-    UIImpactFeedbackGenerator *impact = [[UIImpactFeedbackGenerator alloc]
-                                          initWithStyle:bothOK
-                                                        ? UIImpactFeedbackStyleMedium
-                                                        : UIImpactFeedbackStyleRigid];
-    [impact impactOccurred];
+    // Distinct haptics for right vs. wrong: a success pattern for a correct
+    // answer, an error pattern for a wrong one. The previous impact styles
+    // (medium vs. rigid) felt almost identical; success/error are clearly
+    // different (issue #28). Matches the success haptic already used when an
+    // achievement is earned.
+    UINotificationFeedbackGenerator *haptic = [[UINotificationFeedbackGenerator alloc] init];
+    [haptic notificationOccurred:bothOK ? UINotificationFeedbackTypeSuccess
+                                        : UINotificationFeedbackTypeError];
 
     // Show Next + CancelAfterNext, hide Check + Cancel.
     self.submitButton.hidden  = YES;

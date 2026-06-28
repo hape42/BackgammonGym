@@ -943,11 +943,14 @@
 
     [self showFeedbackOK:ok userValue:userValue correct:correct];
 
-    UIImpactFeedbackGenerator *impact = [[UIImpactFeedbackGenerator alloc]
-                                          initWithStyle:ok
-                                                        ? UIImpactFeedbackStyleMedium
-                                                        : UIImpactFeedbackStyleRigid];
-    [impact impactOccurred];
+    // Distinct haptics for right vs. wrong: a success pattern for a correct
+    // answer, an error pattern for a wrong one. The previous impact styles
+    // (medium vs. rigid) felt almost identical; success/error are clearly
+    // different (issue #28). Matches the success haptic already used when an
+    // achievement is earned.
+    UINotificationFeedbackGenerator *haptic = [[UINotificationFeedbackGenerator alloc] init];
+    [haptic notificationOccurred:ok ? UINotificationFeedbackTypeSuccess
+                                    : UINotificationFeedbackTypeError];
 
     self.submitButton.hidden = YES;
     self.cancelButton.hidden = YES;
