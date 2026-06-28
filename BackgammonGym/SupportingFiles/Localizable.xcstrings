@@ -2866,6 +2866,270 @@
           }
         }
       }
+    },
+    "Manual": {
+      "comment": "Manual",
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Anleitung"
+          }
+        }
+      }
+    },
+    "manual.idea.title": {
+      "comment": "Manual",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The idea behind Backgammon Gym"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Die Idee hinter Backgammon Gym"
+          }
+        }
+      }
+    },
+    "manual.idea.body": {
+      "comment": "Manual",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Backgammon Gym isn’t a game — it’s a training room. You don’t play matches here; you practise the individual skills that make you better at the board: the pip count, counting in clusters, match equity, and more to come.\n\nThe idea is the one behind a gym. Nobody gets strong just by competing — you train individual muscles until they’re solid. It’s the same here: instead of playing a whole match and hoping your weak spots somehow sort themselves out, you take one skill and train it until it becomes second nature.\n\nEach topic is its own module, and every module takes you through the same stages, from understanding to confident mastery: Warm-up, Training, Workout, Progress. You’ll meet these four words throughout the app, and they always mean the same thing.\n\nSome modules offer more than just a Warm-up: in Pip Count, for example, the Cluster section teaches a method of its own for counting positions in groups, fast. More learning sections like this will be added over time."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Backgammon Gym ist kein Spiel — es ist ein Trainingsraum. Hier spielst du keine Partien, sondern übst gezielt die einzelnen Fähigkeiten, die dich am Brett besser machen: den Pip Count, das Zählen in Clustern, die Match-Equity und nach und nach viele weitere.\n\nDer Gedanke dahinter ist der eines Fitnessstudios. Niemand wird stark, indem er nur Wettkämpfe bestreitet — man trainiert einzelne Muskeln, bis sie sitzen. Genauso hier: Statt ein ganzes Match zu spielen und zu hoffen, dass sich deine Schwächen schon irgendwie auswachsen, nimmst du dir eine Fähigkeit vor und trainierst sie, bis sie selbstverständlich wird.\n\nJedes Thema ist als eigenes Modul aufgebaut, und jedes Modul führt dich in denselben Stufen vom Verstehen zum sicheren Können: Warm-up, Training, Workout, Progress. Diese vier Begriffe begegnen dir überall in der App und bedeuten immer dasselbe.\n\nManche Module bieten mehr als nur ein Warm-up: Beim Pip Count etwa lernst du im Cluster-Bereich eine eigene Methode, um Stellungen in Gruppen blitzschnell zu zählen. Solche zusätzlichen Lern-Bereiche kommen mit der Zeit dazu."
+          }
+        }
+      }
+    },
+    "manual.warmup.title": {
+      "comment": "Manual",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Warm-up"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Warm-up"
+          }
+        }
+      }
+    },
+    "manual.warmup.body": {
+      "comment": "Manual",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The Warm-up explains the method. There’s no input and no time pressure here — you read, look at example positions, and get a feel for what it’s about. What is a pip? How do you count a cluster? What does the match equity table tell you?\n\nThink of the Warm-up as the chapter in the textbook you read before getting started yourself. You can come back here any time you want to look something up."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Das Warm-up erklärt dir die Methode. Hier gibt es keine Eingabe und keinen Zeitdruck — du liest, schaust dir Beispiel-Stellungen an und verstehst, worum es geht. Was ist ein Pip? Wie zählt man einen Cluster? Was sagt die Match-Equity-Tabelle aus?\n\nSieh das Warm-up als das Kapitel im Lehrbuch, das du liest, bevor du selbst loslegst. Du kannst jederzeit hierher zurückkehren, wenn du etwas nachschlagen willst."
+          }
+        }
+      }
+    },
+    "manual.training.title": {
+      "comment": "Manual",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Training"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Training"
+          }
+        }
+      }
+    },
+    "manual.training.body": {
+      "comment": "Manual",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "In Training you apply the method yourself for the first time — but with training wheels. In Pip Count the numbers are shown on the board; in Match Equity you can switch on aids like Neil’s Numbers or the Janowski formula. The clock runs in the background but doesn’t pressure you — it’s only shown after you answer.\n\nThe goal isn’t to be fast, but to get the method right with confidence. The aids are there to drill the approach into you until it works without them."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Im Training wendest du die Methode zum ersten Mal selbst an — aber mit Stützrädern. Beim Pip Count werden dir die Zahlen am Brett eingeblendet; bei der Match-Equity kannst du dir Hilfen wie Neil’s Numbers oder die Janowski-Formel dazuschalten. Die Zeit läuft im Hintergrund mit, setzt dich aber nicht unter Druck — sie wird dir erst nach deiner Antwort gezeigt.\n\nDas Ziel ist nicht, möglichst schnell zu sein, sondern die Methode sicher zu beherrschen. Die Hilfsmittel sind dafür da, dir das Vorgehen einzuschleifen, bis es ohne sie funktioniert."
+          }
+        }
+      }
+    },
+    "manual.workout.title": {
+      "comment": "Manual",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Workout"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Workout"
+          }
+        }
+      }
+    },
+    "manual.workout.body": {
+      "comment": "Manual",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The Workout is the test. The training wheels come off: no numbers on the board, no aids — just like at a real tournament table. The time is shown live, because at the real board it matters not only whether you’re right, but how fast.\n\nThat’s the key difference from Training, and it’s deliberate: the aids from Training don’t exist in a real game. If you’re good in the Workout, you’re good at the real board. That’s also why only your Workout results count towards your statistics and achievements — Training has training wheels; the Workout shows what you can really do."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Das Workout ist die Prüfung. Hier fallen die Stützräder weg: keine Zahlen am Brett, keine Hilfen — genau wie am echten Tisch im Turnier. Die Zeit wird live angezeigt, denn am realen Brett zählt nicht nur, ob du richtig liegst, sondern auch, wie schnell.\n\nDas ist der wichtigste Unterschied zum Training, und er ist Absicht: Die Hilfsmittel aus dem Training gibt es im echten Spiel nicht. Wer im Workout gut ist, ist auch am echten Brett gut. Deshalb zählen auch nur deine Workout-Ergebnisse für deine Statistik und deine Erfolge — das Training hat ja Stützräder, das Workout zeigt dein wahres Können."
+          }
+        }
+      }
+    },
+    "manual.progress.title": {
+      "comment": "Manual",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Progress"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Progress"
+          }
+        }
+      }
+    },
+    "manual.progress.body": {
+      "comment": "Manual",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Progress shows how you’re developing. Every completed Workout session is recorded: how many tasks, your hit rate, how fast your answers were. Over time a curve builds up that shows where you’re improving — and where work still waits.\n\nProgress shows this development within a single module. For the overall picture across all modules, see the Statistics and Achievements tiles on the start screen."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Im Progress siehst du, wie du dich entwickelst. Jede abgeschlossene Workout-Sitzung wird festgehalten: wie viele Aufgaben, wie hoch deine Trefferquote, wie schnell deine Antworten. Über die Zeit entsteht eine Kurve, an der du ablesen kannst, wo du besser wirst — und wo noch Arbeit wartet.\n\nProgress zeigt dir diese Entwicklung innerhalb eines einzelnen Moduls. Den Gesamtblick über alle Module geben dir die Kacheln Statistik und Erfolge auf dem Startbildschirm."
+          }
+        }
+      }
+    },
+    "manual.stats.title": {
+      "comment": "Manual",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Statistics & Achievements"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Statistik & Erfolge"
+          }
+        }
+      }
+    },
+    "manual.stats.body": {
+      "comment": "Manual",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "While Progress shows your development within a module, the Statistics and Achievements tiles on the start screen sum up your progress across all modules.\n\nStatistics shows an activity grid at the top — one square per day, coloured by whether you opened the app, trained, or did a workout that day. Below it, for each module, are the key figures split by Training and Workout: how many sessions and tasks, your hit rate, your average time, and your best streak.\n\nAchievements are badges you earn — for a certain number of solved tasks, for long streaks of correct answers, or for fast, correct counting. They deliberately count only your Workout results, since that’s where your true ability shows without aids. Badges you haven’t earned yet show how far you still have to go."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Während Progress dir die Entwicklung innerhalb eines Moduls zeigt, fassen die Kacheln Statistik und Erfolge auf dem Startbildschirm deinen Fortschritt über alle Module zusammen.\n\nDie Statistik zeigt oben ein Aktivitäts-Raster — ein Feld pro Tag, eingefärbt danach, ob du an diesem Tag die App geöffnet, trainiert oder ein Workout gemacht hast. Darunter findest du für jedes Modul die wichtigsten Zahlen, getrennt nach Training und Workout: wie viele Sitzungen und Aufgaben, deine Trefferquote, deine Durchschnittszeit und deine beste Serie.\n\nDie Erfolge sind Abzeichen, die du dir verdienst — etwa für eine bestimmte Zahl gelöster Aufgaben, für lange Serien richtiger Antworten oder für schnelles, korrektes Zählen. Sie zählen bewusst nur deine Workout-Ergebnisse, denn nur dort zeigt sich dein echtes Können ohne Hilfsmittel. Noch nicht erreichte Abzeichen zeigen dir, wie weit du noch bist."
+          }
+        }
+      }
+    },
+    "manual.navigation.title": {
+      "comment": "Manual",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Finding your way around"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zurechtfinden in der App"
+          }
+        }
+      }
+    },
+    "manual.navigation.body": {
+      "comment": "Manual",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Within a module you switch stages using the menu at the top right ([list.bullet]). From there you jump between Warm-up, Training, Workout and Progress.\n\nThe house icon at the top left ([house]) takes you back to the start screen any time. The gear there ([gearshape]) opens the settings — board design, language, and the thresholds at which times and hit rates are coloured green, orange or red."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Innerhalb eines Moduls wechselst du die Stufen über das Menü oben rechts ([list.bullet]). Dort springst du zwischen Warm-up, Training, Workout und Progress hin und her.\n\nDas Haus-Symbol oben links ([house]) bringt dich jederzeit zurück zum Startbildschirm. Über das Zahnrad dort ([gearshape]) erreichst du die Einstellungen — Brett-Design, Sprache, und die Schwellen, ab denen Zeiten und Trefferquoten grün, orange oder rot eingefärbt werden."
+          }
+        }
+      }
     }
   },
   "version": "1.2"

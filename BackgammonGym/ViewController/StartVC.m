@@ -19,6 +19,7 @@
 #import "AchievementsVC.h"
 #import "MoreModulesVC.h"
 #import "CreditsVC.h"
+#import "BGGManualVC.h"
 #import "BGGAchievements.h"
 #import "BGGLocalization.h"
 #import "BGGLanguage.h"
@@ -164,7 +165,17 @@ static NSString * const kBGGStartTileID     = @"StartTile";
                                                                    action:@selector(setupButtonTapped:)];
     setupButton.tintColor = [UIColor colorNamed:@"AccentColor"];
 
-    self.navigationItem.rightBarButtonItem = setupButton;
+    // Manual button, sitting to the left of the gear. In a right-side bar
+    // button array the first item is outermost (right), so the gear stays on
+    // the outside and the manual appears just left of it.
+    UIBarButtonItem *manualButton = [[UIBarButtonItem alloc]
+        initWithImage:[UIImage systemImageNamed:@"book"]
+                style:UIBarButtonItemStylePlain
+               target:self
+               action:@selector(manualButtonTapped:)];
+    manualButton.tintColor = [UIColor colorNamed:@"AccentColor"];
+
+    self.navigationItem.rightBarButtonItems = @[setupButton, manualButton];
 
     [self setupSections];
     [self setupCollectionView];
@@ -621,6 +632,14 @@ didSelectItemAtIndexPath:(NSIndexPath *)indexPath
                        error:(NSError *)error
 {
     [controller dismissViewControllerAnimated:YES completion:nil];
+}
+
+- (void)manualButtonTapped:(UIBarButtonItem *)sender
+{
+    // The manual is a content page with a Home button, like Credits, so it is
+    // pushed onto the navigation stack rather than presented as a sheet.
+    BGGManualVC *manualVC = [[BGGManualVC alloc] init];
+    [self.navigationController pushViewController:manualVC animated:YES];
 }
 
 - (void)setupButtonTapped:(UIBarButtonItem *)sender
