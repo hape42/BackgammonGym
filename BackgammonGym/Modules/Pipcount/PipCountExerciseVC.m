@@ -643,8 +643,22 @@ static const CGFloat kWideThreshold = 700.0;
     // Yellow is the first field (opponent, top of board).
     [self setActiveFieldBlue:NO];
 
+    // Each new position should start at the top, showing the board to count –
+    // after a check we scrolled down to the result, so Next must bring the
+    // view back up rather than leaving the user at the input pad. No-op when
+    // already at the top (first task) or when nothing scrolls (wide/iPad).
+    [self scrollToTop];
+
     // Always measure time. Workout shows it live; Training shows it in the feedback.
     [self startTimer];
+}
+
+// Scrolls the view back to its top edge, accounting for the safe-area inset.
+- (void)scrollToTop
+{
+    [self.contentView layoutIfNeeded];
+    CGFloat topY = -self.scrollView.adjustedContentInset.top;
+    [self.scrollView setContentOffset:CGPointMake(0.0, topY) animated:YES];
 }
 
 #pragma mark - Field selection + number pad
@@ -765,6 +779,31 @@ static const CGFloat kWideThreshold = 700.0;
     self.nextButton.hidden    = NO;
     self.cancelAfterNextButton.hidden = NO;
     self.numberPad.enabled    = NO;
+
+    // On a small portrait screen the feedback, Next and Cancel sit below the
+    // board and the input pad, i.e. off-screen after answering – it's easy to
+    // miss them and think nothing happened (issue #29). Scroll the bottom of
+    // the control group into view so the result and Next are visible without
+    // the user hunting for them. On wide/iPad layouts everything is already
+    // on screen, so this is a harmless no-op.
+    [self scrollResultIntoView];
+}
+
+// Bring the just-revealed result/Next/Cancel group into the visible area.
+- (void)scrollResultIntoView
+{
+    // The buttons were just un-hidden; force a layout pass so their frames are
+    // final before we compute the rect to scroll to.
+    [self.contentView layoutIfNeeded];
+
+    UIView *target = self.cancelAfterNextButton;   // lowest item of the group
+    CGRect rect = [self.scrollView convertRect:target.bounds fromView:target];
+
+    // A little breathing room below the target so it doesn't sit flush at the
+    // very bottom edge.
+    rect = CGRectInset(rect, 0.0, -12.0);
+
+    [self.scrollView scrollRectToVisible:rect animated:YES];
 }
 
 - (void)nextTapped
