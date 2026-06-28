@@ -413,6 +413,16 @@ static NSString * const kBGGStartTileID     = @"StartTile";
         [header configureWithSectionTitle:section.title
                                introTitle:@"Backgammon Gym"   // proper noun, not localized
                                 introBody:BGGLocalizedString(@"start.intro.body")];
+
+#if DEBUG
+        // Developer-only shortcut: long-press the "Backgammon Gym" title to
+        // open the position browser/editor. This is the tool used to maintain
+        // positions.json; it is not meant for users, so it is compiled in only
+        // for DEBUG builds and cannot appear in a TestFlight/App Store build.
+        // (The "Collections" tile stays in the grid as a placeholder for the
+        // future user-facing "create your own positions" feature.)
+        [self attachDeveloperGestureToTitle:header.introTitleLabel];
+#endif
     }
     else
     {
@@ -422,6 +432,34 @@ static NSString * const kBGGStartTileID     = @"StartTile";
     }
     return header;
 }
+
+#if DEBUG
+// Wires (or re-wires) the long-press recognizer on a recycled header's title
+// label. Header views are reused, so we remove any previous recognizer first
+// to avoid stacking several on the same label.
+- (void)attachDeveloperGestureToTitle:(UILabel *)titleLabel
+{
+    for (UIGestureRecognizer *g in [titleLabel.gestureRecognizers copy])
+    {
+        [titleLabel removeGestureRecognizer:g];
+    }
+    titleLabel.userInteractionEnabled = YES;
+    UILongPressGestureRecognizer *lp =
+        [[UILongPressGestureRecognizer alloc] initWithTarget:self
+                                                      action:@selector(developerTitleLongPressed:)];
+    lp.minimumPressDuration = 1.5;   // long enough not to trigger by accident
+    [titleLabel addGestureRecognizer:lp];
+}
+
+- (void)developerTitleLongPressed:(UILongPressGestureRecognizer *)gesture
+{
+    // Fire once, when the press is first recognized.
+    if (gesture.state != UIGestureRecognizerStateBegan) { return; }
+
+    PositionBrowserVC *browser = [[PositionBrowserVC alloc] init];
+    [self.navigationController pushViewController:browser animated:YES];
+}
+#endif
 
 #pragma mark - UICollectionViewDelegateFlowLayout
 
