@@ -694,10 +694,16 @@
 
 - (void)showCountPickerForLength:(NSInteger)length
 {
+    // Explain why a length is chosen at all: a session has a fixed length so
+    // it ends with a recorded result and stats (issue #12).
+    NSString *message = [NSString stringWithFormat:
+                         BGGLocalizedString(@"%ld-point match"), (long)length];
+    message = [message stringByAppendingFormat:@"\n\n%@",
+               BGGLocalizedString(@"session.fixedlength.hint")];
+
     UIAlertController *alert = [UIAlertController
                                 alertControllerWithTitle:BGGLocalizedString(@"How many questions?")
-                                                 message:[NSString stringWithFormat:
-                                                          BGGLocalizedString(@"%ld-point match"), (long)length]
+                                                 message:message
                                           preferredStyle:UIAlertControllerStyleAlert];
 
     for (NSNumber *n in @[@5, @10, @20])

@@ -548,6 +548,11 @@ static const CGFloat kWideThreshold = 700.0;
     NSInteger available = (NSInteger)all.count;
     NSString *message   = [NSString stringWithFormat:BGGLocalizedString(@"%ld positions available"), (long)available];
 
+    // Explain why a length is chosen at all: a session has a fixed length so
+    // it ends with a recorded result and stats (issue #12).
+    message = [message stringByAppendingFormat:@"\n\n%@",
+               BGGLocalizedString(@"session.fixedlength.hint")];
+
     UIAlertController *alert = [UIAlertController
                                 alertControllerWithTitle:BGGLocalizedString(@"How many positions?")
                                                  message:message
