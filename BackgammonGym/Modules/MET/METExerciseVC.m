@@ -811,29 +811,39 @@
     NSDictionary *task = self.tasks[(NSUInteger)self.currentIndex];
     NSInteger leaderScore  = [task[@"leaderScore"] integerValue];
     NSInteger trailerScore = [task[@"trailerScore"] integerValue];
-    NSInteger leaderAway   = [task[@"leaderAway"] integerValue];
-    NSInteger trailerAway  = [task[@"trailerAway"] integerValue];
 
     // Big score, then the away count smaller and muted right after it, e.g.
     // "3 – 1  (2 away – 4 away)".
+    //
+    // The away conversion is a learning aid: at a real tournament table it
+    // isn't shown, so we only append it in modes that offer aids (Training).
+    // In Workout the score line stays bare ("3 – 1"), matching the existing
+    // Training/Workout philosophy (board numbers and MET hints in Training,
+    // none in Workout). The match length stays visible below either way.
     NSString *scoreText = [NSString stringWithFormat:@"%ld – %ld",
                            (long)leaderScore, (long)trailerScore];
-    NSString *awayText  = [NSString stringWithFormat:@"  (%ld %@ – %ld %@)",
-                           (long)leaderAway,  BGGLocalizedString(@"away"),
-                           (long)trailerAway, BGGLocalizedString(@"away")];
 
     NSMutableAttributedString *score =
         [[NSMutableAttributedString alloc] initWithString:scoreText
             attributes:@{ NSForegroundColorAttributeName: [UIColor labelColor] }];
-    [score appendAttributedString:
-        [[NSAttributedString alloc] initWithString:awayText
-            attributes:@{
-                NSForegroundColorAttributeName: [UIColor secondaryLabelColor],
-                NSFontAttributeName: [UIFont systemFontOfSize:18.0 weight:UIFontWeightRegular],
-                // Lift the smaller text so it sits roughly mid-height of the
-                // big score instead of clinging to its baseline.
-                NSBaselineOffsetAttributeName: @(8.0),
-            }]];
+
+    if (self.showsHelpButtons)
+    {
+        NSInteger leaderAway  = [task[@"leaderAway"] integerValue];
+        NSInteger trailerAway = [task[@"trailerAway"] integerValue];
+        NSString *awayText = [NSString stringWithFormat:@"  (%ld %@ – %ld %@)",
+                              (long)leaderAway,  BGGLocalizedString(@"away"),
+                              (long)trailerAway, BGGLocalizedString(@"away")];
+        [score appendAttributedString:
+            [[NSAttributedString alloc] initWithString:awayText
+                attributes:@{
+                    NSForegroundColorAttributeName: [UIColor secondaryLabelColor],
+                    NSFontAttributeName: [UIFont systemFontOfSize:18.0 weight:UIFontWeightRegular],
+                    // Lift the smaller text so it sits roughly mid-height of the
+                    // big score instead of clinging to its baseline.
+                    NSBaselineOffsetAttributeName: @(8.0),
+                }]];
+    }
     self.scoreLabel.attributedText = score;
 
     self.matchLabel.text = [NSString stringWithFormat:BGGLocalizedString(@"in a %ld-point match"),
