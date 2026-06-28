@@ -14,6 +14,7 @@
 #import "METTrainingVC.h"
 #import "METWorkoutVC.h"
 #import "METProgressVC.h"
+#import "BGGLocalization.h"
 #import "BackgammonGym-Swift.h"
 
 typedef NS_ENUM(NSInteger, METSection)
@@ -45,6 +46,23 @@ static NSString * sectionSymbol(METSection section)
         case METSectionTraining: return @"pencil";
         case METSectionWorkout:  return @"dumbbell";
         case METSectionProgress: return @"chart.line.uptrend.xyaxis";
+    }
+}
+
+// Short subtitle shown under Training and Workout in the menu, explaining how
+// the two differ (Training offers hints, Workout removes them). The names
+// alone read as interchangeable, so the distinction is spelled out at the
+// point of choice. Other sections have no subtitle (returns nil).
+static NSString * sectionSubtitle(METSection section)
+{
+    switch (section)
+    {
+        case METSectionTraining:
+            return BGGLocalizedString(@"met.training.menu.subtitle");
+        case METSectionWorkout:
+            return BGGLocalizedString(@"met.workout.menu.subtitle");
+        default:
+            return nil;
     }
 }
 
@@ -170,6 +188,7 @@ static NSString * sectionSymbol(METSection section)
                 [self showSection:section];
             }];
 
+        action.subtitle = sectionSubtitle(section);
         action.state = isActive ? UIMenuElementStateOn : UIMenuElementStateOff;
         [actions addObject:action];
     }

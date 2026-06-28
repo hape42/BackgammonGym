@@ -2794,6 +2794,78 @@
           }
         }
       }
+    },
+    "pipcount.training.menu.subtitle": {
+      "comment": "Pip Count menu",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Practice with pip numbers shown on the board."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Üben mit eingeblendeten Pip-Zahlen am Brett."
+          }
+        }
+      }
+    },
+    "pipcount.workout.menu.subtitle": {
+      "comment": "Pip Count menu",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Real conditions — no numbers on the board."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Echte Bedingungen — keine Zahlen am Brett."
+          }
+        }
+      }
+    },
+    "met.training.menu.subtitle": {
+      "comment": "MET menu",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Practice with optional hints (Neil’s Numbers, Janowski)."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Üben mit zuschaltbaren Hilfen (Neil’s Numbers, Janowski)."
+          }
+        }
+      }
+    },
+    "met.workout.menu.subtitle": {
+      "comment": "MET menu",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Real conditions — no hints."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Echte Bedingungen — keine Hilfen."
+          }
+        }
+      }
     }
   },
   "version": "1.2"
