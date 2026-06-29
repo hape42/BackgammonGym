@@ -833,10 +833,11 @@
         [[NSMutableAttributedString alloc] initWithString:scoreText
             attributes:@{ NSForegroundColorAttributeName: [UIColor labelColor] }];
 
+    NSInteger leaderAway  = [task[@"leaderAway"] integerValue];
+    NSInteger trailerAway = [task[@"trailerAway"] integerValue];
+
     if (self.showsHelpButtons)
     {
-        NSInteger leaderAway  = [task[@"leaderAway"] integerValue];
-        NSInteger trailerAway = [task[@"trailerAway"] integerValue];
         NSString *awayText = [NSString stringWithFormat:@"  (%ld %@ – %ld %@)",
                               (long)leaderAway,  BGGLocalizedString(@"away"),
                               (long)trailerAway, BGGLocalizedString(@"away")];
@@ -850,6 +851,25 @@
                     NSBaselineOffsetAttributeName: @(8.0),
                 }]];
     }
+
+    // When either player is 1-away, the next game is the Crawford game (no
+    // cube). The equity at 1-away is the Crawford value, so flag it on the
+    // task. Unlike the away hint, this is shown in BOTH modes: Crawford is a
+    // property of the position a player always knows at the table, not a
+    // learning aid. "Crawford" is a proper noun and stays untranslated.
+    if (leaderAway == 1 || trailerAway == 1)
+    {
+        NSString *crawfordText = [NSString stringWithFormat:@"  · %@",
+                                  BGGLocalizedString(@"Crawford")];
+        [score appendAttributedString:
+            [[NSAttributedString alloc] initWithString:crawfordText
+                attributes:@{
+                    NSForegroundColorAttributeName: [UIColor colorNamed:@"AccentColor"],
+                    NSFontAttributeName: [UIFont systemFontOfSize:18.0 weight:UIFontWeightSemibold],
+                    NSBaselineOffsetAttributeName: @(8.0),
+                }]];
+    }
+
     self.scoreLabel.attributedText = score;
 
     self.matchLabel.text = [NSString stringWithFormat:BGGLocalizedString(@"in a %ld-point match"),

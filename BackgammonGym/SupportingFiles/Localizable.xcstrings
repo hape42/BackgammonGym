@@ -3148,6 +3148,18 @@
           }
         }
       }
+    },
+    "Crawford": {
+      "comment": "MET – backgammon term, stays English in all languages",
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Crawford"
+          }
+        }
+      }
     }
   },
   "version": "1.2"
