@@ -209,7 +209,12 @@ static NSArray<NSString *> * defaultTags(void)
     self.textView = [self textViewWithPlaceholder:@"Explanation shown next to the board…"];
     [self.contentView addSubview:self.textView];
     [self pinView:self.textView below:textHeader offset:s leading:m trailing:-m inView:self.contentView];
-    [self.textView.heightAnchor constraintEqualToConstant:80.0].active = YES;
+    // The didactic explanations run long (a dozen lines or more). 80pt only
+    // showed three or four lines, so editing them meant peering through a
+    // slot. Give the field room to show most of a typical text at once; the
+    // rest scrolls inside the text view. Press Return for real line breaks –
+    // NSJSONSerialization stores them as \n in positions.json automatically.
+    [self.textView.heightAnchor constraintEqualToConstant:240.0].active = YES;
 
     // ── Difficulty ─────────────────────────────────────────────────────
     UILabel *diffHeader = [self sectionHeader:@"Difficulty"];

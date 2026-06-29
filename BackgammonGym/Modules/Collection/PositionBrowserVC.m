@@ -375,9 +375,31 @@
 - (void)rebuildCards
 {
     // Keep the title in step with what is actually shown: "Positions (N)",
-    // where N is the count after the current tag filter.
-    self.title = [NSString stringWithFormat:@"Positions (%lu)",
-                  (unsigned long)self.filteredPositions.count];
+    // where N is the count after the current tag filter. When some of those
+    // positions have no explanation text yet, append "· M without text" as a
+    // progress hint. Both counts are over the filtered set, so filtering by a
+    // tag shows how many gaps remain within that group. (Note: cluster
+    // positions keep their text in the catalog by convention, so an empty JSON
+    // text there is expected, not a real gap.)
+    NSUInteger missing = 0;
+    for (BGGPositionEntry *e in self.filteredPositions)
+    {
+        NSString *t = [e.text stringByTrimmingCharactersInSet:
+                       [NSCharacterSet whitespaceAndNewlineCharacterSet]];
+        if (t.length == 0) { missing++; }
+    }
+
+    if (missing > 0)
+    {
+        self.title = [NSString stringWithFormat:@"Positions (%lu · %lu without text)",
+                      (unsigned long)self.filteredPositions.count,
+                      (unsigned long)missing];
+    }
+    else
+    {
+        self.title = [NSString stringWithFormat:@"Positions (%lu)",
+                      (unsigned long)self.filteredPositions.count];
+    }
 
     // Remove old cards. Copy the array first – removing while iterating over
     // arrangedSubviews skips elements and leaves stale cards behind.
