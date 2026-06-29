@@ -2130,13 +2130,13 @@
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Rick Janowskis Formel gibt die Match-Equity des Führenden direkt an:\n\n  E = 50 + (D × 85) ÷ (T + 6)\n\nwobei E die Equity des Führenden in Prozent ist, D die Differenz der Stände (noch benötigte Punkte) und T der Away-Score des Verfolgers — die Punkte, die der Zurückliegende noch braucht.\n\nBeispiel: ein 11-Punkte-Match bei 5-away gegen 9-away. Die Differenz ist D = 9 − 5 = 4 und T = 9, also E = 50 + (4 × 85) ÷ (9 + 6) = 50 + 340 ÷ 15 ≈ 72,7 %. Woolseys Tabelle gibt hier 73 % an.\n\nSie liegt meist innerhalb von etwa 1 %. Die Ausnahme ist, wenn der Führende nur noch einen oder zwei Punkte braucht — dort kann sie Ausreißer erzeugen, also vertraue an diesen Ständen lieber den auswendig gelernten Werten."
+            "value": "Rick Janowskis Formel gibt die Match-Equity des Führenden direkt an:\n\n  E = 50 + (D × 85) ÷ (T + 6)\n\nwobei E die Equity des Führenden in Prozent ist, D die Differenz der Stände (noch benötigte Punkte) und T der Away-Score des Verfolgers — die Punkte, die der Zurückliegende noch braucht.\n\nBeispiel: ein 11-Punkte-Match bei 5-away gegen 9-away. Die Differenz ist D = 9 − 5 = 4 und T = 9, also E = 50 + (4 × 85) ÷ (9 + 6) = 50 + 340 ÷ 15 ≈ 72,7 %. Die eingebaute Tabelle gibt hier 73 % an.\n\nSie liegt meist innerhalb von etwa 1 %. Die Ausnahme ist, wenn der Führende nur noch einen oder zwei Punkte braucht — dort kann sie Ausreißer erzeugen, also vertraue an diesen Ständen lieber den auswendig gelernten Werten."
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Rick Janowski's formula gives the leader's match equity directly:\n\n  E = 50 + (D × 85) ÷ (T + 6)\n\nwhere E is the leader's equity in percent, D is the difference in scores (points-to-go), and T is the trailer's away-score — the points the player who is behind still needs.\n\nExample: an 11-point match standing 5-away vs 9-away. The difference is D = 9 − 5 = 4 and T = 9, so E = 50 + (4 × 85) ÷ (9 + 6) = 50 + 340 ÷ 15 ≈ 72.7%. Woolsey's table gives 73% here.\n\nIt's usually within about 1%. The exception is when the leader needs only one or two points — there it can produce outliers, so trust the memorized values at those scores instead."
+            "value": "Rick Janowski's formula gives the leader's match equity directly:\n\n  E = 50 + (D × 85) ÷ (T + 6)\n\nwhere E is the leader's equity in percent, D is the difference in scores (points-to-go), and T is the trailer's away-score — the points the player who is behind still needs.\n\nExample: an 11-point match standing 5-away vs 9-away. The difference is D = 9 − 5 = 4 and T = 9, so E = 50 + (4 × 85) ÷ (9 + 6) = 50 + 340 ÷ 15 ≈ 72.7%. The built-in table gives 73% here.\n\nIt's usually within about 1%. The exception is when the leader needs only one or two points — there it can produce outliers, so trust the memorized values at those scores instead."
           }
         }
       }
@@ -2274,13 +2274,13 @@
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Dein Away-Score links untereinander, der deines Gegners oben quer. Jede Zelle ist deine Match-Gewinnchance in Prozent."
+            "value": "Dein Away-Score links untereinander, der deines Gegners oben quer. Jede Zelle ist deine Match-Gewinnchance in Prozent. Dies ist die Rockwell-Kazaross-Tabelle. Zeile 1 und Spalte 1 sind die Crawford-Partie; Post-Crawford-Werte zeigt diese gekürzte Tabelle nicht."
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Your away-score down the left, your opponent's across the top. Each cell is your match-winning chance in percent."
+            "value": "Your away-score down the left, your opponent's across the top. Each cell is your match-winning chance in percent. This is the Rockwell-Kazaross table. Row 1 and column 1 are the Crawford game; post-Crawford equities aren't shown in this abridged table."
           }
         }
       }
