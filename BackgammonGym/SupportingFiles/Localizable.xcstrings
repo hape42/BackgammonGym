@@ -2166,13 +2166,13 @@
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Für eine Zahl dazwischen interpolierst du (7-away liegt genau zwischen 6 und 8, ist also 6½ wert). Über den trivialen Anfang 3/4/5/6 hinaus musst du dir nur merken: „8 ist 6, 11 ist 5, 15 ist 4.“\n\nBeispiel: Du führst 3–0 in einem 7-Punkte-Match. Der Verfolger braucht 7, wert 6½ pro Punkt. Dein Vorsprung ist 3 Punkte, also 3 × 6½ = 19½ über 50 % → etwa 69½ %. Die Tabelle sagt 70 % — nah genug, um danach zu handeln.\n\nNeils Numbers sind bemerkenswert genau, solange der Führende noch 3 oder mehr Punkte braucht. Sie weichen ab, wenn der Führende nur noch 1 oder 2 Punkte entfernt ist, daher lohnt es sich, diese wenigen Stände exakt zu lernen."
+            "value": "Für eine Zahl dazwischen interpolierst du (7-away liegt genau zwischen 6 und 8, ist also 6½ wert). Über den trivialen Anfang 3/4/5/6 hinaus musst du dir nur merken: „8 ist 6, 11 ist 5, 15 ist 4.“\n\nBeispiel: Du führst 3–0 in einem 7-Punkte-Match (4-away – 7-away). Der Verfolger braucht 7, wert 6½ pro Punkt. Dein Vorsprung ist 3 Punkte, also 3 × 6½ = 19½ über 50 % → etwa 69½ %. Die Tabelle sagt 70 % — nah genug, um danach zu handeln.\n\nNeils Numbers sind bemerkenswert genau, solange der Führende noch 3 oder mehr Punkte braucht. Sie weichen ab, wenn der Führende nur noch 1 oder 2 Punkte entfernt ist, daher lohnt es sich, diese wenigen Stände exakt zu lernen."
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "For an in-between number, interpolate (7-away sits halfway between 6 and 8, so it's worth 6½). Beyond the trivial 3/4/5/6 start, the only thing to remember is “8 is 6, 11 is 5, 15 is 4.”\n\nExample: you lead 3–0 in a 7-point match. The trailer needs 7, worth 6½ per point. Your lead is 3 points, so 3 × 6½ = 19½ over 50% → about 69½%. The table says 70% — close enough to act on.\n\nNeil's Numbers are remarkably accurate as long as the leader still needs 3 or more points. They drift when the leader is only 1 or 2 points away, so it's worth learning those few scores exactly."
+            "value": "For an in-between number, interpolate (7-away sits halfway between 6 and 8, so it's worth 6½). Beyond the trivial 3/4/5/6 start, the only thing to remember is “8 is 6, 11 is 5, 15 is 4.”\n\nExample: you lead 3–0 in a 7-point match (4-away – 7-away). The trailer needs 7, worth 6½ per point. Your lead is 3 points, so 3 × 6½ = 19½ over 50% → about 69½%. The table says 70% — close enough to act on.\n\nNeil's Numbers are remarkably accurate as long as the leader still needs 3 or more points. They drift when the leader is only 1 or 2 points away, so it's worth learning those few scores exactly."
           }
         }
       }
@@ -2346,13 +2346,13 @@
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Am deutlichsten zahlt es sich bei Cube-Entscheidungen aus. Stell dir vor, es steht in einem 11-Punkte-Match 5–5 und dein Gegner doppelt auf 4. Gibst du auf, steht es 5–7, wo deine Match-Gewinnchance bei etwa 36 % liegt. Ein Take lohnt sich also nur, wenn du erwartest, dieses Spiel zu mehr als 36 % zu gewinnen — weit über den 25 %, die du im Geldspiel bräuchtest. Ohne die Tabelle rätst du; mit ihr hast du einen konkreten Schwellenwert zum Vergleichen.\\n\\nDieselben Zahlen fließen in feinere Zug- und Cube-Entscheidungen ein, die vom Spielstand abhängen. Deine Equity zu kennen verwandelt vage Intuition in eine Zahl, mit der du tatsächlich argumentieren kannst — ein großer Teil des Schritts vom fortgeschrittenen zum starken Match-Spiel."
+            "value": "Am deutlichsten zahlt es sich bei Cube-Entscheidungen aus. Stell dir vor, es steht in einem 11-Punkte-Match 5–5 (6-away – 6-away), dein Gegner besitzt den Cube auf 2 und redoppelt auf 4. Gibst du auf, steht es 5–7 (6-away – 4-away), wo deine Match-Gewinnchance bei etwa 36 % liegt. Ein Take lohnt sich also nur, wenn du erwartest, dieses Spiel zu mehr als 36 % zu gewinnen — weit über den 25 %, die du im Geldspiel bräuchtest. Ohne die Tabelle rätst du; mit ihr hast du einen konkreten Schwellenwert zum Vergleichen.\\n\\nDieselben Zahlen fließen in feinere Zug- und Cube-Entscheidungen ein, die vom Spielstand abhängen. Deine Equity zu kennen verwandelt vage Intuition in eine Zahl, mit der du tatsächlich argumentieren kannst — ein großer Teil des Schritts vom fortgeschrittenen zum starken Match-Spiel."
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "The clearest payoff is in cube decisions. Imagine the score is 5–5 in an 11-point match and your opponent doubles to 4. If you pass, the score becomes 5–7, where your match-winning chances are about 36%. So taking only makes sense if you expect to win this game more than 36% of the time — far above the 25% you'd need in a money game. Without the table, you're guessing; with it, you have a concrete threshold to compare against.\\n\\nThe same numbers feed into subtler checker and cube choices that depend on the score. Knowing your equity turns vague intuition into a number you can actually reason with — a big part of moving from intermediate to advanced match play."
+            "value": "The clearest payoff is in cube decisions. Imagine the score is 5–5 in an 11-point match (6-away – 6-away), your opponent owns the cube at 2 and redoubles to 4. If you pass, the score becomes 5–7 (6-away – 4-away), where your match-winning chances are about 36%. So taking only makes sense if you expect to win this game more than 36% of the time — far above the 25% you'd need in a money game. Without the table, you're guessing; with it, you have a concrete threshold to compare against.\\n\\nThe same numbers feed into subtler checker and cube choices that depend on the score. Knowing your equity turns vague intuition into a number you can actually reason with — a big part of moving from intermediate to advanced match play."
           }
         }
       }
