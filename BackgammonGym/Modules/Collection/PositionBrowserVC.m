@@ -172,6 +172,12 @@
 @property (nonatomic, strong) NSArray<BGGPositionEntry *> *allPositions;
 @property (nonatomic, strong) NSArray<BGGPositionEntry *> *filteredPositions;
 @property (nonatomic, strong)  NSMutableSet<NSString *>      *activeTags;
+// Extra filter dimensions beyond tags, combined with AND. noTextOnly keeps
+// only positions whose explanation is empty; activeDifficulty (0 = any, or
+// 1/2/3) keeps only that difficulty. Both are driven by special chips marked
+// with a "§" prefix in their identifier so they don't collide with real tags.
+@property (nonatomic, assign)  BOOL                          noTextOnly;
+@property (nonatomic, assign)  NSInteger                     activeDifficulty;
 // Map from positionID to entry for edit/delete button callbacks
 @property (nonatomic, strong) NSMutableDictionary<NSString *, BGGPositionEntry *> *entryByPositionID;
 @end
@@ -205,6 +211,8 @@
     self.allPositions      = [[PositionDatabase sharedDatabase] allPositions];
     self.filteredPositions = self.allPositions;
     self.activeTags        = [NSMutableSet set];
+    self.noTextOnly        = NO;
+    self.activeDifficulty  = 0;
 
     [self buildTagBar];
     [self buildScrollView];
@@ -247,6 +255,13 @@
     {
         [self.tagStack addArrangedSubview:[self tagChipWithTitle:tag tag:tag]];
     }
+
+    // Special, non-tag filters (AND-combined with the tags). Marked with a
+    // "§" prefix so tagChipTapped: can tell them apart from real tags.
+    [self.tagStack addArrangedSubview:[self tagChipWithTitle:@"no text" tag:@"§notext"]];
+    [self.tagStack addArrangedSubview:[self tagChipWithTitle:@"D1" tag:@"§diff1"]];
+    [self.tagStack addArrangedSubview:[self tagChipWithTitle:@"D2" tag:@"§diff2"]];
+    [self.tagStack addArrangedSubview:[self tagChipWithTitle:@"D3" tag:@"§diff3"]];
 }
 
 - (UIButton *)tagChipWithTitle:(NSString *)title tag:(nullable NSString *)tag
@@ -290,8 +305,20 @@
 
     if (tag.length == 0)
     {
-        // The "All" chip clears the selection.
+        // The "All" chip clears everything: tags and the special filters.
         [self.activeTags removeAllObjects];
+        self.noTextOnly       = NO;
+        self.activeDifficulty = 0;
+    }
+    else if ([tag isEqualToString:@"§notext"])
+    {
+        self.noTextOnly = !self.noTextOnly;   // toggle
+    }
+    else if ([tag hasPrefix:@"§diff"])
+    {
+        NSInteger d = [[tag substringFromIndex:5] integerValue];   // 1/2/3
+        // Tapping the active difficulty turns it off; another replaces it.
+        self.activeDifficulty = (self.activeDifficulty == d) ? 0 : d;
     }
     else if ([self.activeTags containsObject:tag])
     {
@@ -307,39 +334,87 @@
     [self rebuildCards];
 }
 
-// Highlights every chip whose tag is active; the "All" chip is highlighted
-// only when no tag is selected.
+// Highlights every chip whose filter is active; the "All" chip is highlighted
+// only when nothing at all is selected (no tags, no text filter, no difficulty).
 - (void)refreshChipStyles
 {
+    BOOL nothingActive = (self.activeTags.count == 0
+                          && !self.noTextOnly
+                          && self.activeDifficulty == 0);
+
     for (UIView *v in self.tagStack.arrangedSubviews)
     {
         if (![v isKindOfClass:[UIButton class]]) { continue; }
         UIButton *chip = (UIButton *)v;
         NSString *chipTag = chip.accessibilityIdentifier;
-        BOOL isActive = (chipTag.length == 0)
-            ? (self.activeTags.count == 0)
-            : [self.activeTags containsObject:chipTag];
+
+        BOOL isActive;
+        if (chipTag.length == 0)
+        {
+            isActive = nothingActive;                      // "All"
+        }
+        else if ([chipTag isEqualToString:@"§notext"])
+        {
+            isActive = self.noTextOnly;
+        }
+        else if ([chipTag hasPrefix:@"§diff"])
+        {
+            isActive = (self.activeDifficulty == [[chipTag substringFromIndex:5] integerValue]);
+        }
+        else
+        {
+            isActive = [self.activeTags containsObject:chipTag];
+        }
         [self applyChipStyle:chip active:isActive];
     }
 }
 
-// Filters to positions that carry *all* selected tags (AND). No selection
-// shows everything.
+// Filters to positions matching ALL active criteria (AND): every selected
+// tag, plus the no-text filter and the difficulty filter when set. With
+// nothing selected, shows everything.
 - (void)applyFilter
 {
-    if (self.activeTags.count == 0)
-    {
-        self.filteredPositions = self.allPositions;
-        return;
-    }
-
     NSMutableArray<NSPredicate *> *subs = [NSMutableArray array];
+
     for (NSString *tag in self.activeTags)
     {
         [subs addObject:[NSPredicate predicateWithFormat:@"tags CONTAINS %@", tag]];
     }
-    NSPredicate *all = [NSCompoundPredicate andPredicateWithSubpredicates:subs];
-    self.filteredPositions = [self.allPositions filteredArrayUsingPredicate:all];
+
+    if (self.activeDifficulty != 0)
+    {
+        [subs addObject:[NSPredicate predicateWithFormat:@"difficulty == %ld",
+                         (long)self.activeDifficulty]];
+    }
+
+    if (subs.count == 0 && !self.noTextOnly)
+    {
+        self.filteredPositions = self.allPositions;   // nothing selected
+        return;
+    }
+
+    NSArray<BGGPositionEntry *> *result = self.allPositions;
+    if (subs.count > 0)
+    {
+        NSPredicate *all = [NSCompoundPredicate andPredicateWithSubpredicates:subs];
+        result = [result filteredArrayUsingPredicate:all];
+    }
+
+    // "no text" isn't a key-path predicate (it needs trimming), so filter it
+    // in code on top of the predicate result.
+    if (self.noTextOnly)
+    {
+        NSMutableArray<BGGPositionEntry *> *withoutText = [NSMutableArray array];
+        for (BGGPositionEntry *e in result)
+        {
+            NSString *t = [e.text stringByTrimmingCharactersInSet:
+                           [NSCharacterSet whitespaceAndNewlineCharacterSet]];
+            if (t.length == 0) { [withoutText addObject:e]; }
+        }
+        result = withoutText;
+    }
+
+    self.filteredPositions = result;
 }
 
 #pragma mark - Scroll view + cards
