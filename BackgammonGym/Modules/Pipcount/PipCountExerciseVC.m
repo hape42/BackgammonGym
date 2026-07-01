@@ -104,6 +104,10 @@ static const CGFloat kWideThreshold = 700.0;
 @property (nonatomic, strong) NSArray<BGGPositionEntry *> *positions;
 @property (nonatomic, assign) NSInteger currentIndex;
 @property (nonatomic, assign) NSInteger correctCount;
+// Total answers checked so far (correct + wrong). Drives the "Finish session"
+// zero-attempt case: finishing before answering anything exits cleanly without
+// saving an empty session.
+@property (nonatomic, assign) NSInteger attemptsMade;
 @property (nonatomic, assign) NSInteger totalCount;
 
 // The Core Data workout for the running session (nil until started).
@@ -285,8 +289,11 @@ static const CGFloat kWideThreshold = 700.0;
     self.submitButton.hidden = YES;   // replaced by the pad's OK key
     [self.controlsView addSubview:self.submitButton];
 
-    // Cancel button (visible under Check)
-    self.cancelButton = [self cancelButtonWithAction:@selector(cancelTapped)];
+    // "Finish session" button (visible under the pad). Replaces the old Cancel:
+    // same position and dezent styling, but ends the session with a result
+    // (or exits cleanly at zero attempts) instead of discarding.
+    self.cancelButton = [self cancelButtonWithAction:@selector(finishSessionTapped)];
+    [self.cancelButton setTitle:BGGLocalizedString(@"Finish session") forState:UIControlStateNormal];
 
     // Feedback label
     self.feedbackLabel = [[UILabel alloc] init];
@@ -327,8 +334,9 @@ static const CGFloat kWideThreshold = 700.0;
     self.nextButton.backgroundColor = [UIColor systemGrayColor];
     self.nextButton.hidden = YES;
 
-    // Cancel after Next – hidden until after Check
-    self.cancelAfterNextButton = [self cancelButtonWithAction:@selector(cancelTapped)];
+    // "Finish session" after Next – same as above, shown after a check.
+    self.cancelAfterNextButton = [self cancelButtonWithAction:@selector(finishSessionTapped)];
+    [self.cancelAfterNextButton setTitle:BGGLocalizedString(@"Finish session") forState:UIControlStateNormal];
     self.cancelAfterNextButton.hidden = YES;
 
     // Fixed heights for the buttons (the stack sets width via fill alignment).
@@ -640,11 +648,78 @@ static const CGFloat kWideThreshold = 700.0;
 
 #pragma mark - Count picker
 
+// Step 1 of the setup flow: pick a difficulty. Only difficulties that
+// actually have positions are offered, each with its count in parentheses,
+// plus "All" across every difficulty. Choosing one leads to the count picker
+// (step 2) with just those positions. Cancel here leaves the exercise, exactly
+// as the old single picker's Cancel did.
 - (void)showCountPicker
 {
     NSArray<BGGPositionEntry *> *all = [[PositionDatabase sharedDatabase]
                                         positionsForTags:[self requiredTags]];
-    NSInteger available = (NSInteger)all.count;
+
+    // Count positions per difficulty (1..3) from the tag-filtered set. Doing it
+    // in code keeps this independent of the exact database query signature.
+    NSCountedSet *byDifficulty = [[NSCountedSet alloc] init];
+    for (BGGPositionEntry *entry in all)
+    {
+        [byDifficulty addObject:@(entry.difficulty)];
+    }
+
+    UIAlertController *alert = [UIAlertController
+                                alertControllerWithTitle:BGGLocalizedString(@"Which difficulty?")
+                                                 message:nil
+                                          preferredStyle:UIAlertControllerStyleAlert];
+
+    // Difficulty labels. The numeric prefix stays; the word is localized.
+    NSDictionary<NSNumber *, NSString *> *names = @{
+        @1 : BGGLocalizedString(@"1 – Easy"),
+        @2 : BGGLocalizedString(@"2 – Medium"),
+        @3 : BGGLocalizedString(@"3 – Hard"),
+    };
+
+    for (NSNumber *level in @[@1, @2, @3])
+    {
+        NSInteger count = (NSInteger)[byDifficulty countForObject:level];
+        if (count == 0) { continue; }   // offer only difficulties that exist
+
+        NSString *title = [NSString stringWithFormat:@"%@ (%ld)", names[level], (long)count];
+        [alert addAction:[UIAlertAction actionWithTitle:title
+                                                  style:UIAlertActionStyleDefault
+                                                handler:^(UIAlertAction *a)
+        {
+            NSPredicate *p = [NSPredicate predicateWithFormat:@"difficulty == %ld", (long)level.integerValue];
+            NSArray *filtered = [all filteredArrayUsingPredicate:p];
+            [self showCountPickerForPositions:filtered];
+        }]];
+    }
+
+    // All difficulties together.
+    NSString *allTitle = [NSString stringWithFormat:BGGLocalizedString(@"All (%ld)"), (long)all.count];
+    [alert addAction:[UIAlertAction actionWithTitle:allTitle
+                                              style:UIAlertActionStyleDefault
+                                            handler:^(UIAlertAction *a)
+    {
+        [self showCountPickerForPositions:all];
+    }]];
+
+    [alert addAction:[UIAlertAction actionWithTitle:BGGLocalizedString(@"Cancel")
+                                              style:UIAlertActionStyleCancel
+                                            handler:^(UIAlertAction *a)
+    {
+        [self returnFromExercise];
+    }]];
+
+    [self presentViewController:alert animated:YES completion:nil];
+}
+
+// Step 2 of the setup flow: pick how many positions to practice, from the
+// positions of the difficulty chosen in step 1. Fixed stages (5/10/25) are
+// offered only when the pool is large enough, always with "All (N)". Cancel
+// returns to the exercise exit, as before.
+- (void)showCountPickerForPositions:(NSArray<BGGPositionEntry *> *)positions
+{
+    NSInteger available = (NSInteger)positions.count;
     NSString *message   = [NSString stringWithFormat:BGGLocalizedString(@"%ld positions available"), (long)available];
 
     // Explain why a length is chosen at all: a session has a fixed length so
@@ -657,16 +732,16 @@ static const CGFloat kWideThreshold = 700.0;
                                                  message:message
                                           preferredStyle:UIAlertControllerStyleAlert];
 
-    for (NSNumber *n in @[@5, @10, @20])
+    for (NSNumber *n in @[@5, @10, @25])
     {
         NSInteger count = n.integerValue;
-        if (count > available) { continue; }
+        if (count >= available) { continue; }   // skip stages at/above the pool; "All" covers the rest
         [alert addAction:[UIAlertAction
                           actionWithTitle:[NSString stringWithFormat:BGGLocalizedString(@"%ld positions"), (long)count]
                                     style:UIAlertActionStyleDefault
                                   handler:^(UIAlertAction *a)
         {
-            [self startSessionWithCount:count positions:all];
+            [self startSessionWithCount:count positions:positions];
         }]];
     }
 
@@ -675,7 +750,7 @@ static const CGFloat kWideThreshold = 700.0;
                                 style:UIAlertActionStyleDefault
                               handler:^(UIAlertAction *a)
     {
-        [self startSessionWithCount:available positions:all];
+        [self startSessionWithCount:available positions:positions];
     }]];
 
     [alert addAction:[UIAlertAction actionWithTitle:BGGLocalizedString(@"Cancel")
@@ -702,6 +777,7 @@ static const CGFloat kWideThreshold = 700.0;
     self.positions    = [[shuffled subarrayWithRange:NSMakeRange(0, (NSUInteger)count)] copy];
     self.currentIndex = 0;
     self.correctCount = 0;
+    self.attemptsMade = 0;
     self.totalCount   = count;
 
     // Open a workout for this session. Attempts are added per check.
@@ -909,6 +985,7 @@ static const CGFloat kWideThreshold = 700.0;
     BOOL bothOK  = blueOK && yellowOK;
 
     if (bothOK) { self.correctCount++; }
+    self.attemptsMade++;
 
     // Persist this attempt immediately (crash-safe). Translate the internal
     // Blue/Yellow board sides to the Player/Opponent storage convention:
@@ -991,10 +1068,23 @@ static const CGFloat kWideThreshold = 700.0;
     }
 }
 
-- (void)cancelTapped
+// "Finish session" – the single in-session exit (replacing the old Cancel).
+// With at least one answer checked, it ends the session like a fixed-length
+// session reaching its target: stop the timer and show the summary, which
+// saves the session as completed. With no answers yet, there is nothing to
+// record, so it leaves cleanly without saving an empty session – returning to
+// the previous section, exactly as the old Cancel did.
+- (void)finishSessionTapped
 {
     [self stopTimer];
-    [self returnFromExercise];
+    if (self.attemptsMade == 0)
+    {
+        [self returnFromExercise];
+    }
+    else
+    {
+        [self showSummary];
+    }
 }
 
 - (void)showFeedbackBlueOK:(BOOL)blueOK
@@ -1118,11 +1208,14 @@ static const CGFloat kWideThreshold = 700.0;
                        checkAndAwardForModule:[self moduleIdentifier]];
     }
 
+    // Score over the answers actually checked, not the planned target. For a
+    // session played to the end these are equal; for an early "Finish session"
+    // this reports the real ratio (e.g. 2 of 3), not 2 of a planned 25.
     NSString *message = [NSString stringWithFormat:
                          BGGLocalizedString(@"%ld of %ld correct (%.0f%%)"),
-                         (long)self.correctCount, (long)self.totalCount,
-                         self.totalCount > 0
-                             ? (double)self.correctCount / self.totalCount * 100.0
+                         (long)self.correctCount, (long)self.attemptsMade,
+                         self.attemptsMade > 0
+                             ? (double)self.correctCount / self.attemptsMade * 100.0
                              : 0.0];
 
     // If this workout unlocked new achievements, name them under the result
