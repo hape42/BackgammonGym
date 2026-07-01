@@ -386,7 +386,14 @@ static NSArray<NSString *> * defaultTags(void)
     if (state)
     {
         self.boardView.boardState  = state;
-        self.boardStatusLabel.text = @"✓ Valid position ID";
+        // Show both pip counts next to the valid-ID confirmation, so the
+        // explanation text can be checked against the real totals while
+        // writing it. Player = blue (bottom, the user), Opponent = yellow.
+        NSInteger playerPips   = [state pipCountForPlayer:BGGPlayerBlue];
+        NSInteger opponentPips = [state pipCountForPlayer:BGGPlayerYellow];
+        self.boardStatusLabel.text =
+            [NSString stringWithFormat:@"✓ Valid position ID   ·   Player %ld   ·   Opponent %ld",
+             (long)playerPips, (long)opponentPips];
         self.boardStatusLabel.textColor = [UIColor systemGreenColor];
     }
     else

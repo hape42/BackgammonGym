@@ -75,6 +75,19 @@
     [idView updateWithID:entry.positionID];
     [self addSubview:idView];
 
+    // Pip counts for both players, computed from the board. Handy for checking
+    // the explanation text against the real totals. Player = blue (bottom),
+    // Opponent = yellow (top).
+    BGGBoardState *pipState = [entry boardState];
+    UILabel *pipLabel = [[UILabel alloc] init];
+    pipLabel.font          = [UIFont monospacedDigitSystemFontOfSize:13.0 weight:UIFontWeightRegular];
+    pipLabel.textColor     = [UIColor secondaryLabelColor];
+    pipLabel.translatesAutoresizingMaskIntoConstraints = NO;
+    pipLabel.text = [NSString stringWithFormat:@"Pip count   ·   Player %ld   ·   Opponent %ld",
+                     (long)[pipState pipCountForPlayer:BGGPlayerBlue],
+                     (long)[pipState pipCountForPlayer:BGGPlayerYellow]];
+    [self addSubview:pipLabel];
+
     // Edit / Delete buttons
     UIButton *editBtn = [UIButton buttonWithType:UIButtonTypeSystem];
     [editBtn setTitle:@"Edit" forState:UIControlStateNormal];
@@ -118,8 +131,13 @@
         [idView.leadingAnchor constraintEqualToAnchor:self.leadingAnchor constant:m],
         [idView.trailingAnchor constraintEqualToAnchor:self.trailingAnchor constant:-m],
 
+        // Pip count line
+        [pipLabel.topAnchor     constraintEqualToAnchor:idView.bottomAnchor constant:6.0],
+        [pipLabel.leadingAnchor constraintEqualToAnchor:self.leadingAnchor constant:m],
+        [pipLabel.trailingAnchor constraintEqualToAnchor:self.trailingAnchor constant:-m],
+
         // Edit / Delete buttons
-        [editBtn.topAnchor    constraintEqualToAnchor:idView.bottomAnchor constant:4.0],
+        [editBtn.topAnchor    constraintEqualToAnchor:pipLabel.bottomAnchor constant:4.0],
         [editBtn.leadingAnchor constraintEqualToAnchor:self.leadingAnchor constant:m],
         [editBtn.bottomAnchor constraintEqualToAnchor:self.bottomAnchor constant:-m],
 
