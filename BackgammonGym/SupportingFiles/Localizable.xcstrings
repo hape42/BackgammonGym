@@ -3160,6 +3160,30 @@
           }
         }
       }
+    },
+    "Show explanation": {
+      "comment": "Pip Count training – explanation toggle",
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Erklärung zeigen"
+          }
+        }
+      }
+    },
+    "Hide explanation": {
+      "comment": "Pip Count training – explanation toggle",
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Erklärung ausblenden"
+          }
+        }
+      }
     }
   },
   "version": "1.2"

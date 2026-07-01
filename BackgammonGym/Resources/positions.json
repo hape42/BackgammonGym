@@ -36,7 +36,7 @@
       ],
       "caption" : "Typical Holding game",
       "note" : "Test",
-      "text" : "My checkers: I know there are 42 pips on the closed board. Two checkers are missing on the 5th, so 32 pips. 1 checker on the 10th. That makes 42. 2 checkers on the 21st = 42. That makes 84. 1 checker on the 16th, that makes 100, + 1 checker on the 13th = total 113\n\nThere are certainly several ways to count the opponent’s checkers. For example, I mentally move the checker from 8 and 6 to 7, giving 11 × 7 = 77. \n2 checker on 5 = 87. \n2 checker on 2 = 91.\n\nWith a little practice, counting a position like this takes less than 5 seconds.\n"
+      "text" : "Players checkers: We know there are 42 pips on the closed board. Two checkers are missing on the 5th, so 32 pips. 1 checker on the 10th. That makes 42. 2 checkers on the 21st = 42. That makes 84. 1 checker on the 16th, that makes 100, + 1 checker on the 13th = total 113\n\nThere are certainly several ways to count the opponent’s checkers. For example, we mentally move the checker from 8 and 6 to 7, giving 11 × 7 = 77. \n2 checker on 5 = 87. \n2 checker on 2 = 91.\n\nWith a little practice, counting a position like this takes less than 5 seconds.\n"
     },
     {
       "difficulty" : 1,
@@ -172,15 +172,16 @@
       "text" : "Player's checker can be easily counted in three clusters: 40 (eight 5's) + 33 (RP4 + 3 pips) + 64 (three 20's + 4) = 137.\n\nDivide Opponent's checkers into three clusters: 44 (5-prime + 4 pips forward, 2 each from the 7-point to the 5-point) + 33 (three 10's + 3 pips from 13 to 10) + 44 (two 20's + 4) = 121.\n\nPlayer = 137. Opponent = 121."
     },
     {
-      "difficulty" : 1,
+      "difficulty" : 3,
       "id" : "NrtFABTYtuMAIA:MIHlADAAEAAE",
       "tags" : [
         "pipcount",
-        "training"
+        "training",
+        "wip"
       ],
       "caption" : "",
       "note" : "",
-      "text" : ""
+      "text" : "Pipcount Player: Opponent:\n\nOne way to count: Player: mental shifting 2 checkers 7 -> 6 and 2 checkers 5 -> 6 = 7x6 ‎ = 42\n+ 1 checker on 8 = 50\n+ 1 checker on 11 = 61\n+ checkers on 2 and 3 = 10  ; 61 +10 ‎ = 71\n+ 45 (checkers on 23 and 22) 71+45 = 116\n\nOpponent:\n5 prime over 6 = 10x6 ‎ = 60\n+ one checker on 8 = 68\n+ 3 checkers on 11 = 33 -> 68 + 33 ‎ = 101\n+1 checker on 24 = 101+24 =\u001d 125\n"
     },
     {
       "difficulty" : 1,
@@ -195,7 +196,7 @@
       "text" : "Player's spare checkers on the 6- and 8- points are on the same side of the board. By shifting them one pip in opposite directions to the 7-point, a 5-prime is formed. Player's position can easily be counted in two clusters: 70 (5-prime) + 65 (five 13's) = 135.\n\nOpponent's spare checkers on the 8- and 13-points are on opposite sides of the board. By shifting them in the same direction, in this case left-to-right, a 5-prime is formed (RP1) and RP7 is also formed. Opponent's position can then be counted in three clusters: 60 + 40 + 42 (two 20's + 2) = 142.\n\nPlayer = 135. Opponent = 142."
     },
     {
-      "difficulty" : 1,
+      "difficulty" : 3,
       "id" : "u9kFwADWOQcHAA:cIk2AQAAEAAE",
       "tags" : [
         "training",
@@ -204,10 +205,10 @@
       ],
       "caption" : "",
       "note" : "",
-      "text" : ""
+      "text" : "One way to count: Player: mental shifting one checker from 6 to 5, one checker from 4 to 5 ; one checker from 8 to 3, we get a five prime with center over 4. We know this is 10x4 ‎ = 40 . Don’t forget to add 5 from shifting 8 to 3 = 45 2 checkers on 8 (one checker ist shifted) = 16 ; 45 + 16 =\u001d 61\n3 checker on 13 = 39 ; 61 + 39‎  =  100\n\nOpponent: shift one checker for 6 to 4 and one checker from 2 to 4 = closed board. We know closed board = 42 + one checker on 7 = 49\n+ 2 checker on 18 = 36 + 49 = 85 "
     },
     {
-      "difficulty" : 1,
+      "difficulty" : 3,
       "id" : "7c4MBgC72QXAAA:MAEpAQAAEAAE",
       "tags" : [
         "holding",
@@ -216,7 +217,7 @@
       ],
       "caption" : "",
       "note" : "",
-      "text" : ""
+      "text" : "One way to count: Player: mental shifting one checker from 1 to 2, we get 3 checker on 2, 3 and 4. This is the same as 9 checker on 3 = 3 x 9 = 27\nDon’t forget to subtract  1 from shifting 1 to 2 = 26\n2 checkers on 6 -> 26 + 12  = 38 2 checkers on 8  = 16 ; 38 + 16 =\u001d 54\n2 checker on 13 = 26 ; 54 + 26 ‎ =  80\n\nOpponent: shift one checker for 6 to 4 and one checker from 2 to 4 = closed board. We know closed board = 42 + one checker on 7 = 49\n+ 2 checker on 18 = 36 + 49 = 85 "
     },
     {
       "difficulty" : 1,
@@ -252,7 +253,7 @@
       ],
       "caption" : "",
       "note" : "",
-      "text" : ""
+      "text" : "Player:\n9 x 2 = 18\n\nOpponent:\n\n6 + 5 + 8 (2x4) + 4 (2x2) = 23 "
     },
     {
       "difficulty" : 1,
@@ -301,7 +302,7 @@
       "text" : ""
     },
     {
-      "difficulty" : 1,
+      "difficulty" : 2,
       "id" : "uu1JAQDYvmcAAA:UQn3AEAACAAE",
       "tags" : [
         "race",
@@ -310,10 +311,10 @@
       ],
       "caption" : "",
       "note" : "",
-      "text" : ""
+      "text" : "Player:\nShift two checkers from 9 to 8 —> 5 prime over 6 = 10 x 6 = 60 \nDon’t forget to add 2 from shifting 9 to 8 = 62\n2 checkers on 7 -> 62 + 14 = 76 \n3 checkers on 6 -> 76 + 18 = 94 \n\nOpponent:\nShift one checker from 3 to 2 —> 5 prime over 4 = 10 x 4 = 40 \nDon’t forget to add 1 from shifting 3 to 2 = 41\nAdd 2 checker form 6 = 53\nOne checker on 11, 10 an 8 = 53 + 11 + 10 + 8 = 82"
     },
     {
-      "difficulty" : 1,
+      "difficulty" : 2,
       "id" : "dPseAAC67UkBAA:EYHuAEAACAAE",
       "tags" : [
         "race",
@@ -322,10 +323,10 @@
       ],
       "caption" : "",
       "note" : "",
-      "text" : ""
+      "text" : "Player:\nShift one checker from 4 to 3 —> 5 prime over 5 = 10 x 5 = 50 \nDon’t forget to add 1 from shifting 4 to 3 = 51\n2 checkers on 7 -> 51 + 14 = 65 \n3 checkers on 6 -> 65 + 18 = 83 \n\nOpponent:\nShift one checker from 3 to 2 —> 5 prime over 4 = 10 x 4 = 40 \nDon’t forget to add 1 from shifting 3 to 2 = 41\nAdd 2 checker form 6 = 53\nOne checker on 11, 10 an 8 = 53 + 11 + 10 + 8 = 82"
     },
     {
-      "difficulty" : 1,
+      "difficulty" : 2,
       "id" : "ut2HAAB0+x4AAA:UQnuAEAACAAE",
       "tags" : [
         "pipcount",
@@ -333,7 +334,7 @@
       ],
       "caption" : "",
       "note" : "",
-      "text" : ""
+      "text" : "Player:\nShift one checker from 4 to 3 —> 5 prime over 5 = 10 x 5 = 50 \nDon’t forget to add 1 from shifting 4 to 3 = 51\n2 checkers on 7 -> 51 + 14 = 65 \n3 checkers on 6 -> 65 + 18 = 83 \n\nOpponent:\nShift one checker from 3 to 2 —> 5 prime over 4 = 10 x 4 = 40 \nDon’t forget to add 1 from shifting 3 to 2 = 41\nAdd one checker form 5 = 46\n3 checker on 6 = 46 + 18 = 64\nOne checker on 10 = 64 + 10 = 74\n"
     },
     {
       "difficulty" : 1,
@@ -445,7 +446,7 @@
       ],
       "caption" : "",
       "note" : "",
-      "text" : ""
+      "text" : "Player:\n24 + 5 + 8 + 3 + 2  = 42 \n\nOpponent:\n15 + 8 + 6 = 29 "
     },
     {
       "difficulty" : 1,
@@ -456,7 +457,7 @@
       ],
       "caption" : "",
       "note" : "",
-      "text" : ""
+      "text" : "Player:\n6 + 8 + 3 + 2 + 3 = 22 \n\nOpponent:\n15 + 8 + 6 = 29 "
     },
     {
       "difficulty" : 1,
@@ -467,7 +468,7 @@
       ],
       "caption" : "",
       "note" : "",
-      "text" : ""
+      "text" : "Player:\n\n6 + 8 (2x4) + 2 + 2 (2x1) = 18 \n\nOpponent:\n\n10 (2x5) + 8 (2x4) + 3 + 2 = 23 "
     },
     {
       "difficulty" : 1,

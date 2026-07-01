@@ -69,6 +69,28 @@ static const CGFloat kWideThreshold = 700.0;
 @property (nonatomic, strong) UIButton      *cancelButton;
 @property (nonatomic, strong) UIButton      *nextButton;
 @property (nonatomic, strong) UIButton      *cancelAfterNextButton;
+// Training only: an optional, collapsible explanation of how to count the
+// current position. Uses the position's explanation text; shown only when
+// that text exists. Hidden entirely in Workout.
+@property (nonatomic, strong) UIButton      *explanationToggle;
+// Vertical stack holding the after-pad controls (cancel, feedback, time badge,
+// next, cancel-after-next). A stack view removes hidden arranged subviews from
+// the layout entirely – including spacing – so the block is exactly as tall as
+// its visible content and nothing leaves an empty gap.
+@property (nonatomic, strong) UIStackView   *bottomStack;
+@property (nonatomic, strong) UIView        *timeBadgeRow;
+@property (nonatomic, strong) UILabel       *explanationLabel;
+@property (nonatomic, assign) BOOL           explanationExpanded;
+// Zero-height constraints used to collapse the toggle/label when they are not
+// in use (Workout, or a position without text), so they take no vertical space.
+@property (nonatomic, strong) NSLayoutConstraint *explanationToggleZeroHeight;
+@property (nonatomic, strong) NSLayoutConstraint *explanationLabelZeroHeight;
+// The explanation block lives in contentView (not controlsView) so it can be
+// placed full-width under the controls on iPhone, and under the board (the
+// wide left column) on iPad – instead of being squeezed into the narrow right
+// column. These top/leading/trailing constraints are swapped per layout.
+@property (nonatomic, strong) NSArray<NSLayoutConstraint *> *explanationWideConstraints;
+@property (nonatomic, strong) NSArray<NSLayoutConstraint *> *explanationNarrowConstraints;
 
 // Feedback
 @property (nonatomic, strong) UILabel       *feedbackLabel;
@@ -265,7 +287,6 @@ static const CGFloat kWideThreshold = 700.0;
 
     // Cancel button (visible under Check)
     self.cancelButton = [self cancelButtonWithAction:@selector(cancelTapped)];
-    [self.controlsView addSubview:self.cancelButton];
 
     // Feedback label
     self.feedbackLabel = [[UILabel alloc] init];
@@ -273,11 +294,12 @@ static const CGFloat kWideThreshold = 700.0;
     self.feedbackLabel.textAlignment = NSTextAlignmentCenter;
     self.feedbackLabel.numberOfLines = 0;
     self.feedbackLabel.alpha         = 0.0;
+    self.feedbackLabel.hidden        = YES;
     self.feedbackLabel.translatesAutoresizingMaskIntoConstraints = NO;
-    [self.controlsView addSubview:self.feedbackLabel];
 
     // Time badge – a coloured pill showing the answer time after a check.
-    // Colour comes from BGGTimeColor (green / orange / red by threshold).
+    // Wrapped in a row so it can be centred (a stack view would otherwise
+    // stretch it to full width).
     self.timeBadge = [[UILabel alloc] init];
     self.timeBadge.font          = [UIFont monospacedDigitSystemFontOfSize:17.0
                                                                     weight:UIFontWeightSemibold];
@@ -287,19 +309,91 @@ static const CGFloat kWideThreshold = 700.0;
     self.timeBadge.layer.masksToBounds = YES;
     self.timeBadge.alpha         = 0.0;
     self.timeBadge.translatesAutoresizingMaskIntoConstraints = NO;
-    [self.controlsView addSubview:self.timeBadge];
+
+    self.timeBadgeRow = [[UIView alloc] init];
+    self.timeBadgeRow.translatesAutoresizingMaskIntoConstraints = NO;
+    self.timeBadgeRow.hidden = YES;
+    [self.timeBadgeRow addSubview:self.timeBadge];
+    [NSLayoutConstraint activateConstraints:@[
+        [self.timeBadge.centerXAnchor constraintEqualToAnchor:self.timeBadgeRow.centerXAnchor],
+        [self.timeBadge.topAnchor     constraintEqualToAnchor:self.timeBadgeRow.topAnchor],
+        [self.timeBadge.bottomAnchor  constraintEqualToAnchor:self.timeBadgeRow.bottomAnchor],
+        [self.timeBadge.heightAnchor  constraintEqualToConstant:30.0],
+    ]];
 
     // Next button – hidden until after Check
     self.nextButton = [self actionButtonWithTitle:BGGLocalizedString(@"Next →")
                                            action:@selector(nextTapped)];
     self.nextButton.backgroundColor = [UIColor systemGrayColor];
     self.nextButton.hidden = YES;
-    [self.controlsView addSubview:self.nextButton];
 
     // Cancel after Next – hidden until after Check
     self.cancelAfterNextButton = [self cancelButtonWithAction:@selector(cancelTapped)];
     self.cancelAfterNextButton.hidden = YES;
-    [self.controlsView addSubview:self.cancelAfterNextButton];
+
+    // Fixed heights for the buttons (the stack sets width via fill alignment).
+    [self.cancelButton.heightAnchor           constraintEqualToConstant:44.0].active = YES;
+    [self.nextButton.heightAnchor             constraintEqualToConstant:48.0].active = YES;
+    [self.cancelAfterNextButton.heightAnchor  constraintEqualToConstant:44.0].active = YES;
+
+    // The bottom stack. Hidden arranged subviews collapse completely, so the
+    // block is always exactly as tall as what's visible – no empty gap below
+    // the pad before a check, and the explanation toggle sits right beneath it.
+    self.bottomStack = [[UIStackView alloc] initWithArrangedSubviews:@[
+        self.cancelButton, self.feedbackLabel, self.timeBadgeRow,
+        self.nextButton, self.cancelAfterNextButton
+    ]];
+    self.bottomStack.axis    = UILayoutConstraintAxisVertical;
+    self.bottomStack.spacing = 8.0;
+    self.bottomStack.alignment = UIStackViewAlignmentFill;
+    self.bottomStack.translatesAutoresizingMaskIntoConstraints = NO;
+    [self.controlsView addSubview:self.bottomStack];
+
+    // Explanation toggle + collapsible text (Training only, and only when the
+    // position carries an explanation). Lives in contentView (not controlsView)
+    // so the layout switch can place it full-width under the controls on iPhone
+    // and under the board on iPad. Both start hidden; showCurrentPosition
+    // decides per position. The toggle is styled like the MET hint pills:
+    // an eye / eye-slash icon that flips when expanded.
+    self.explanationToggle = [UIButton buttonWithType:UIButtonTypeSystem];
+    self.explanationToggle.titleLabel.font = [UIFont preferredFontForTextStyle:UIFontTextStyleSubheadline];
+    self.explanationToggle.tintColor = [UIColor colorNamed:@"AccentColor"] ?: [UIColor systemRedColor];
+    self.explanationToggle.backgroundColor = [UIColor secondarySystemBackgroundColor];
+    self.explanationToggle.layer.cornerRadius = 10.0;
+    self.explanationToggle.contentHorizontalAlignment = UIControlContentHorizontalAlignmentCenter;
+    self.explanationToggle.translatesAutoresizingMaskIntoConstraints = NO;
+    self.explanationToggle.hidden = YES;
+    // Space the icon and title a little. contentEdge/imageEdge insets are
+    // deprecated on iOS 15+, but kept here (as with the MET hint pills) since
+    // no UIButtonConfiguration is in play and the manual variant is simpler.
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+    self.explanationToggle.imageEdgeInsets   = UIEdgeInsetsMake(0, 0, 0, 6);
+    self.explanationToggle.titleEdgeInsets   = UIEdgeInsetsMake(0, 6, 0, 0);
+#pragma clang diagnostic pop
+    [self.explanationToggle addTarget:self action:@selector(explanationToggleTapped)
+                     forControlEvents:UIControlEventTouchUpInside];
+    [self.contentView addSubview:self.explanationToggle];
+    // Base pill height, but at a priority the zero-height collapse can override
+    // when the explanation isn't in use.
+    NSLayoutConstraint *toggleH = [self.explanationToggle.heightAnchor constraintEqualToConstant:44.0];
+    toggleH.priority = UILayoutPriorityDefaultHigh;   // 750, below the 1000 collapse
+    toggleH.active = YES;
+
+    self.explanationLabel = [[UILabel alloc] init];
+    self.explanationLabel.font          = [UIFont preferredFontForTextStyle:UIFontTextStyleBody];
+    self.explanationLabel.textColor     = [UIColor labelColor];
+    self.explanationLabel.numberOfLines = 0;
+    self.explanationLabel.hidden        = YES;
+    self.explanationLabel.translatesAutoresizingMaskIntoConstraints = NO;
+    [self.contentView addSubview:self.explanationLabel];
+
+    // Collapse-to-zero constraints, toggled in showCurrentPosition. When the
+    // explanation isn't in use, both views collapse so they take no space.
+    self.explanationToggleZeroHeight =
+        [self.explanationToggle.heightAnchor constraintEqualToConstant:0.0];
+    self.explanationLabelZeroHeight =
+        [self.explanationLabel.heightAnchor constraintEqualToConstant:0.0];
 
     // Controls internal layout
     [NSLayoutConstraint activateConstraints:@[
@@ -357,48 +451,20 @@ static const CGFloat kWideThreshold = 700.0;
                                                          constant:-m],
         [self.submitButton.heightAnchor  constraintEqualToConstant:0.5],
 
-        [self.cancelButton.topAnchor     constraintEqualToAnchor:self.numberPad.bottomAnchor
+        // The bottom stack holds cancel / feedback / time badge / next /
+        // cancel-after-next. Hidden items collapse, so it's always exactly as
+        // tall as what's visible.
+        [self.bottomStack.topAnchor      constraintEqualToAnchor:self.numberPad.bottomAnchor
                                                         constant:8.0],
-        [self.cancelButton.leadingAnchor constraintEqualToAnchor:self.controlsView.leadingAnchor
+        [self.bottomStack.leadingAnchor  constraintEqualToAnchor:self.controlsView.leadingAnchor
                                                         constant:m],
-        [self.cancelButton.trailingAnchor constraintEqualToAnchor:self.controlsView.trailingAnchor
-                                                         constant:-m],
-        [self.cancelButton.heightAnchor  constraintEqualToConstant:44.0],
-
-        [self.feedbackLabel.topAnchor    constraintEqualToAnchor:self.cancelButton.bottomAnchor
-                                                        constant:12.0],
-        [self.feedbackLabel.leadingAnchor constraintEqualToAnchor:self.controlsView.leadingAnchor
-                                                         constant:m],
-        [self.feedbackLabel.trailingAnchor constraintEqualToAnchor:self.controlsView.trailingAnchor
-                                                          constant:-m],
-
-        // Time badge – centred pill below the feedback line.
-        [self.timeBadge.topAnchor        constraintEqualToAnchor:self.feedbackLabel.bottomAnchor
-                                                        constant:8.0],
-        [self.timeBadge.centerXAnchor    constraintEqualToAnchor:self.controlsView.centerXAnchor],
-        [self.timeBadge.heightAnchor     constraintEqualToConstant:30.0],
-
-        [self.nextButton.topAnchor       constraintEqualToAnchor:self.timeBadge.bottomAnchor
-                                                        constant:12.0],
-        [self.nextButton.leadingAnchor   constraintEqualToAnchor:self.controlsView.leadingAnchor
-                                                        constant:m],
-        [self.nextButton.trailingAnchor  constraintEqualToAnchor:self.controlsView.trailingAnchor
+        [self.bottomStack.trailingAnchor constraintEqualToAnchor:self.controlsView.trailingAnchor
                                                         constant:-m],
-        [self.nextButton.heightAnchor    constraintEqualToConstant:48.0],
 
-        [self.cancelAfterNextButton.topAnchor    constraintEqualToAnchor:self.nextButton.bottomAnchor
-                                                                constant:8.0],
-        [self.cancelAfterNextButton.leadingAnchor constraintEqualToAnchor:self.controlsView.leadingAnchor
-                                                                 constant:m],
-        [self.cancelAfterNextButton.trailingAnchor constraintEqualToAnchor:self.controlsView.trailingAnchor
-                                                                  constant:-m],
-        [self.cancelAfterNextButton.heightAnchor constraintEqualToConstant:44.0],
-
-        // Pin the container's bottom to the last button so controlsView has a
-        // defined height from its content. Without this the view collapses
-        // inside the scroll view and nothing scrolls. cancelAfterNextButton
-        // stays in the layout even while hidden, so this anchor is stable.
-        [self.controlsView.bottomAnchor constraintEqualToAnchor:self.cancelAfterNextButton.bottomAnchor
+        // Pin the container's bottom to the stack so controlsView is exactly as
+        // tall as its visible content. The explanation block lives in
+        // contentView and is positioned by the layout switch, not here.
+        [self.controlsView.bottomAnchor constraintEqualToAnchor:self.bottomStack.bottomAnchor
                                                        constant:m],
     ]];
 
@@ -422,6 +488,14 @@ static const CGFloat kWideThreshold = 700.0;
         // wide  -> pinned below the info line (board left, controls right)
         // narrow-> pinned below the board ID view (board on top, controls below)
         [self.controlsView.trailingAnchor constraintEqualToAnchor:self.contentView.trailingAnchor],
+
+        // Explanation: the label always sits directly under the toggle. The
+        // toggle's top/leading/trailing are direction-dependent (set in the
+        // layout switch), so only this vertical link is fixed here.
+        [self.explanationLabel.topAnchor      constraintEqualToAnchor:self.explanationToggle.bottomAnchor
+                                                             constant:8.0],
+        [self.explanationLabel.leadingAnchor  constraintEqualToAnchor:self.explanationToggle.leadingAnchor],
+        [self.explanationLabel.trailingAnchor constraintEqualToAnchor:self.explanationToggle.trailingAnchor],
     ]];
 }
 
@@ -500,7 +574,11 @@ static const CGFloat kWideThreshold = 700.0;
 
     [NSLayoutConstraint deactivateConstraints:self.wideConstraints   ?: @[]];
     [NSLayoutConstraint deactivateConstraints:self.narrowConstraints ?: @[]];
+    [NSLayoutConstraint deactivateConstraints:self.explanationWideConstraints   ?: @[]];
+    [NSLayoutConstraint deactivateConstraints:self.explanationNarrowConstraints ?: @[]];
     self.isWideLayout = wide;
+
+    CGFloat m = 16.0;
 
     if (wide)
     {
@@ -515,12 +593,22 @@ static const CGFloat kWideThreshold = 700.0;
             [self.boardView.widthAnchor    constraintEqualToAnchor:self.contentView.widthAnchor
                                                         multiplier:0.60],
             // Whichever column is taller defines the content height.
-            [self.contentView.bottomAnchor constraintGreaterThanOrEqualToAnchor:self.boardView.bottomAnchor
-                                                                       constant:8.0],
             [self.contentView.bottomAnchor constraintGreaterThanOrEqualToAnchor:self.controlsView.bottomAnchor
                                                                        constant:8.0],
         ];
         [NSLayoutConstraint activateConstraints:self.wideConstraints];
+
+        // Explanation under the board, using the full left column width – not
+        // squeezed into the narrow right controls column.
+        self.explanationWideConstraints = @[
+            [self.explanationToggle.topAnchor      constraintEqualToAnchor:self.boardIDView.bottomAnchor
+                                                                  constant:12.0],
+            [self.explanationToggle.leadingAnchor  constraintEqualToAnchor:self.boardView.leadingAnchor],
+            [self.explanationToggle.trailingAnchor constraintEqualToAnchor:self.boardView.trailingAnchor],
+            [self.contentView.bottomAnchor constraintGreaterThanOrEqualToAnchor:self.explanationLabel.bottomAnchor
+                                                                       constant:8.0],
+        ];
+        [NSLayoutConstraint activateConstraints:self.explanationWideConstraints];
     }
     else
     {
@@ -532,10 +620,21 @@ static const CGFloat kWideThreshold = 700.0;
             [self.controlsView.topAnchor    constraintEqualToAnchor:self.boardIDView.bottomAnchor
                                                            constant:8.0],
             [self.controlsView.leadingAnchor constraintEqualToAnchor:self.contentView.leadingAnchor],
-            [self.contentView.bottomAnchor   constraintEqualToAnchor:self.controlsView.bottomAnchor
-                                                             constant:8.0],
         ];
         [NSLayoutConstraint activateConstraints:self.narrowConstraints];
+
+        // Explanation under the controls, full content width.
+        self.explanationNarrowConstraints = @[
+            [self.explanationToggle.topAnchor      constraintEqualToAnchor:self.controlsView.bottomAnchor
+                                                                  constant:12.0],
+            [self.explanationToggle.leadingAnchor  constraintEqualToAnchor:self.contentView.leadingAnchor
+                                                                  constant:m],
+            [self.explanationToggle.trailingAnchor constraintEqualToAnchor:self.contentView.trailingAnchor
+                                                                  constant:-m],
+            [self.contentView.bottomAnchor constraintEqualToAnchor:self.explanationLabel.bottomAnchor
+                                                          constant:8.0],
+        ];
+        [NSLayoutConstraint activateConstraints:self.explanationNarrowConstraints];
     }
 }
 
@@ -627,13 +726,18 @@ static const CGFloat kWideThreshold = 700.0;
     self.boardView.boardState = [entry boardState];
     [self.boardIDView updateWithID:entry.positionID];
 
+    // Set up the optional explanation for this position (Training + has text).
+    [self configureExplanationForEntry:entry];
+
     self.progressLabel.text   = [NSString stringWithFormat:@"%ld / %ld",
                                  (long)(self.currentIndex + 1), (long)self.totalCount];
     self.blueInput            = @"";
     self.yellowInput          = @"";
     [self refreshFieldDisplays];
     self.feedbackLabel.alpha  = 0.0;
+    self.feedbackLabel.hidden = YES;
     self.timeBadge.alpha      = 0.0;
+    self.timeBadgeRow.hidden  = YES;
     self.submitButton.hidden  = YES;   // replaced by the pad's OK key
     self.cancelButton.hidden  = NO;
     self.nextButton.hidden    = YES;
@@ -659,6 +763,63 @@ static const CGFloat kWideThreshold = 700.0;
     [self.contentView layoutIfNeeded];
     CGFloat topY = -self.scrollView.adjustedContentInset.top;
     [self.scrollView setContentOffset:CGPointMake(0.0, topY) animated:YES];
+}
+
+#pragma mark - Explanation (Training only)
+
+// Configures the collapsible explanation for the current position. Shown only
+// in Training (gated on showsPointNumbers, the same flag that puts the helper
+// numbers on the board) and only when the position actually has text. Resets
+// to collapsed on every new position.
+- (void)configureExplanationForEntry:(BGGPositionEntry *)entry
+{
+    NSString *text = [entry.text stringByTrimmingCharactersInSet:
+                      [NSCharacterSet whitespaceAndNewlineCharacterSet]];
+    BOOL available = self.showsPointNumbers && text.length > 0;
+
+    self.explanationExpanded = NO;   // always start collapsed on a new position
+
+    if (!available)
+    {
+        self.explanationToggle.hidden = YES;
+        self.explanationLabel.hidden  = YES;
+        self.explanationLabel.text    = @"";
+        self.explanationToggleZeroHeight.active = YES;
+        self.explanationLabelZeroHeight.active  = YES;
+        return;
+    }
+
+    self.explanationLabel.text = entry.text;   // full text, real line breaks
+    self.explanationToggle.hidden = NO;
+    self.explanationToggleZeroHeight.active = NO;
+    [self applyExplanationState];
+}
+
+// Reflects explanationExpanded in the toggle (icon + title) and the label.
+- (void)applyExplanationState
+{
+    NSString *title = self.explanationExpanded
+        ? BGGLocalizedString(@"Hide explanation")
+        : BGGLocalizedString(@"Show explanation");
+    [self.explanationToggle setTitle:title forState:UIControlStateNormal];
+
+    // Eye when shown, eye-slash when hidden – same visual language as the MET
+    // hint pills.
+    NSString *symbol = self.explanationExpanded ? @"eye" : @"eye.slash";
+    [self.explanationToggle setImage:[UIImage systemImageNamed:symbol]
+                            forState:UIControlStateNormal];
+
+    self.explanationLabel.hidden = !self.explanationExpanded;
+    self.explanationLabelZeroHeight.active = !self.explanationExpanded;
+}
+
+- (void)explanationToggleTapped
+{
+    self.explanationExpanded = !self.explanationExpanded;
+    [self applyExplanationState];
+    [UIView animateWithDuration:0.2 animations:^{
+        [self.contentView layoutIfNeeded];
+    }];
 }
 
 #pragma mark - Field selection + number pad
@@ -869,6 +1030,9 @@ static const CGFloat kWideThreshold = 700.0;
     // Show the answer time as a coloured badge in both modes.
     [self showTimeBadge];
 
+    // Un-hide in the stack (so they take their space), then fade in.
+    self.feedbackLabel.hidden = NO;
+    self.timeBadgeRow.hidden  = NO;
     [UIView animateWithDuration:0.2 animations:^{
         self.feedbackLabel.alpha = 1.0;
         self.timeBadge.alpha     = 1.0;
